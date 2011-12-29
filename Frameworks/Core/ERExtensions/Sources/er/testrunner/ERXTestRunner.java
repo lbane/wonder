@@ -47,7 +47,7 @@ public class ERXTestRunner extends BaseTestRunner {
             externalListener.startTest(test);
 	}
 
-	public void endTest(Test test) {
+	public synchronized void endTest(Test test) {
             externalListener.endTest(test);
 	}
 			

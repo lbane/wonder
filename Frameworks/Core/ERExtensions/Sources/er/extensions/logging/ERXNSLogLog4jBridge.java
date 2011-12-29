@@ -32,7 +32,7 @@ public class ERXNSLogLog4jBridge extends /* NSLog.Logger */ NSLog.PrintStreamLog
        // setIsEnabled(true);
     }
 
-    public void appendln(Object obj) {
+    public synchronized void appendln(Object obj) {
         if (isEnabled()) {
             if (obj == null)   obj = "";
             switch (type) {
@@ -67,7 +67,7 @@ public class ERXNSLogLog4jBridge extends /* NSLog.Logger */ NSLog.PrintStreamLog
         }
     }
 
-    public void appendln() {
+    public synchronized void appendln() {
         appendln(""); // Assuming people will always put "%n" at the end of the layout pattern.  
     }
 
