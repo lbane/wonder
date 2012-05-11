@@ -12,10 +12,10 @@ import org.apache.log4j.Logger;
 import com.webobjects.appserver.WOAdaptor;
 import com.webobjects.appserver.WOApplication;
 import com.webobjects.appserver.WOContext;
+import com.webobjects.appserver.WODynamicURL;
 import com.webobjects.appserver.WORequest;
 import com.webobjects.appserver.WOResponse;
 import com.webobjects.appserver.WOSession;
-import com.webobjects.appserver._private.WODynamicURL;
 import com.webobjects.appserver._private.WOURLEncoder;
 import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSDelayedCallbackCenter;
@@ -163,8 +163,9 @@ public class InstantMessengerAdaptor extends WOAdaptor implements IMessageListen
 	}
 
 	/**
-	 * @deprecated use defaultInstantMessenger() instead
+	 * @deprecated use {@link #defaultInstantMessenger()}
 	 */
+	@Deprecated
 	public IInstantMessenger instantMessenger() {
 		return defaultInstantMessenger();
 	}
@@ -399,7 +400,7 @@ public class InstantMessengerAdaptor extends WOAdaptor implements IMessageListen
 				catch (InterruptedException t) {
 					// ignore
 				}
-				InstantMessengerAdaptor.this.removeExpiredConversations();
+				removeExpiredConversations();
 			}
 		}
 	}

@@ -66,7 +66,13 @@ import er.extensions.localization.ERXLocalizer;
  * @author mschrag
  */
 public class AjaxFlexibleFileUpload extends AjaxFileUpload {
-	
+	/**
+	 * Do I need to update serialVersionUID?
+	 * See section 5.6 <cite>Type Changes Affecting Serialization</cite> on page 51 of the 
+	 * <a href="http://java.sun.com/j2se/1.4/pdf/serial-spec.pdf">Java Object Serialization Spec</a>
+	 */
+	private static final long serialVersionUID = 1L;
+
 	protected final Logger log = Logger.getLogger(getClass());
 	
 	public static interface Keys {
@@ -290,7 +296,7 @@ public class AjaxFlexibleFileUpload extends AjaxFileUpload {
 			stateObj.takeValueForKey(progress.fileName(), "filename");
 		}
 		this.refreshState();
-		stateObj.takeValueForKey(new Integer(state.ordinal()), "state");
+		stateObj.takeValueForKey(Integer.valueOf(state.ordinal()), "state");
 		if (state == UploadState.CANCELED) {
 			stateObj.takeValueForKey(cancelUrl(), "cancelUrl");
 		}
@@ -623,9 +629,9 @@ public class AjaxFlexibleFileUpload extends AjaxFileUpload {
 		if (progress != null) {
 			if (!progress.isSucceeded()) {
 				int percent = (int)(progress.percentage() * 100);
-				amount = new Integer(percent);
+				amount = Integer.valueOf(percent);
 			} else {
-				amount = new Integer(100);
+				amount = Integer.valueOf(100);
 			}
 		}
 		return amount;

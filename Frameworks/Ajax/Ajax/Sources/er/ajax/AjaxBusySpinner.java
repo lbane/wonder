@@ -31,9 +31,20 @@ import com.webobjects.appserver.WOResponse;
  * @binding trail (optional) afterglow percentage
  * @binding shadow (optional) whether to render a shadow
  * @binding spinOpts (optional) json style list of spinner options (explicit binding values take precedence)
+ * 
+ * @property er.extensions.ERXResponseRewriter.resource.Ajax.spin.js=Ajax.spin.min.js replaces the normal
+ *           spin.js file with the minified version
+ * 
  * @author qdolan
  */
 public class AjaxBusySpinner extends AjaxComponent {
+	/**
+	 * Do I need to update serialVersionUID?
+	 * See section 5.6 <cite>Type Changes Affecting Serialization</cite> on page 51 of the 
+	 * <a href="http://java.sun.com/j2se/1.4/pdf/serial-spec.pdf">Java Object Serialization Spec</a>
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public AjaxBusySpinner(WOContext context) {
 		super(context);
 	}

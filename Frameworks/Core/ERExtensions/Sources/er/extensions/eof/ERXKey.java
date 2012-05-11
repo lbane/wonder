@@ -1,13 +1,17 @@
 package er.extensions.eof;
 
 import java.math.BigDecimal;
+import java.util.Locale;
 
 import com.webobjects.eocontrol.EOQualifier;
+import com.webobjects.eocontrol.EOSortOrdering;
 import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSKeyValueCodingAdditions;
 import com.webobjects.foundation.NSRange;
+import com.webobjects.foundation.NSSelector;
 import com.webobjects.foundation.NSTimestamp;
 
+import er.extensions.eof.ERXSortOrdering.ERXSortOrderings;
 import er.extensions.qualifiers.ERXAndQualifier;
 import er.extensions.qualifiers.ERXKeyComparisonQualifier;
 import er.extensions.qualifiers.ERXKeyValueQualifier;
@@ -1182,6 +1186,18 @@ public class ERXKey<T> {
 	}
 
 	/**
+	 * Constructs a localized ERXKey.
+	 * 
+	 * @param key
+	 *            the underlying keypath
+	 * @param locale
+	 * 			  the locale for the key
+	 */
+	public ERXKey(String key, String locale) {
+		_key = key + "_" + locale;
+	}
+
+	/**
 	 * Equivalent to ERXS.asc(key())
 	 * 
 	 * @return asc sort ordering for key
@@ -1260,6 +1276,30 @@ public class ERXKey<T> {
 	 */
 	public String key() {
 		return _key;
+	}
+	
+	/**
+	 * Returns a localized key.
+	 * 
+	 * @param locale
+	 * 	locale for the new key.
+	 * 
+	 * @return localized key
+	 */
+	public ERXKey<T> loc(String locale) {
+		return new ERXKey(key(), locale);
+	}
+
+	/**
+	 * Returns a localized key.
+	 * 
+	 * @param locale
+	 * 	locale for the new key.
+	 * 
+	 * @return localized key
+	 */
+	public ERXKey<T> loc(Locale locale) {
+		return new ERXKey(key(), locale.getLanguage().toLowerCase());
 	}
 
 	/**
@@ -1651,6 +1691,18 @@ public class ERXKey<T> {
 	 */
 	public ERXOrQualifier inObjects(T... values) {
 		return ERXQ.inObjects(_key, values);
+	}
+	
+	/**
+	 * Equivalent to a new ERXAndQualifier of
+	 * EONotQualifier(EOKeyValueQualifier) with key equals value for each value.
+	 * 
+	 * @param values
+	 *            the values
+	 * @return an ERXAndQualifier
+	 */
+	public ERXAndQualifier notInObjects(T... values) {
+		return ERXQ.notInObjects(_key, values);
 	}
 
 	/**
@@ -2089,5 +2141,82 @@ public class ERXKey<T> {
 	@Override
 	public String toString() {
 		return _key;
+	}
+	
+	/**
+	 * Prefix the key in the given sort ordering with this key. For example, if
+	 * you have a sort ordering on Company of "name ascending" and you want to
+	 * sort a group of Person eo's by the name of the company they work for, you
+	 * need to prefix the key in the existing sort ordering to be "company.name
+	 * ascending" (to go through the company relationship on Person). Prefix
+	 * provides a mechanism to do that.
+	 * 
+	 * Person.COMPANY.prefix(Company.NAME.asc()) is equivalent to ERXS.sortOrder("compan.name", ERXS.ASC)
+	 * 
+	 * @param sortOrder
+	 *            the sort ordering to prefix
+	 * @return a sort ordering with its key prefixed with this key
+	 * @author David Avendasora
+	 */
+	public ERXSortOrdering prefix(EOSortOrdering sortOrder) {
+		String keyPathToChain = sortOrder.key();
+		String fullKeyPath = append(keyPathToChain).key();
+		NSSelector selector = sortOrder.selector();
+		ERXSortOrdering prefixedSortOrdering = ERXS.sortOrder(fullKeyPath, selector);
+		return prefixedSortOrdering;
+	}
+
+	/**
+	 * Prefix the keys in the given array of sort orderings with this key.
+	 * 
+	 * @param sortOrderings
+	 *            an Array of sort orderings to prefix
+	 * @return a sort ordering with its key prefixed with this key
+	 * @see #prefix(EOSortOrdering)
+	 * @author David Avendasora
+	 */
+	public ERXSortOrderings prefix(NSArray<EOSortOrdering> sortOrderings) {
+		ERXSortOrderings prefixedSortOrderings = new ERXSortOrderings();
+		for (EOSortOrdering sortOrdering : sortOrderings) {
+			EOSortOrdering prefixedSortOrdering = prefix(sortOrdering);
+			prefixedSortOrderings.addObject(prefixedSortOrdering);
+		}
+		return prefixedSortOrderings;
+	}
+	
+	/**
+	 * Simple cover method for {@link #prefix(EOQualifier)}.
+	 * 
+	 * @param qualifier
+	 *            the qualifier to prefix
+	 * @return a qualifier with all of its keys prefixed with this key
+	 * @author David Avendasora
+	 */
+	public EOQualifier dot(EOQualifier qualifier) {
+		return prefix(qualifier);
+	}
+	
+	/**
+	 * Simple cover method for {@link #prefix(EOSortOrdering)}.
+	 * 
+	 * @param sortOrdering
+	 *            the sort ordering to prefix
+	 * @return a sort ordering with its key prefixed with this key
+	 * @author David Avendasora
+	 */
+	public ERXSortOrdering dot(EOSortOrdering sortOrdering) {
+		return prefix(sortOrdering);
+	}
+	
+	/**
+	 * Simple cover method for {@link #prefix(NSArray)}.
+	 * 
+	 * @param sortOrderings
+	 *            an Array of sort orderings to prefix
+	 * @return a sort ordering with its key prefixed with this key
+	 * @author David Avendasora
+	 */
+	public ERXSortOrderings dot(NSArray<EOSortOrdering> sortOrderings) {
+		return prefix(sortOrderings);
 	}
 }

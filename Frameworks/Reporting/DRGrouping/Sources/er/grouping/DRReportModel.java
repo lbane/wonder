@@ -12,7 +12,6 @@ import com.webobjects.appserver.xml.*;
 import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 
-import er.extensions.*;
 import er.extensions.eof.ERXConstant;
 import er.extensions.foundation.ERXStringUtilities;
 import er.extensions.foundation.ERXValueUtilities;
@@ -451,7 +450,7 @@ public class DRReportModel extends Object  {
 
         }
 
-        Number dpthKey = new Integer(_attributeListDepth);
+        Number dpthKey = Integer.valueOf(_attributeListDepth);
         //OWDebug.println(1, "dpthKey:"+dpthKey);
         NSMutableArray lst = (NSMutableArray)_flatAttributeDepthDict.objectForKey(dpthKey);
 
@@ -490,7 +489,7 @@ public class DRReportModel extends Object  {
         int cnt = depthKeys.count();
 
         for (i = 0; i < cnt; i++) {
-            Number ky = new Integer(i);
+            Number ky = Integer.valueOf(i);
             //OWDebug.println(1, "ky:"+ ky);
             NSArray attsForDepth = (NSArray)_flatAttributeDepthDict.objectForKey(ky);
             Enumeration anEnum = attsForDepth.objectEnumerator();

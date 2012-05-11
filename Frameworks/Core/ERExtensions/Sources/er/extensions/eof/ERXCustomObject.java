@@ -66,6 +66,12 @@ import er.extensions.validation.ERXValidationFactory;
  */
 
 public class ERXCustomObject extends EOCustomObject implements ERXGuardedObjectInterface, ERXGeneratesPrimaryKeyInterface, ERXEnterpriseObject {
+	/**
+	 * Do I need to update serialVersionUID?
+	 * See section 5.6 <cite>Type Changes Affecting Serialization</cite> on page 51 of the 
+	 * <a href="http://java.sun.com/j2se/1.4/pdf/serial-spec.pdf">Java Object Serialization Spec</a>
+	 */
+	private static final long serialVersionUID = 1L;
 
     /** holds all subclass related Logger's */
     private static final NSMutableDictionary<Class, Logger> classLogs = new NSMutableDictionary<Class, Logger>();
@@ -78,6 +84,7 @@ public class ERXCustomObject extends EOCustomObject implements ERXGuardedObjectI
      * Clazz object implementation for ERXCustomObject. See
      * {@link EOEnterpriseObjectClazz} for more information on this
      * neat design pattern.
+     * @param <T> 
      */
     public static class ERXCustomObjectClazz<T extends EOEnterpriseObject> extends EOEnterpriseObjectClazz<T> {
         
@@ -440,7 +447,7 @@ public class ERXCustomObject extends EOCustomObject implements ERXGuardedObjectI
      */
     public String encryptedPrimaryKey() {
         String pk = ERXEOControlUtilities.primaryKeyStringForObject(this);
-        return pk==null ? null : ERXCrypto.blowfishEncode(pk);
+        return pk==null ? null : ERXCrypto.crypterForAlgorithm(ERXCrypto.BLOWFISH).encrypt(pk);
     }
         
     /* (non-Javadoc)
@@ -614,8 +621,9 @@ public class ERXCustomObject extends EOCustomObject implements ERXGuardedObjectI
     }
 
     /**
-        * @deprecated use {@link ERXGenericRecord#isNewObject() ERXGenericRecord#isNewObject}
+     * @deprecated use {@link ERXGenericRecord#isNewObject() ERXGenericRecord#isNewObject}
      */
+    @Deprecated
     public boolean isNewEO() {
         return isNewObject();
     }

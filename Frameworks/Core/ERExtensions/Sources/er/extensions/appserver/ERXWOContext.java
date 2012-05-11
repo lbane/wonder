@@ -148,19 +148,39 @@ public class ERXWOContext extends ERXAjaxContext implements ERXMutableUserInfoHo
 	public boolean _generatingCompleteResourceURLs() {
 		return _generateCompleteResourceURLs;
 	}
+	
+	@Override
+	public void generateCompleteURLs() {
+		super.generateCompleteURLs();
+		_generateCompleteURLs = true; 
+	}
 
 	@Override
+	@Deprecated
 	public void _generateCompleteURLs() {
 		super._generateCompleteURLs();
 		_generateCompleteURLs = true; 
 	}
 
 	@Override
+	public void generateRelativeURLs() {
+		super.generateRelativeURLs();
+		_generateCompleteURLs = false;
+	}
+	
+	@Override
+	@Deprecated
 	public void _generateRelativeURLs() {
 		super._generateRelativeURLs();
 		_generateCompleteURLs = false;
 	}
+	
+	@Override
+	public boolean doesGenerateCompleteURLs() {
+		return _generateCompleteURLs;
+	}
 
+	@Deprecated
 	public boolean _generatingCompleteURLs() {
 		return _generateCompleteURLs;
 	}
@@ -342,64 +362,65 @@ public class ERXWOContext extends ERXAjaxContext implements ERXMutableUserInfoHo
 	
 	/**
 	 * 
-	 * @deprecated replaced by ERXResponseRewriter
+	 * @deprecated replaced by {@link ERXResponseRewriter}
 	 */
+	@Deprecated
 	public static String _htmlCloseHeadTag() {
 		return ERXResponseRewriter._htmlCloseHeadTag(); 
 	}
 	
 	/**
-	 * 
-	 * @deprecated replaced by ERXResponseRewriter
+	 * @deprecated replaced by {@link ERXResponseRewriter}
 	 */
+	@Deprecated
 	public static void insertInResponseBeforeTag(WOContext context, WOResponse response, String content, String tag, TagMissingBehavior tagMissingBehavior) {
 		ERXResponseRewriter.insertInResponseBeforeTag(response, context, content, tag, tagMissingBehavior);
 	}
 	
 	/**
-	 * 
-	 * @deprecated replaced by ERXResponseRewriter
+	 * @deprecated replaced by {@link ERXResponseRewriter}
 	 */
+	@Deprecated
 	public static void addScriptResourceInHead(WOContext context, WOResponse response, String framework, String fileName) {
 		ERXResponseRewriter.addScriptResourceInHead(response, context, framework, fileName);
 	}
 	
 	/**
-	 * 
-	 * @deprecated replaced by ERXResponseRewriter
+	 * @deprecated replaced by {@link ERXResponseRewriter}
 	 */
+	@Deprecated
 	public static void addStylesheetResourceInHead(WOContext context, WOResponse response, String framework, String fileName) {
 		ERXResponseRewriter.addStylesheetResourceInHead(response, context, framework, fileName);
 	}
 	
 	/**
-	 * 
-	 * @deprecated replaced by ERXResponseRewriter
+	 * @deprecated replaced by {@link ERXResponseRewriter}
 	 */
+	@Deprecated
 	public static void addScriptCodeInHead(WOContext context, WOResponse response, String script) {
 		ERXResponseRewriter.addScriptCodeInHead(response, context, script);
 	}
 	
 	/**
-	 * 
-	 * @deprecated replaced by ERXResponseRewriter
+	 * @deprecated replaced by {@link ERXResponseRewriter}
 	 */
+	@Deprecated
 	public static void addScriptCodeInHead(WOContext context, WOResponse response, String script, String scriptName) {
 		ERXResponseRewriter.addScriptCodeInHead(response, context, script, scriptName);
 	}
 	
 	/**
-	 * 
-	 * @deprecated replaced by ERXResponseRewriter
+	 * @deprecated replaced by {@link ERXResponseRewriter}
 	 */
+	@Deprecated
 	public static void addResourceInHead(WOContext context, WOResponse response, String framework, String fileName, String startTag, String endTag) {
 		ERXResponseRewriter.addResourceInHead(response, context, framework, fileName, startTag, endTag);
 	}
 	
 	/**
-	 * 
-	 * @deprecated replaced by ERXResponseRewriter
+	 * @deprecated replaced by {@link ERXResponseRewriter}
 	 */
+	@Deprecated
 	public static void addResourceInHead(WOContext context, WOResponse response, String framework, String fileName, String startTag, String endTag, TagMissingBehavior tagMissingBehavior) {
 		ERXResponseRewriter.addResourceInHead(response, context, framework, fileName, startTag, endTag, tagMissingBehavior);
 	}
@@ -445,8 +466,9 @@ public class ERXWOContext extends ERXAjaxContext implements ERXMutableUserInfoHo
 	 * @param elementID
 	 *            the element ID
 	 * @return a javascript-safe version (i.e. "_1_2_3_10")
-	 * @deprecated for ERXStringUtilities.safeIdentifierName(String)
+	 * @deprecated user {@link ERXStringUtilities#safeIdentifierName(String)}
 	 */
+	@Deprecated
 	public static String toSafeElementID(String elementID) {
 		return ERXStringUtilities.safeIdentifierName(elementID);
 	}
@@ -470,7 +492,7 @@ public class ERXWOContext extends ERXAjaxContext implements ERXMutableUserInfoHo
 			String directActionURL;
 			if (ERXApplication.isWO54()) {
 				Method _directActionURLMethod = context.getClass().getMethod("_directActionURL", new Class[] { String.class, NSDictionary.class, boolean.class, int.class, boolean.class });
-				directActionURL = (String) _directActionURLMethod.invoke(context, new Object[] { actionName, queryParams, Boolean.valueOf(secure), new Integer(0), Boolean.FALSE });
+				directActionURL = (String) _directActionURLMethod.invoke(context, new Object[] { actionName, queryParams, Boolean.valueOf(secure), Integer.valueOf(0), Boolean.FALSE });
 			}
 			else {
 				Method _directActionURLMethod = context.getClass().getMethod("_directActionURL", new Class[] { String.class, NSDictionary.class, boolean.class });
@@ -601,15 +623,12 @@ public class ERXWOContext extends ERXAjaxContext implements ERXMutableUserInfoHo
 		if (host == null && currentlySecure == secureBool && port == null) {
 			completeUrls = true;
 		}
-		else if (context instanceof ERXWOContext) {
-			completeUrls = ((ERXWOContext) context)._generatingCompleteURLs();
-		}
 		else {
-			completeUrls = false;
+			completeUrls = context.doesGenerateCompleteURLs();
 		}
 
 		if (!completeUrls) {
-			context._generateCompleteURLs();
+			context.generateCompleteURLs();
 		}
 
 		String url;
@@ -660,7 +679,7 @@ public class ERXWOContext extends ERXAjaxContext implements ERXMutableUserInfoHo
 		}
 		finally {
 			if (!completeUrls) {
-				context._generateRelativeURLs();
+				context.generateRelativeURLs();
 			}
 		}
 		return url;

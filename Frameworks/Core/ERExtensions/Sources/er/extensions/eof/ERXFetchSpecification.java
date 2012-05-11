@@ -12,6 +12,7 @@ import com.webobjects.eocontrol.EOQualifierEvaluation;
 import com.webobjects.eocontrol.EOSortOrdering;
 import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSDictionary;
+import com.webobjects.foundation.NSMutableArray;
 import com.webobjects.foundation.NSMutableDictionary;
 import com.webobjects.foundation.NSPropertyListSerialization;
 
@@ -30,14 +31,21 @@ import er.extensions.qualifiers.ERXQualifierTraversal;
  * @param <T> the type of objects this fetch spec will return
  */
 public class ERXFetchSpecification<T extends EOEnterpriseObject> extends EOFetchSpecification {
+	/**
+	 * Do I need to update serialVersionUID?
+	 * See section 5.6 <cite>Type Changes Affecting Serialization</cite> on page 51 of the 
+	 * <a href="http://java.sun.com/j2se/1.4/pdf/serial-spec.pdf">Java Object Serialization Spec</a>
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private NSMutableDictionary _userInfo;
 	private boolean _includeEditingContextChanges;
 	
-	public ERXFetchSpecification(String entityName, EOQualifier qualifier, NSArray sortOrderings, boolean usesDistinct, boolean isDeep, NSDictionary hints) {
+	public ERXFetchSpecification(String entityName, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings, boolean usesDistinct, boolean isDeep, NSDictionary hints) {
 		super(entityName, qualifier, sortOrderings, usesDistinct, isDeep, hints);
 	}
 
-	public ERXFetchSpecification(String entityName, EOQualifier qualifier, NSArray sortOrderings) {
+	public ERXFetchSpecification(String entityName, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
 		super(entityName, qualifier, sortOrderings);
 	}
 
@@ -155,6 +163,14 @@ public class ERXFetchSpecification<T extends EOEnterpriseObject> extends EOFetch
 	 */
 	public void setRawRowKeyPaths(String keyPath, String... keyPaths) {
 		super.setRawRowKeyPaths(new NSArray<String>(keyPath, keyPaths));
+	}
+	
+	public void setPrefetchingRelationshipKeyPaths(ERXKey<?>... prefetchingRelationshipKeyPaths) {
+		NSMutableArray<String> keypaths = new NSMutableArray<String>();
+    	for (ERXKey<?> key : prefetchingRelationshipKeyPaths) {
+    		keypaths.addObject(key.key());
+    	}
+		setPrefetchingRelationshipKeyPaths(keypaths);
 	}
 
 	/**

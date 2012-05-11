@@ -12,18 +12,22 @@ import com.webobjects.appserver.WOComponent;
 import com.webobjects.appserver.WOContext;
 import com.webobjects.foundation.NSArray;
 
-// Nice little unread marker.  Subclass in specific look frameworks to provide custom
-//	unread marker images.
 /**
  * Nice for denoting that something has not been viewed. Extended in look frameworks.<br />
  * 
  * @binding item
  * @binding list
- * @binding condition" defaults="Boolean
- * @binding negate" defaults="Boolean
+ * @binding condition A boolean
+ * @binding negate A boolean
  */
 
 public class ERXUnreadMarker extends WOComponent {
+	/**
+	 * Do I need to update serialVersionUID?
+	 * See section 5.6 <cite>Type Changes Affecting Serialization</cite> on page 51 of the 
+	 * <a href="http://java.sun.com/j2se/1.4/pdf/serial-spec.pdf">Java Object Serialization Spec</a>
+	 */
+	private static final long serialVersionUID = 1L;
 
     public ERXUnreadMarker(WOContext aContext) {
         super(aContext);

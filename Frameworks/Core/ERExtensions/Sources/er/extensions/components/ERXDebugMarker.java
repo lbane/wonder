@@ -20,10 +20,17 @@ import er.extensions.eof.ERXEnterpriseObject;
 /**
  * Given an object displays a link to show information about the editing context of that object.
  * 
- * @binding object
+ * @binding object An EOEditingContext or an EOEnterpriseObject object 
+ * @binding debugPageProvider Page to display for showing up details about a EOEnterpriseObject
  */
 
 public class ERXDebugMarker extends WOComponent {
+	/**
+	 * Do I need to update serialVersionUID?
+	 * See section 5.6 <cite>Type Changes Affecting Serialization</cite> on page 51 of the 
+	 * <a href="http://java.sun.com/j2se/1.4/pdf/serial-spec.pdf">Java Object Serialization Spec</a>
+	 */
+	private static final long serialVersionUID = 1L;
 
     /** logging support */
     public static final Logger log = Logger.getLogger(ERXDebugMarker.class);

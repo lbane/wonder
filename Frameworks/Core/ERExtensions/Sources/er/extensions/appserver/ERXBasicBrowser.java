@@ -1,5 +1,5 @@
 //
-// // ERXBasicBrowser.java
+// ERXBasicBrowser.java
 // Project ERExtensions
 //
 // Created by tatsuya on Tue Jul 23 2002
@@ -14,13 +14,14 @@ import com.webobjects.foundation.NSMutableDictionary;
 import er.extensions.foundation.ERXStringUtilities;
 
 /**
+ * <span class="en">
  * <code>ERXBasicBrowser</code> is a concrete subclass of {@link ERXBrowser}
  * that defines browser object. A browser object represents the web browser
  * that the current request-response cycle is dealing with. It holds the
  * information retrieved from HTTP request's <code>"user-agent"</code>
  * header, and such information includes web browser's name, version, Mozilla
  * compatible version and platform (OS). Also, a browser object can answer
- * boolean questions such as {@link #isIE},{@link #isOmniWeb}, 
+ * boolean questions such as {@link #isIE}, {@link #isOmniWeb},
  * {@link #isVersion5} and {@link #isMozilla40Compatible}, and even more
  * specific questions like {@link #isIFrameSupported} and
  * {@link #willRenderNestedTablesFast}.
@@ -50,7 +51,7 @@ import er.extensions.foundation.ERXStringUtilities;
  * object from a session-less direct action.
  * 
  * 
- * <h3>Some browser user-agents</h3> 
+ * <h3>Some browser user-agents</h3>
  * 
  * <p><strong>IE 5.17 OS 9</strong><br>
  * user-agent = (Mozilla/4.0 (compatible; MSIE 5.17; Mac_PowerPC)); ua-os = (MacOS); ua-cpu = (PPC);
@@ -61,22 +62,67 @@ import er.extensions.foundation.ERXStringUtilities;
  * ua-os = (MacOS); ua-cpu = (PPC);
  * </p>
  * 
- * <p><strong>FireFox OS X 10.3.3</strong><br> 
+ * <p><strong>FireFox OS X 10.3.3</strong><br>
  * user-agent = (Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; en-US; rv:1.6) Gecko/20040206 Firefox/0.8);
  * </p>
  * 
- * <p><strong>IE 5.2 MacOS X</strong><br> 
+ * <p><strong>IE 5.2 MacOS X</strong><br>
  * user-agent = (Mozilla/4.0 (compatible; MSIE 5.23; Mac_PowerPC)); ua-os = (MacOS); ua-cpu = (PPC);
  * </p>
  * 
- * <p><strong>Safari</strong><br> 
+ * <p><strong>Safari</strong><br>
  * user-agent = ("Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en-us) AppleWebKit/124 (KHTML, like Gecko) Safari/125.1");
  * </p>
  * 
- * <p><strong>IE WIndows 6.02</strong><br> 
+ * <p><strong>IE WIndows 6.02</strong><br>
  * user-agent = (Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0));
- * </p>
- *  
+ * </span>
+ * 
+ * <span class="ja">
+ * <code>ERXBasicBrowser</code> はブラウザ・オブジェクトを定義する {@link ERXBrowser} の明確なサブクラスです。
+ * ブラウザ・オブジェクトはカレント・リクエスト・レスポンス・ループの Webブラウザを表します。
+ * HTTP リクエスト・ヘッダー <code>"user-agent"</code> の情報を保持し、さらに
+ * Webブラウザ名、プラットフォームや Mozilla互換性の情報を含みます。
+ * ブラウザ・オブジェクトは基本なメソッド <code>isIE</code> や <code>isVersion5</code> のみではなく、
+ * もっと確実な <code>isIFrameSupported</code>と <code>willRenderNestedTablesFast</code> を boolean で
+ * 回答します。<br>
+ * 
+ * ERXBasicBrowser は不変で、他のセッションとダイレクト・アクションで共有されています。
+ * 共有インスタンスは ERXBrowserFactory で管理されています。他には ERXBrowserFactory が
+ * WORequest の "user-agent" パースとブラウザ・オブジェクトの作成を担当しています。<br>
+ * 
+ * 自分のアプリケーションの為に ERXBrowser や ERXBasicBrowser のサブクラスをつくることができます。
+ * 例：アプリケーションでサポートされているブラウザかどうかの <code>isSupportedBrowser</code> を追加できます。<br>
+ * 
+ * ERXSession はブラウザ・オブジェクトを保持し、セッションにアクセスしている Web Browser の情報を持っている。
+ * <code>browser</code> メソッドでオブジェクトを取得できます。<br>
+ * 
+ * コンポーネント内の WOConditionals より ERXBasicBrowser の boolean を問い合わせにアクセスする時、
+ * 次のようなキーパス "session.brower.isNetscape" をバインディングします。<br>
+ * 
+ * ERXDirectAction もカレント・リクエストのブラウザ・オブジェクトを保持します。
+ * オブジェクトをアクセスするには <code>browser</code> メソッドを使用します。<br>
+ * 
+ * <h3>ブラウザの user-agents 一部: </h3>
+ * 
+ * <p><strong>IE 5.17 OS 9: </strong><br>
+ * user-agent = (Mozilla/4.0 (compatible; MSIE 5.17; Mac_PowerPC)); ua-os = (MacOS); ua-cpu = (PPC);
+ * 
+ * IE 5.0 OS 9: user-agent = (Mozilla/4.0 (compatible; MSIE 5.0; Mac_PowerPC));
+ * ua-os = (MacOS); ua-cpu = (PPC);
+ * 
+ * <p><strong>FireFox OS X 10.3.3: </strong><br>
+ * user-agent = (Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; en-US; rv:1.6) Gecko/20040206 Firefox/0.8);
+ * 
+ * <p><strong>IE 5.2 MacOS X: </strong><br>
+ * user-agent = (Mozilla/4.0 (compatible; MSIE 5.23; Mac_PowerPC)); ua-os = (MacOS); ua-cpu = (PPC);
+ * 
+ * <p><strong>Safari: </strong><br>
+ * user-agent = ("Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en-us) AppleWebKit/124 (KHTML, like Gecko) Safari/125.1");
+ * 
+ * <p><strong>IE WIndows 6.02: </strong><br>
+ * user-agent = (Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0));
+ * </span>
  */
 public class ERXBasicBrowser extends ERXBrowser {
 
@@ -196,15 +242,13 @@ public class ERXBasicBrowser extends ERXBrowser {
 	        if (majorVersion.indexOf(".") != -1) {
 	        	majorVersion = majorVersion.substring(0, majorVersion.indexOf("."));
 	        }
-
-            Integer mj;
+	        Integer mj = -1;
 	        try {
 	        	mj = Integer.valueOf(majorVersion);
 	        } catch (NumberFormatException e) {
 	        	log.info("could not determine major version from '" + majorVersion + "'", e);
-	        	mj = -1;
 			}
-            _majorVersion = mj;
+			_majorVersion = mj;
         }
     }
 
@@ -230,10 +274,19 @@ public class ERXBasicBrowser extends ERXBrowser {
     }
 
     /**
+     * <span class="en">
      * CPU string
      * 
      * @return what processor that the browser is running on
+     * </span>
+     * 
+     * <span class="ja">
+     * ブラウザが動作している CPU を戻します
+     * 
+     * @return ブラウザが動作している CPU
+     * </span>
      */
+    @SuppressWarnings("javadoc")
     public String cpu() {
         return _cpu;
     }
@@ -286,6 +339,13 @@ public class ERXBasicBrowser extends ERXBrowser {
         return _isChrome;
     }
 
+    /**
+     * <span class="ja">
+     * Mozilla ですか？
+     * 
+     * @return Mozilla の場合には true を戻します
+     * </span>
+     */
     public boolean isMozilla() {
         return _isMozilla;
     }
@@ -387,23 +447,49 @@ public class ERXBasicBrowser extends ERXBrowser {
     }
 
     /**
+     * <span class="en">
      * Does the browser support IFrames?
      * 
      * @return true if the browser is IE.
+     * </span>
+     * 
+     * <span class="ja">
+     * ブラウザが iFrames をサポートしていますか？
+     * 
+     * @return iFrames サポートの場合には true を戻します
+     * </span>
      */
+    @SuppressWarnings("javadoc")
     public boolean isIFrameSupported() {
         return isIE();
     }
 
     /**
+     * <span class="en">
      * Browser is not netscape or is a version 5 browser.
      * 
      * @return true if this browser can handle nested tables
+     * </span>
+     * 
+     * <span class="ja">
+     * ネストされているテーブルを高速でレンダリング可能？
+     * Browser is not netscape or is a version 5 browser.
+     * 
+     * @return ネストされているテーブルを高速でレンダリング可能の場合には true を戻します
+     * </span>
      */
+    @SuppressWarnings("javadoc")
     public boolean willRenderNestedTablesFast() {
         return isNotNetscape() || isMozilla50Compatible();
     }
 
+    /**
+     * <span class="ja">
+     * Javascript OnImage ボタンがサポートされていますか？
+     * 
+     * @return Javascript OnImage ボタンがサポートされている場合には true を戻します
+     * </span>
+     */
     public boolean isJavaScriptOnImageButtonSupported() {
         return isNotNetscape() || isMozilla50Compatible();
     }

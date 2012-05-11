@@ -15,9 +15,11 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.net.BindException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -27,7 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Random;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -44,6 +45,7 @@ import org.w3c.dom.NodeList;
 
 import com.webobjects.appserver.WOAction;
 import com.webobjects.appserver.WOActionResults;
+import com.webobjects.appserver.WOAdaptor;
 import com.webobjects.appserver.WOApplication;
 import com.webobjects.appserver.WOComponent;
 import com.webobjects.appserver.WOContext;
@@ -56,6 +58,7 @@ import com.webobjects.appserver.WOResponse;
 import com.webobjects.appserver.WOSession;
 import com.webobjects.appserver.WOTimer;
 import com.webobjects.appserver._private.WOComponentDefinition;
+import com.webobjects.appserver._private.WODeployedBundle;
 import com.webobjects.appserver._private.WOProperties;
 import com.webobjects.eocontrol.EOEditingContext;
 import com.webobjects.eocontrol.EOObserverCenter;
@@ -98,6 +101,7 @@ import er.extensions.formatters.ERXFormatterFactory;
 import er.extensions.foundation.ERXArrayUtilities;
 import er.extensions.foundation.ERXCompressionUtilities;
 import er.extensions.foundation.ERXConfigurationManager;
+import er.extensions.foundation.ERXExceptionUtilities;
 import er.extensions.foundation.ERXPatcher;
 import er.extensions.foundation.ERXProperties;
 import er.extensions.foundation.ERXRuntimeUtilities;
@@ -150,6 +154,7 @@ import er.extensions.statistics.ERXStats;
  * @property er.extensions.ERXApplication.useEditingContextUnlocker
  * @property er.extensions.ERXApplication.useSessionStoreDeadlockDetection
  * @property er.extensions.ERXComponentActionRedirector.enabled
+ * @property er.extensions.ERXApplication.allowMultipleDevInstances
  */
 public abstract class ERXApplication extends ERXAjaxApplication implements ERXGracefulShutdown.GracefulApplication {
 
@@ -313,7 +318,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 			for (int i = 0; i < files.length; i++) {
 				String string = files[i];
 				try {
-					urls[i] = new File(string).toURL();
+					urls[i] = new File(string).toURI().toURL();
 				}
 				catch (MalformedURLException e) {
 					// TODO Auto-generated catch block
@@ -562,7 +567,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 					}
 				}
 			}
-			NSNotificationCenter.defaultCenter().addObserver(this, new NSSelector("bundleDidLoad", new Class[] { NSNotification.class }), "NSBundleDidLoadNotification", null);
+			NSNotificationCenter.defaultCenter().addObserver(this, new NSSelector("bundleDidLoad", ERXConstant.NotificationClassArray), "NSBundleDidLoadNotification", null);
 		}
 		
 		private void debugMsg(String msg) {
@@ -822,6 +827,58 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	}
 
 	/**
+	 * <p>Terminates a different instance of the same application that may already be running.<br>
+	 * Only in dev mode.</p>
+	 * <p>Set the property "er.extensions.ERXApplication.allowMultipleDevInstances" to "true" if
+	 * you need to run multiple instances in dev mode.</p>
+	 * 
+	 * @return true if a previously running instance was stopped.
+	 */
+	private static boolean stopPreviousDevInstance() {
+		if (!isDevelopmentModeSafe() || 
+				ERXProperties.booleanForKeyWithDefault("er.extensions.ERXApplication.allowMultipleDevInstances", false)) {
+			return false;
+		}
+		
+		if (!(application().wasMainInvoked())) {
+			return false;
+		}
+		
+		String adapterUrl;
+		if (application().host() != null) {
+			adapterUrl = application().cgiAdaptorURL();
+		} else {
+			adapterUrl = application().cgiAdaptorURL().replace("://null/", "://localhost/");
+		}
+		
+		String appUrl;
+		if (application().isDirectConnectEnabled()) {
+			appUrl = adapterUrl.replace("/cgi", ":" + application().port() + "/cgi");
+			appUrl += "/" + application().name() + ".woa";
+		} else {
+			appUrl = adapterUrl + "/" + application().name() + ".woa/-" + application().port();
+		}
+		
+		URL url;
+		try {
+			appUrl = appUrl + "/" + application().directActionRequestHandlerKey() + "/stop";
+			url = new URL(appUrl);
+
+			log.debug("Stopping previously running instance of " + application().name());
+			
+			URLConnection connection = url.openConnection();
+			connection.getContent();
+			
+			Thread.sleep(2000);
+			
+			return true;
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	/**
 	 * Utility class to track down duplicate items in the class path. Reports
 	 * duplicate packages and packages that are present in different versions.
 	 * 
@@ -1031,10 +1088,21 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	}
 
 	/**
-	 * The ERXApplication contructor.
+	 * The ERXApplication constructor.
 	 */
 	public ERXApplication() {
 		super();
+		
+		/* 
+		 * ERXComponentRequestHandler is a patched version of the original WOComponentRequestHandler
+		 * This method will tell Application to used the patched, the patched version will disallow direct component access by name
+		 * If you want to use the unpatched version set the property ERXDirectComponentAccessAllowed to true
+		 */
+		if (!ERXProperties.booleanForKeyWithDefault("ERXDirectComponentAccessAllowed", false)) {
+			ERXComponentRequestHandler erxComponentRequestHandler = new ERXComponentRequestHandler();
+			registerRequestHandler(erxComponentRequestHandler, componentRequestHandlerKey());
+		}
+		
 		ERXStats.initStatisticsIfNecessary();
 
 		// WOFrameworksBaseURL and WOApplicationBaseURL properties are broken in 5.4.  
@@ -1160,8 +1228,9 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	 * Decides whether to use editing context unlocking.
 	 * 
 	 * @return true if ECs should be unlocked after each RR-loop
-	 * @deprecated use er.extensions.ERXEC.useUnlocker property instead
+	 * @deprecated use {@link ERXEC#useUnlocker()}
 	 */
+	@Deprecated
 	public Boolean useEditingContextUnlocker() {
 		Boolean useUnlocker = null;
 		if (ERXProperties.stringForKey("er.extensions.ERXApplication.useEditingContextUnlocker") != null) {
@@ -1174,8 +1243,9 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	 * Decides whether or not to keep track of open editing context locks.
 	 * 
 	 * @return true if editing context locks should be tracked
-	 * @deprecated use er.extensions.ERXEC.traceOpenLocks property instead
+	 * @deprecated use {@link ERXEC#traceOpenLocks()}
 	 */
+	@Deprecated
 	public Boolean traceOpenEditingContextLocks() {
 		Boolean traceOpenLocks = null;
 		if (ERXProperties.stringForKey("er.extensions.ERXApplication.traceOpenEditingContextLocks") != null) {
@@ -1986,7 +2056,6 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	 * @return response
 	 */
 	@Override
-
 	public WOResponse dispatchRequest(WORequest request) {
 		WOResponse response = null;
 		ERXDelayedRequestHandler delayedRequestHandler = delayedRequestHandler();
@@ -2052,7 +2121,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 						NSData compressedNSData = ERXCompressionUtilities.gzipInputStreamAsNSData(contentInputStream, (int)inputBytesLength);
 						//compressedData = compressedNSData._bytesNoCopy();
 						compressedData = compressedNSData.bytes();
-						response.setContentStream(null, 0, 0);
+						response.setContentStream(null, 0, 0L);
 					}
 					else {
 						NSData input = response.content();
@@ -2231,6 +2300,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	 * Returns whether or not this application is running in development-mode.
 	 * If you are using Xcode, you should add a WOIDE=Xcode setting to your
 	 * launch parameters.
+	 * @return <code>true</code> if application is in dev mode
 	 */
 	public boolean isDevelopmentMode() {
 		return ERXApplication._defaultIsDevelopmentMode();
@@ -2332,7 +2402,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	}
 
 	public Number sessionTimeOutInMinutes() {
-		return new Integer(sessionTimeOut().intValue() / 60);
+		return Integer.valueOf(sessionTimeOut().intValue() / 60);
 	}
 
 	protected static final ERXFormatterFactory _formatterFactory = new ERXFormatterFactory();
@@ -2377,6 +2447,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 
 	/**
 	 * Returns an ERXMigrator with the lock owner name "appname-instancenumber".
+	 * @return migrator for this instance
 	 */
 	public ERXMigrator migrator() {
 		return new ERXMigrator(name() + "-" + host() + ":" + port());
@@ -2416,6 +2487,20 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	      processedURL = processedURL.replaceFirst(_replaceApplicationPathPattern, _replaceApplicationPathReplace);
 	    }
 		return processedURL;
+	}
+	
+	/**
+	 * This method is called by ERXResourceManager and provides the application a hook
+	 * to rewrite generated URLs for resources.
+	 *
+	 * @param url
+	 *            the URL to rewrite
+	 * @param bundle
+	 *            the bundle the resource is located in
+	 * @return the rewritten URL
+	 */
+	public String _rewriteResourceURL(String url, WODeployedBundle bundle) {
+	    return url;
 	}
 
 	/**
@@ -2617,6 +2702,19 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 		return additionalAdaptors;
 	}
 
+	@Override
+	public WOAdaptor adaptorWithName(String aClassName, NSDictionary<String, Object> anArgsDictionary) {
+		try {
+			return super.adaptorWithName(aClassName, anArgsDictionary);
+		} catch (NSForwardException e) {
+			Throwable rootCause = ERXExceptionUtilities.getMeaningfulThrowable(e);
+			if ((rootCause instanceof BindException) && stopPreviousDevInstance()) {
+				return super.adaptorWithName(aClassName, anArgsDictionary);
+			}
+			throw e;
+		}
+	}
+	
 	protected void _debugValueForDeclarationNamed(WOComponent component, String verb, String aDeclarationName, String aDeclarationType, String aBindingName, String anAssociationDescription, Object aValue) {
 		if (aValue instanceof String) {
 			StringBuffer stringbuffer = new StringBuffer(((String) aValue).length() + 2);

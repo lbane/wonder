@@ -33,8 +33,15 @@ import er.extensions.foundation.ERXUtilities;
  * @d2wKey sortCaseInsensitive
  * @d2wKey id
  * @d2wKey title
+ * @d2wKey goingVertically
  */
 public class ERD2WEditToOneRelationship extends D2WEditToOneRelationship {
+	/**
+	 * Do I need to update serialVersionUID?
+	 * See section 5.6 <cite>Type Changes Affecting Serialization</cite> on page 51 of the 
+	 * <a href="http://java.sun.com/j2se/1.4/pdf/serial-spec.pdf">Java Object Serialization Spec</a>
+	 */
+	private static final long serialVersionUID = 1L;
 
     public ERD2WEditToOneRelationship(WOContext context) {
         super(context);
