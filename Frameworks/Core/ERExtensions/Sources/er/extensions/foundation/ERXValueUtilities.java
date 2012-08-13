@@ -1,4 +1,5 @@
 package er.extensions.foundation;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
@@ -7,6 +8,7 @@ import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSData;
 import com.webobjects.foundation.NSDictionary;
 import com.webobjects.foundation.NSKeyValueCoding;
+import com.webobjects.foundation.NSMutableData;
 import com.webobjects.foundation.NSPropertyListSerialization;
 import com.webobjects.foundation.NSRange;
 import com.webobjects.foundation.NSSet;
@@ -21,10 +23,9 @@ import er.extensions.components.ERXComponentUtilities;
  * (or one containing only whitespace) is given, then
  * the string is assumed to be null. This is because
  * D2W is not able to give back null values anymore.
+ * 
  * @author ak on Mon Oct 28 2002
- * @project ERExtensions
  */
-
 public class ERXValueUtilities {
 	/**
 	 * Returns whether or not the given object is null or NSKVC.Null.
@@ -610,6 +611,11 @@ public class ERXValueUtilities {
 						throw new IllegalArgumentException("Failed to parse data from the value '" + obj + "'.");
 					}
 					value = (NSData) objValue;
+					if (value instanceof NSMutableData) {
+						// AK: we need NSData if we want to use it for a PK, but
+						// we get NSMutableData
+						value = new NSData(value);
+					}
 				}
 			} else {
 				throw new IllegalArgumentException("Failed to parse data from the value '" + obj + "'.");

@@ -237,6 +237,10 @@ public class ERD2WInspectPage extends ERD2WPage implements InspectPageInterface,
     				EOEnterpriseObject eo = ERXEOAccessUtilities.refetchFailedObject(ec, ex);
     				setErrorMessage(ERXLocalizer.currentLocalizer().localizedTemplateStringForKeyWithObject("CouldNotSavePleaseReapply", d2wContext()));
     				validationFailedWithException(ex, eo, "CouldNotSavePleaseReapply");
+    				} else if(ERXEOAccessUtilities.isUniqueFailure(ex)) { 
+    				  EOEnterpriseObject eo = ERXEOAccessUtilities.refetchFailedObject(ec, ex);
+    				  setErrorMessage(ERXLocalizer.currentLocalizer().localizedTemplateStringForKeyWithObject("DatabaseUniqException", d2wContext()));
+    				  validationFailedWithException(ex, eo, "DatabaseUniqException");
     			} else {
     				throw ex;
     			}
@@ -296,7 +300,7 @@ public class ERD2WInspectPage extends ERD2WPage implements InspectPageInterface,
      * used in conjunction with the <code>firstResponderKey</code> to mark the cell where the propertyKey is that named 
      * by the <code>firstResponderKey</code> so that the "focusing" JavaScript {@link #tabScriptString tabScriptString}
      * can identify it.
-     * @return a String to be included in the <code>td<td> tag for the propertyKey component cell.
+     * @return a String to be included in the <code>td</code> tag for the propertyKey component cell.
      */
     public String otherTagStringsForPropertyKeyComponentCell() {
         String firstResponderKey = (String)d2wContext().valueForKey(Keys.firstResponderKey);

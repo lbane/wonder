@@ -270,6 +270,15 @@
         </antcall>
     </target>
 
+	<target name="JavaNeo4JAdaptorTest.all">
+        <antcall target="global.application.${build.action}" >
+            <param name="project.type" value="application" />
+            <param name="project.name" value="JavaNeo4JAdaptorTest" />
+            <param name="project.dir" value="Tests/JavaNeo4JAdaptorTest" />
+            <param name="wo.external.root.bundles" value="${frameworks.wonder.core}/JavaNeo4JAdaptor" />
+        </antcall>
+    </target>
+
     <target name="ERIndexing.all">
         <antcall target="global.framework.${build.action}" >
             <param name="project.principal.class" value="" />
@@ -473,6 +482,16 @@
             <param name="project.principal.class" value="er.ticktock.Application" />
             <param name="project.name" value="TickTockMan" />
             <param name="project.dir" value="Examples/Misc/TickTockMan" />
+            <param name="wo.external.root.bundles" value="${frameworks.wonder.core}/WOOgnl" />
+       </antcall>
+    </target>
+
+     <target name="WOTested.all">
+         <antcall target="global.application.${build.action}" >
+            <param name="project.type" value="application" />
+            <param name="project.principal.class" value="org.ganymede.Application" />
+            <param name="project.name" value="WOTested" />
+            <param name="project.dir" value="Applications/WOTested" />
             <param name="wo.external.root.bundles" value="${frameworks.wonder.core}/WOOgnl" />
        </antcall>
     </target>
@@ -977,6 +996,19 @@
             <param name="wo.external.root.bundles" value="${frameworks.wonder.core}" />
         </antcall>
     </target>
+    
+    <target name="JavaNeo4JAdaptor.all">
+        <antcall target="global.framework.${build.action}" >
+            <param name="project.principal.class" value="" />
+            <param name="project.customInfo.plist" value="&lt;key&gt;EOAdaptorClassName&lt;/key&gt;&lt;string&gt;er.neo4jadaptor.Neo4JAdaptor&lt;/string&gt;"/>
+            <param name="project.name" value="JavaNeo4JAdaptor" />
+            <param name="project.dir" value="Frameworks/EOAdaptors/JavaNeo4JAdaptor" />
+            <param name = "compiler.target" value = "1.5" />
+            <param name = "compiler.source" value = "1.5" />
+
+            <param name="wo.external.root.bundles" value="${frameworks.wonder.core}" />
+        </antcall>
+    </target>    
 
     <target name="JavaFSAdaptor.all">
         <antcall target="global.framework.${build.action}" >
@@ -1094,7 +1126,7 @@
             <param name="project.dir" value="Frameworks/Ajax/ERJQueryMobile" />
             <param name="wo.external.root.bundles" value="${frameworks.wonder.core}/Ajax/ERAttachment" />
         </antcall>
-    </target>
+    </target>    
     <target name="JqueryMobileExample.all">
         <antcall target="global.application.${build.action}" >
             <param name="project.type" value="application" />
@@ -1104,8 +1136,24 @@
 
             <param name="wo.external.root.bundles" value="${frameworks.wonder.core}/ERJQueryMobile/ERMoviesLogic" />
         </antcall>
-    </target>    
-
+    </target>
+    <target name="ERQuartzScheduler.all">
+        <antcall target="global.framework.${build.action}" >
+            <param name="project.principal.class" value="" />
+            <param name="project.name" value="ERQuartzScheduler" />
+            <param name="project.dir" value="Frameworks/Misc/ERQuartzScheduler" />
+            <param name="wo.external.root.bundles" value="${frameworks.wonder.core}/ERJavaMail" />
+        </antcall>
+    </target>        
+    <target name="ERXiss.all">
+        <antcall target="global.framework.${build.action}" >
+            <param name="project.principal.class" value="" />
+            <param name="project.name" value="ERXiss" />
+            <param name="project.dir" value="Frameworks/Misc/ERXiss" />
+            <param name="wo.external.root.bundles" value="${frameworks.wonder.core}" />
+        </antcall>
+    </target>
+    
      <target name="deployment.embed.check" if="deployment.standalone">
         <property name="wonder.deployment.embed.jars" value="true" />
     </target>
@@ -1135,7 +1183,7 @@
             <param name="project.principal.class" value="com.webobjects.monitor.wotaskd.Application" />
             <param name="project.name" value="wotaskd" />
             <param name="project.dir" value="Applications/wotaskd" />
-      		<param name="wo.external.root.bundles" value="ERJars/ERExtensions/JavaWOExtensions/JavaMonitorFramework" />
+      		<param name="wo.external.root.bundles" value="ERJars/ERExtensions/JavaWOExtensions/JavaMonitorFramework/ERRest" />
       		<param name="wo.external.root.bundles.embed" value="${wonder.deployment.embed.jars}" />
       		<param name="wo.system.root.bundles.embed" value="${wonder.deployment.embed.jars}" />
       		<param name="after.build" value="wotaskd.post.build" />
@@ -1169,15 +1217,24 @@
             <param name="wo.external.root.bundles" value="${frameworks.wonder.core}" />
        </antcall>
     </target>
+    
+    <target name="ERFirebug.all">
+        <antcall target="global.framework.${build.action}" >
+            <param name="project.principal.class" value="" />
+            <param name="project.name" value="ERFirebug" />
+            <param name="project.dir" value="Frameworks/Misc/ERFirebug" />
+            <param name="wo.external.root.bundles" value="${frameworks.wonder.core}" />
+       </antcall>
+    </target>    
 	
     <!--
         The targets here correspond to a top-level directory, split into frameworks, apps and examples
         to add your own, add a target definition above and choose the correct group below
      -->
 
-    <target name="common.frameworks.all" depends="ERJars.all, JavaWOExtensions.all, ERExtensions.all, Ajax.all, ERDirectToWeb.all, ERNeutralLook.all, ERSelenium.all, WOOgnl.all, ERPrototypes.all, ERPlot.all, ERIndexing.all, ERChronic.all, ERCaching.all, ERCaptcha.all, ERProfiling.all, EROpenID.all, ERPDFGeneration.all, ERJGroupsSynchronizer.all, ERRest.all, ERAttachment.all, ERTaggable.all, ERJavaMail.all, ERCoreBusinessLogic.all, ERChangeNotificationJMS.all, ERCalendar.all, ERExcelLook.all, ERWorkerChannel.all, BTBusinessLogic.all, JavaMemoryAdaptor.all, JavaRESTAdaptor.all, JavaFSAdaptor.all, JavaERJDBCAdaptor.all, WOLips.all, WOJRebel.all, ERMoviesLogic.all, SnapshotExplorer.all, ERDivaliteLook.all, ERJasperReports.all, ERAttributeExtension.all, ERWOAdaptor.all, ERCayenne.all, ERCayenne.all, ERDistribution.all, MooTools.all, ERJQueryMobile.all, ERPersistentSessionStorage.all" />
+    <target name="common.frameworks.all" depends="ERJars.all, JavaWOExtensions.all, ERExtensions.all, Ajax.all, ERDirectToWeb.all, ERNeutralLook.all, ERSelenium.all, WOOgnl.all, ERPrototypes.all, ERPlot.all, ERIndexing.all, ERChronic.all, ERCaching.all, ERCaptcha.all, ERProfiling.all, EROpenID.all, ERPDFGeneration.all, ERJGroupsSynchronizer.all, ERRest.all, ERAttachment.all, ERTaggable.all, ERJavaMail.all, ERCoreBusinessLogic.all, ERChangeNotificationJMS.all, ERCalendar.all, ERExcelLook.all, ERWorkerChannel.all, BTBusinessLogic.all, JavaMemoryAdaptor.all, JavaNeo4JAdaptor.all, JavaRESTAdaptor.all, JavaFSAdaptor.all, JavaERJDBCAdaptor.all, WOLips.all, WOJRebel.all, ERMoviesLogic.all, SnapshotExplorer.all, ERDivaliteLook.all, ERJasperReports.all, ERAttributeExtension.all, ERWOAdaptor.all, ERCayenne.all, ERCayenne.all, ERDistribution.all, MooTools.all, ERJQueryMobile.all, ERPersistentSessionStorage.all, ERQuartzScheduler.all, ERXiss.all, ERFirebug.all" />
 
-    <target name="common.applications.all" depends="BugTracker.all, ERMailer.all, Uber.all, SecretPal.all, ERXTest.all, PluginTest.all" />
+    <target name="common.applications.all" depends="BugTracker.all, ERMailer.all, Uber.all, SecretPal.all, ERXTest.all, PluginTest.all, WOTested.all" />
 
     <target name="common.examples.all" depends="ERSeleniumExample.all, ERIndexingExample.all, ERMovies.all, D2WComponentTour.all, AjaxExample.all, AjaxExample2.all, YUIExample.all, EROpenIDExample.all, JavaRESTAdaptorExample.all, ERDivaliteExample.all, TickTockMan.all, ERComponentTour.all, ERRestRouteExample.all, Movies.all, ERWebSocketExample.all, ERJasperReportsExample.all, BackgroundTasks.all, ERCayenneExample.all, ERDistributionExampleModel.all, ERDistributionExampleServer.all, ERDistributionExampleClient.all, MooToolsExample.all, ERPDFExamples.all, JqueryMobileExample.all" />
 
@@ -1225,7 +1282,7 @@
 
     <target name="applications.all" depends="DevStudio.all, common.applications.all, validity.applications.all, JavaMonitor.all, wotaskd.all"/>
     <target name="examples.all" depends="common.examples.all, validity.examples.all, dynareporting.examples.all, ajax.examples.all, experimental.all"/>
-    <target name="tests.all" depends="ERXTest.all, PluginTest.all"/> <!-- TODO include ERRestTest, TestAdaptor -->
+    <target name="tests.all" depends="ERXTest.all, PluginTest.all"/> <!-- TODO include ERRestTest, TestAdaptor, JavaNeo4JAdaptorTest.all -->
 
     <target name="all.run" depends="frameworks.all, applications.all, examples.all"/>
 
@@ -1341,31 +1398,32 @@
 
         <property name="fRJ" value="frameworks/Resources/Java" />
 
+        <property file="${user.home}${file.separator}Library${file.separator}wobuild.properties"/>
+
         <java classname="er.erxtest.Application" fork="true" failonerror="true" maxmemory="128m" dir="${build.root}/ERXTest.woa">
             <arg value="-DWORootDirectory=/System" />
             <arg value="-DWOLocalRootDirectory=" />
             <arg value="-DWOUserDirectory=${build.root}/ERXTest.woa" />
-            <arg value="-Der.erxtest.ERXTestListener=${er.erxtest.ERXTestListener}" />
+            <arg value="-Der.extensions.defaultModelGroupClassName=er.extensions.eof.SortOfModelGroup" />
+            <arg value="-Dwo.test.emailAddress=${wo.test.emailAddress}" />
+            <arg value="-Dwo.test.extra=${wo.test.extra}" />
 
             <classpath>
                 <pathelement location="${build.root}/ERXTest.woa/Contents/Resources/Java/ERXTest.jar" />
                 <pathelement location="${build.root}/ERExtensions.${fRJ}/ERExtensions.jar" />
-                <pathelement location="${build.root}/ERChronic.${fRJ}/commons-lang-2.4.jar" />
                 <pathelement location="${build.root}/ERChronic.${fRJ}/ERChronic.jar" />
-                <pathelement location="${build.root}/ERJars.${fRJ}/commons-lang-2.5-sources.jar" />
-                <pathelement location="${build.root}/ERJars.${fRJ}/commons-lang-2.5.jar" />
+                <pathelement location="${build.root}/ERJars.${fRJ}/commons-lang-2.6.jar" />
                 <pathelement location="${build.root}/ERJars.${fRJ}/ERFoundation.jar" />
                 <pathelement location="${build.root}/ERJars.${fRJ}/ERJars.jar" />
                 <pathelement location="${build.root}/ERJars.${fRJ}/ERWebObjects.jar" />
                 <pathelement location="${build.root}/ERJars.${fRJ}/erxservletadaptor.jar" />
                 <pathelement location="${build.root}/ERJars.${fRJ}/icu4j-3_8_1.jar" />
-                <pathelement location="${build.root}/ERJars.${fRJ}/joda-time-1.6.2-sources.jar" />
-                <pathelement location="${build.root}/ERJars.${fRJ}/joda-time-1.6.2.jar" />
+                <pathelement location="${build.root}/ERJars.${fRJ}/joda-time-2.1.jar" />
                 <pathelement location="${build.root}/ERJars.${fRJ}/junit-4.8.jar" />
                 <pathelement location="${build.root}/ERJars.${fRJ}/log4j-1.2.16.jar" />
                 <pathelement location="${build.root}/ERJars.${fRJ}/ognl-2.6.7.jar" />
-                <pathelement location="${build.root}/ERJars.${fRJ}/slf4j-api-1.5.0.jar" />
-                <pathelement location="${build.root}/ERJars.${fRJ}/slf4j-log4j12-1.5.0.jar" />
+                <pathelement location="${build.root}/ERJars.${fRJ}/slf4j-api-1.6.5.jar" />
+                <pathelement location="${build.root}/ERJars.${fRJ}/slf4j-log4j12-1.6.5.jar" />
                 <pathelement location="${build.root}/ERPrototypes.${fRJ}/ERPrototypes.jar" />
                 <pathelement location="${build.root}/JavaMemoryAdaptor.${fRJ}/JavaMemoryAdaptor.jar" />
                 <pathelement location="${build.root}/JavaWOExtensions.${fRJ}/JavaWOExtensions.jar" />

@@ -8,6 +8,8 @@
 
 package er.directtoweb.components;
 
+import org.apache.log4j.Level;
+
 import com.webobjects.appserver.WOComponent;
 import com.webobjects.appserver.WOContext;
 import com.webobjects.woextensions.WOStatsPage;
@@ -15,6 +17,7 @@ import com.webobjects.woextensions.WOStatsPage;
 import er.directtoweb.ERD2WModel;
 import er.directtoweb.ERDirectToWeb;
 import er.extensions.ERXExtensions;
+import er.extensions.ERXFrameworkPrincipal;
 import er.extensions.appserver.ERXApplication;
 import er.extensions.components.ERXComponentUtilities;
 import er.extensions.foundation.ERXProperties;
@@ -39,6 +42,7 @@ public class ERD2WDebugFlags extends WOComponent {
         super(context);
     }
 
+    @Override
     public boolean isStateless() {
         return true;
     }
@@ -49,9 +53,14 @@ public class ERD2WDebugFlags extends WOComponent {
         return nextPage.submit();
     }
     
-    public WOComponent toggleD2WInfo() {
-        boolean currentState=ERDirectToWeb.d2wDebuggingEnabled(session());
+    public WOComponent toggleD2WInfo() {    
+        boolean currentState = ERDirectToWeb.d2wDebuggingEnabled(session());
+        Level level = currentState ? Level.INFO : Level.DEBUG;
+        ERDirectToWeb.debugLog.setLevel(level);
+        ERD2WModel.ruleTraceEnabledLog.setLevel(level);
         ERDirectToWeb.setD2wDebuggingEnabled(session(), !currentState);
+        ERDirectToWeb.setD2wComponentNameDebuggingEnabled(session(), !currentState);
+        ERDirectToWeb.setD2wPropertyKeyDebuggingEnabled(session(), !currentState);
         return null;
     }
 
@@ -111,6 +120,15 @@ public class ERD2WDebugFlags extends WOComponent {
      */
     public boolean shouldShow() {
         return ERXComponentUtilities.booleanValueForBinding(this, "shouldShow", ERXApplication.erxApplication().isDevelopmentMode());
+    }
+
+    /**
+     * Check if Selenium Framework is installed.
+     * 
+     * @return if Selenium Framework is Installed the <code>true</code> will return
+     */
+    public boolean hasSeleniumFramework() {
+      return ERXFrameworkPrincipal.hasFrameworkInstalled("ERSelenium");
     }
 
 }

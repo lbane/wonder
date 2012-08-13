@@ -432,6 +432,9 @@ public abstract class ERD2WPage extends D2WPage implements ERXExceptionHolder, E
         errorMessages.removeAllObjects();
         errorKeyOrder.removeAllObjects();
         keyPathsWithValidationExceptions.removeAllObjects();
+        if(validationDelegate() != null) {
+        	validationDelegate().clearValidationFailed();
+        }
     }
 
     /**
@@ -526,9 +529,9 @@ public abstract class ERD2WPage extends D2WPage implements ERXExceptionHolder, E
     }
     
     public ValidationDelegate validationDelegate() {
-    	if(shouldCollectValidationExceptions() && !validationDelegateInited) {
+    	if(!validationDelegateInited && _localContext != null && shouldCollectValidationExceptions()) {
     		// initialize validation delegate
-    		String delegateClassName = (String)d2wContext().valueForKey("validationDelegateClassName");
+    		String delegateClassName = (String)_localContext.valueForKey("validationDelegateClassName");
     		if(delegateClassName != null) {
 	    		try {
 	    			Class<? extends ValidationDelegate> delegateClass = 
@@ -591,7 +594,21 @@ public abstract class ERD2WPage extends D2WPage implements ERXExceptionHolder, E
     	
         public abstract boolean hasValidationExceptionForPropertyKey();
         public abstract void validationFailedWithException(Throwable e, Object value, String keyPath);
+        public abstract void clearValidationFailed();
+        public abstract String errorMessageForPropertyKey();
     }
+    
+    /**
+     * @return the validation exception message for the current property key
+     */
+    public String errorMessageForPropertyKey() {
+    	if(validationDelegate() != null) {
+    		return validationDelegate().errorMessageForPropertyKey();
+    	}
+        return propertyKey() != null && keyPathsWithValidationExceptions.containsObject(propertyKey())?
+        		(String) errorMessages().objectForKey(propertyKey()):null;
+    }
+
 
     /** Checks if the current object can be edited. */
     public boolean isObjectEditable() {
@@ -961,6 +978,15 @@ public abstract class ERD2WPage extends D2WPage implements ERXExceptionHolder, E
 
     /** Returns the {@link ERD2WContainer} defining the current tab. */
     public ERD2WContainer currentTab() {
+        if (_currentTab == null && tabSectionsContents() != null && tabSectionsContents().count() > 0) {
+            //If firstTab is not null, then try to find the tab named firstTab
+        	Integer tabIndex = (Integer) d2wContext().valueForKey(Keys.tabIndex);
+            if(tabIndex!=null && tabIndex.intValue() <= tabSectionsContents().count()){
+                setCurrentTab((ERD2WContainer)tabSectionsContents().objectAtIndex(tabIndex.intValue()));
+            }
+            if(_currentTab==null)
+                setCurrentTab((ERD2WContainer)tabSectionsContents().objectAtIndex(0));
+        }
         return _currentTab;
     }
 
