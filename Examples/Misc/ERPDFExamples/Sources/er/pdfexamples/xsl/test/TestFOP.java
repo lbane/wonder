@@ -1,15 +1,10 @@
 package er.pdfexamples.xsl.test;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.StringReader;
-import java.net.URL;
 import java.util.Date;
-import java.util.Scanner;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -28,9 +23,8 @@ import org.apache.fop.apps.FopFactory;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.xml.sax.InputSource;
-
 import org.apache.xmlgraphics.util.MimeConstants;
+import org.xml.sax.InputSource;
 
 /**
  * This is just a stub class that can be called directly (outside the context of

@@ -1,25 +1,15 @@
 package er.pdfexamples.components;
 
-import org.apache.log4j.Logger;
-
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.ListIterator;
 
-import com.webobjects.appserver.WOActionResults;
-import com.webobjects.appserver.WOApplication;
-import com.webobjects.appserver.WOAssociation;
+import org.apache.log4j.Logger;
+
 import com.webobjects.appserver.WOContext;
-import com.webobjects.appserver.WOElement;
 import com.webobjects.appserver.WOResponse;
-import com.webobjects.appserver._private.WODynamicGroup;
 import com.webobjects.foundation.NSData;
-import com.webobjects.foundation.NSDictionary;
 import com.webobjects.foundation.NSMutableArray;
 
-import er.extensions.appserver.ERXWOContext;
 import er.extensions.components.ERXComponent;
 import er.pdf.ERPDFMerge;
 

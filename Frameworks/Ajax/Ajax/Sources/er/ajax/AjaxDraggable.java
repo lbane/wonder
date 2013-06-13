@@ -86,23 +86,22 @@ public class AjaxDraggable extends AjaxComponent {
     super(context);
   }
   
+  @Override
   public void awake() {
       super.awake();
   }
 
+  @Override
   public void reset() {
       _id = null;
       super.reset();
   }
 
+  @Override
   public boolean isStateless() {
     return true;
   }
 
-  public boolean synchronizesVariablesWithBindings() {
-    return false;
-  }
-  
   public static Object draggableObjectForPage(WOComponent page, String draggableID) {
     Object droppedObject = null;
     Map componentDraggablesMap = (Map)page.context().session().objectForKey(AjaxDraggable.COMPONENT_DRAGGABLES_MAP_KEY);
@@ -115,6 +114,7 @@ public class AjaxDraggable extends AjaxComponent {
     return droppedObject;
   }
   
+  @Override
   public void appendToResponse(WOResponse res, WOContext ctx) {
     if (canGetValueForBinding("draggableObject")) {
       Object draggableObject = valueForBinding("draggableObject");
@@ -189,6 +189,7 @@ public class AjaxDraggable extends AjaxComponent {
     return draggableID;
   }
 
+  @Override
   protected void addRequiredWebResources(WOResponse res) {
     addScriptResourceInHead(res, "prototype.js");
 	addScriptResourceInHead(res, "effects.js");
@@ -196,8 +197,8 @@ public class AjaxDraggable extends AjaxComponent {
 	addScriptResourceInHead(res, "wonder.js");
   }
 
+  @Override
   public WOActionResults handleRequest(WORequest request, WOContext context) {
     return null;
   }
-
 }

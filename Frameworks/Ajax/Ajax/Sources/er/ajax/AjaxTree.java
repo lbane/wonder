@@ -11,6 +11,7 @@ import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSMutableArray;
 
 import er.extensions.appserver.ERXWOContext;
+import er.extensions.components.ERXComponentUtilities;
 
 /**
  * AjaxTree provides an Ajax-refreshing tree view. AjaxTree acts like a WOComponentContent where the content you provide
@@ -68,16 +69,17 @@ public class AjaxTree extends WOComponent {
 		super(context);
 	}
 
+	@Override
 	public boolean synchronizesVariablesWithBindings() {
 		return false;
 	}
 
 	public NSArray nodes() {
 		Object rootNode = treeModel().rootTreeNode();
-		boolean useCache = AjaxUtils.booleanValueForBinding("cache", true, _keyAssociations, parent());
+		boolean useCache = ERXComponentUtilities.booleanValueForBinding("cache", true, _keyAssociations, parent());
 		if (_nodes == null || rootNode == null || !rootNode.equals(_lastRootNode) || !useCache) {
 			NSMutableArray nodes = new NSMutableArray();
-			boolean showRoot = AjaxUtils.booleanValueForBinding("showRoot", true, _keyAssociations, parent());
+			boolean showRoot = ERXComponentUtilities.booleanValueForBinding("showRoot", true, _keyAssociations, parent());
 			_fillInOpenNodes(treeModel().rootTreeNode(), nodes, showRoot);
 			_nodes = nodes;
 			_lastRootNode = rootNode;
@@ -101,6 +103,7 @@ public class AjaxTree extends WOComponent {
 		}
 	}
 
+	@Override
 	public void reset() {
 		super.reset();
 	}
@@ -113,10 +116,10 @@ public class AjaxTree extends WOComponent {
 
 		treeModel().setDelegate(valueForBinding("delegate"));
 		if (hasBinding("allExpanded")) {
-			treeModel().setAllExpanded(AjaxUtils.booleanValueForBinding("allExpanded", false, _keyAssociations, parent()));
+			treeModel().setAllExpanded(ERXComponentUtilities.booleanValueForBinding("allExpanded", false, _keyAssociations, parent()));
 		}
 		if (hasBinding("rootExpanded") || hasBinding("showRoot")) {
-			treeModel().setRootExpanded(AjaxUtils.booleanValueForBinding("rootExpanded", false, _keyAssociations, parent()) || !AjaxUtils.booleanValueForBinding("showRoot", true, _keyAssociations, parent()));
+			treeModel().setRootExpanded(ERXComponentUtilities.booleanValueForBinding("rootExpanded", false, _keyAssociations, parent()) || !ERXComponentUtilities.booleanValueForBinding("showRoot", true, _keyAssociations, parent()));
 		}
 		treeModel().setIsLeafKeyPath(stringValueForBinding("isLeafKeyPath", null));
 		treeModel().setParentTreeNodeKeyPath(stringValueForBinding("parentKeyPath", null));
@@ -125,18 +128,21 @@ public class AjaxTree extends WOComponent {
 		setItem(treeModel().rootTreeNode());
 	}
 
+	@Override
 	public void appendToResponse(WOResponse aResponse, WOContext aContext) {
 		resetTree();
 		super.appendToResponse(aResponse, aContext);
 		resetTree();
 	}
 
+	@Override
 	public void takeValuesFromRequest(WORequest aRequest, WOContext aContext) {
 		resetTree();
 		super.takeValuesFromRequest(aRequest, aContext);
 		resetTree();
 	}
 
+	@Override
 	public WOActionResults invokeAction(WORequest aRequest, WOContext aContext) {
 		resetTree();
 		WOActionResults results = super.invokeAction(aRequest, aContext);
@@ -203,7 +209,7 @@ public class AjaxTree extends WOComponent {
 	 * @return the last close count
 	 */
 	public int lastCloseCount()	{
-		if (AjaxUtils.booleanValueForBinding("showRoot", true, _keyAssociations, parent()) || _closeCount < 1) {
+		if (ERXComponentUtilities.booleanValueForBinding("showRoot", true, _keyAssociations, parent()) || _closeCount < 1) {
 			return _closeCount;
 		}
 
@@ -278,7 +284,7 @@ public class AjaxTree extends WOComponent {
 	}
 
 	public String nodeItem() {
-		StringBuffer nodeItem = new StringBuffer();
+		StringBuilder nodeItem = new StringBuilder();
 		nodeItem.append("<li");
 		if (hasBinding("itemID")) {
 			String itemID = (String) valueForBinding("itemID");

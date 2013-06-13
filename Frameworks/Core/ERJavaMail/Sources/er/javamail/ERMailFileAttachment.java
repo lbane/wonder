@@ -29,7 +29,7 @@ public class ERMailFileAttachment extends ERMailAttachment {
 	}
 
 	/**
-	 * <span class"ja">
+	 * <span class="ja">
 	 * ファイル名を取得します。
 	 * 設定されていなければ、"attachement.txt" が戻ります。
 	 * 
@@ -43,7 +43,7 @@ public class ERMailFileAttachment extends ERMailAttachment {
 	}
 
 	/**
-	 * <span class"ja">
+	 * <span class="ja">
 	 * ファイル名をセットします。
 	 * 
 	 * @param name - ファイル名
@@ -54,7 +54,7 @@ public class ERMailFileAttachment extends ERMailAttachment {
 	}
 
 	/**
-	 * <span class"ja">
+	 * <span class="ja">
 	 * コンテント ID を取得します。
 	 * 
 	 * @return コンテント ID
@@ -65,7 +65,7 @@ public class ERMailFileAttachment extends ERMailAttachment {
 	}
 
 	/**
-	 * <span class"ja">
+	 * <span class="ja">
 	 * コンテント ID をセットします。
 	 * 
 	 * @param id - コンテント ID
@@ -78,12 +78,12 @@ public class ERMailFileAttachment extends ERMailAttachment {
 	@Override
 	protected BodyPart getBodyPart() throws MessagingException {
 		MimeBodyPart bp = new MimeBodyPart();
-		DataSource ds = new FileDataSource((File) this.content());
+		DataSource ds = new FileDataSource((File) content());
 		bp.setDataHandler(new DataHandler(ds));
 
-		if (this.contentID() != null)
-			bp.setHeader("Content-ID", this.contentID());
-		bp.setFileName(this.fileName());
+		if (contentID() != null)
+			bp.setHeader("Content-ID", contentID());
+		bp.setFileName(fileName());
 
 		return bp;
 	}

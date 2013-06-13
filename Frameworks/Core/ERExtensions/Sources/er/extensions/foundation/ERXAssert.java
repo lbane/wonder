@@ -85,11 +85,13 @@ public class ERXAssert {
         }
     }
     protected static class IllegalArgumentHandler extends ThrowingHandler {
+        @Override
         protected void raise(String message) {
             throw new IllegalArgumentException(message);
         }
     }
     protected static class IllegalStateHandler extends ThrowingHandler {
+        @Override
         protected void raise(String message) {
             throw new IllegalStateException(message);
         }
@@ -177,11 +179,11 @@ public class ERXAssert {
     }
 
     public void isFalse(boolean value) {
-        if(value == true) fail("expected false");
+        if(value) fail("expected false");
     }
 
     public void isFalse(String message, boolean value) {
-        if(value == true) fail(message, "expected false");
+        if(value) fail(message, "expected false");
     }
 
     public void isNull(Object value) {

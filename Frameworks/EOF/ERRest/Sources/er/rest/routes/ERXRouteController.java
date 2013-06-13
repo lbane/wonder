@@ -38,6 +38,7 @@ import com.webobjects.foundation._NSUtilities;
 
 import er.extensions.appserver.ERXHttpStatusCodes;
 import er.extensions.appserver.ERXRequest;
+import er.extensions.appserver.ERXResponse;
 import er.extensions.eof.ERXDatabaseContextDelegate.ObjectNotAvailableException;
 import er.extensions.eof.ERXEC;
 import er.extensions.eof.ERXKey;
@@ -228,6 +229,10 @@ public class ERXRouteController extends WODirectAction {
 	 *             if the security check fails
 	 */
 	protected void checkAccess() throws SecurityException {
+	}
+
+	public void _setEditingContent(EOEditingContext ec) {
+		_editingContext = ec;
 	}
 
 	/**
@@ -1140,7 +1145,7 @@ public class ERXRouteController extends WODirectAction {
 		}
 		String str = format().toString(errorMessage, null, null);
 		WOResponse response = stringResponse(str);
-		response.setStatus(status);
+		response.setStatus(status);	
 		if (format().equals(ERXRestFormat.json())) {
 			response.setHeader("application/json", "Content-Type");
 		} else if (format().equals(ERXRestFormat.xml())) { 
@@ -1639,7 +1644,7 @@ public class ERXRouteController extends WODirectAction {
 			}
 		}
 		if (allowJSONP()) {
-			if (this.format().equals(ERXRestFormat.json())) {
+			if (format().equals(ERXRestFormat.json())) {
 				String callbackMethodName = request().stringFormValueForKey("callback");
 				if (callbackMethodName != null) {
 					WOResponse response = results.generateResponse();
@@ -1735,7 +1740,7 @@ public class ERXRouteController extends WODirectAction {
 	 * @return the response
 	 */
 	public WOActionResults optionsAction() throws Throwable {
-		WOResponse response = new WOResponse();
+		ERXResponse response = new ERXResponse();
 		String accessControlAllowOrigin = accessControlAllowOrigin();
 		if (accessControlAllowOrigin != null) {
 			response.setHeader(accessControlAllowOrigin, "Access-Control-Allow-Origin");
@@ -1800,11 +1805,11 @@ public class ERXRouteController extends WODirectAction {
 	public <T extends ERXRouteController> T controller(Class<T> controllerClass) {
 		try {
 			T controller = requestHandler().controller(controllerClass, request(), context());
-			controller._route = _route;
-			controller._editingContext = _editingContext;
-			controller._routeKeys = _routeKeys;
-			controller._objects = _objects;
-			controller._options = _options;
+			controller._setRoute(_route);
+			controller._setEditingContent(_editingContext);
+			controller._setRouteKeys(_routeKeys);
+			controller._setRouteObjects(_objects);
+			controller.setOptions(_options);
 			return controller;
 		}
 		catch (Exception e) {

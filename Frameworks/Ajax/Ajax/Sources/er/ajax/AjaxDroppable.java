@@ -55,19 +55,18 @@ public class AjaxDroppable extends AjaxComponent {
     super(_context);
   }
 
+  @Override
   public void awake() {
     super.awake();
     _draggableIDKeyName = safeElementID() + "_draggableID";
   }
 
+  @Override
   public boolean isStateless() {
     return true;
   }
 
-  public boolean synchronizesVariablesWithBindings() {
-    return false;
-  }
-
+  @Override
   public void appendToResponse(WOResponse response, WOContext context) {
     _actionUrl = AjaxUtils.ajaxComponentActionUrl(context());
     _elementID = context.elementID();
@@ -135,6 +134,7 @@ public class AjaxDroppable extends AjaxComponent {
 	  return onDropBuffer.toString();
   }
 
+  @Override
   protected void addRequiredWebResources(WOResponse res) {
     addScriptResourceInHead(res, "prototype.js");
 	addScriptResourceInHead(res, "effects.js");
@@ -142,6 +142,7 @@ public class AjaxDroppable extends AjaxComponent {
 	addScriptResourceInHead(res, "wonder.js");
   }
 
+  @Override
   public WOActionResults handleRequest(WORequest request, WOContext context) {
 	AjaxUpdateContainer.setUpdateContainerID(request, (String) valueForBinding("updateContainerID"));
     String droppedDraggableID = request.stringFormValueForKey(_draggableIDKeyName);
@@ -161,5 +162,4 @@ public class AjaxDroppable extends AjaxComponent {
     }
     return null;
   }
-
 }

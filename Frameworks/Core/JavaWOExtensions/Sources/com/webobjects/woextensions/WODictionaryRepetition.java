@@ -28,6 +28,7 @@ public class WODictionaryRepetition extends WOComponent {
         super(aContext);
     }
 
+    @Override
     public boolean isStateless() {
         return true;
     }
@@ -38,6 +39,7 @@ public class WODictionaryRepetition extends WOComponent {
         _keyList = null;
     }
 
+    @Override
     public void reset()  {
         _invalidateCaches();
     }
@@ -50,7 +52,7 @@ public class WODictionaryRepetition extends WOComponent {
                 _keyList = NSArray.EmptyArray;
             } else {
                 _keyList = _dictionary.allKeys();
-                _keyList = EOSortOrdering.sortedArrayUsingKeyOrderArray(_keyList, new NSArray(new EOSortOrdering("toString", EOSortOrdering.CompareAscending)));
+                _keyList = EOSortOrdering.sortedArrayUsingKeyOrderArray(_keyList, new NSArray<EOSortOrdering>(new EOSortOrdering("toString", EOSortOrdering.CompareAscending)));
             }
         }
         return _dictionary;

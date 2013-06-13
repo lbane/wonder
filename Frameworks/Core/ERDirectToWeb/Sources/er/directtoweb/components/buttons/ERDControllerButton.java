@@ -45,7 +45,8 @@ public class ERDControllerButton extends ERDActionButton implements ERDBranchInt
     public String cssForChoice() {
     	String css = (String) branch.objectForKey("branchClass");
     	if(css == null) {
-    		css = "";
+    		css = (String)valueForBinding("branchClass");
+    		css = css != null ? css  : "";
     	}
     	css += " " + ERXSubmitButton.STYLE_PREFIX + branch.objectForKey("branchName");
     	if(css.length() ==0 ) {
@@ -81,6 +82,7 @@ public class ERDControllerButton extends ERDActionButton implements ERDBranchInt
         return nextPageFromParent();
     }
     
+    @Override
     public void reset() {
         super.reset();
         branch = null;
@@ -149,6 +151,7 @@ public class ERDControllerButton extends ERDActionButton implements ERDBranchInt
         return branchDelegate() != null && branchChoices().count() > 0;
     }
 
+    @Override
     public void validationFailedWithException(Throwable theException,Object theValue, String theKeyPath) {
         parent().validationFailedWithException(theException, theValue, theKeyPath);
         log.info("" + theException + theValue + theKeyPath);

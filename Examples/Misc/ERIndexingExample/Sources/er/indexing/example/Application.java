@@ -4,7 +4,6 @@ package er.indexing.example;
 import com.webobjects.foundation.NSLog;
 
 import er.extensions.appserver.ERXApplication;
-import er.indexing.ERIndexing;
 
 public class Application extends ERXApplication {
 	
@@ -20,6 +19,6 @@ public class Application extends ERXApplication {
 	}
 	
 	public Application() {
-		NSLog.out.appendln("Welcome to " + this.name() + " !");
+		NSLog.out.appendln("Welcome to " + name() + " !");
 	}
 }

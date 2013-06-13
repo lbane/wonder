@@ -6,8 +6,7 @@
  * included with this distribution in the LICENSE.NPL file.  */
 package er.extensions.eof;
 
-import java.util.Enumeration;
-
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.log4j.Logger;
 
 import com.webobjects.eoaccess.EOAttribute;
@@ -30,11 +29,9 @@ import com.webobjects.eocontrol.EOSharedEditingContext;
 import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSDictionary;
 import com.webobjects.foundation.NSKeyValueCoding;
-import com.webobjects.foundation.NSMutableArray;
 import com.webobjects.foundation.NSMutableDictionary;
 import com.webobjects.foundation.NSValidation;
 
-import er.extensions.ERXExtensions;
 import er.extensions.crypting.ERXCrypto;
 import er.extensions.eof.ERXDatabaseContextDelegate.AutoBatchFaultingEnterpriseObject;
 import er.extensions.foundation.ERXArrayUtilities;
@@ -84,6 +81,8 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 	 * <a href="http://java.sun.com/j2se/1.4/pdf/serial-spec.pdf">Java Object Serialization Spec</a>
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	private transient EOEntity _entity;
 
 	/** holds all subclass related Logger's */
 	private static final NSMutableDictionary<Class, Logger> classLogs = new NSMutableDictionary<Class, Logger>();
@@ -222,7 +221,6 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
         }
     }
     
-
     @Override
     public NSKeyValueCoding._KeyBinding _otherStorageBinding(String key) {
     	NSKeyValueCoding._KeyBinding result = null;
@@ -245,34 +243,23 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 	 * @param <T> 
 	 */
 	public static class ERXGenericRecordClazz<T extends EOEnterpriseObject> extends EOEnterpriseObjectClazz<T> {
-
 	}
 
 	protected String insertionStackTrace = null;
 
 	private boolean _updateInverseRelationships = ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#getClassLog()
-	 */
 	public Logger getClassLog() {
-		Logger classLog = classLogs.objectForKey(this.getClass());
+		Logger classLog = classLogs.objectForKey(getClass());
 		if (classLog == null) {
 			synchronized (classLogs) {
-				classLog = Logger.getLogger(this.getClass());
-				classLogs.setObjectForKey(classLog, this.getClass());
+				classLog = Logger.getLogger(getClass());
+				classLogs.setObjectForKey(classLog, getClass());
 			}
 		}
 		return classLog;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#self()
-	 */
 	public ERXEnterpriseObject self() {
 		return this;
 	}
@@ -321,21 +308,11 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 		_primaryKeyDictionary = originalEO._primaryKeyDictionary;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#mightDelete()
-	 */
 	public void mightDelete() {
 		if (tranLogMightDelete.isDebugEnabled())
 			tranLogMightDelete.debug("Object:" + description());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#willDelete()
-	 */
 	public void willDelete() throws NSValidation.ValidationException {
 		if (canDelete() == false) {
 			throw ERXValidationFactory.defaultFactory().createException(this, null, null, "ObjectCannotBeDeletedException");
@@ -344,11 +321,6 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 			tranLogWillDelete.debug("Object:" + description());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#willInsert()
-	 */
 	public void willInsert() {
 		/*
 		 * Disabling this check by default -- it's causing problems for objects
@@ -356,8 +328,7 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 		 */
 		if (tranLogWillInsert.isDebugEnabled()) {
 			/* check that all the to manies have an array */
-			for (Enumeration e = toManyRelationshipKeys().objectEnumerator(); e.hasMoreElements();) {
-				String key = (String) e.nextElement();
+			for (String key : toManyRelationshipKeys()) {
 				Object o = storedValueForKey(key);
 				if (o == null || !EOFaultHandler.isFault(o) && o instanceof NSKeyValueCoding.Null) {
 					tranLogWillInsert.error("Found illegal value in to many " + key + " for " + this + ": " + o);
@@ -369,11 +340,6 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 			trimSpaces();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#willUpdate()
-	 */
 	public void willUpdate() {
 		if (canUpdate() == false) {
 			throw ERXValidationFactory.defaultFactory().createException(this, null, null, "ObjectCannotBeUpdatedException");
@@ -384,8 +350,7 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 		 */
 		if (tranLogWillUpdate.isDebugEnabled()) {
 			/* check that all the to manies have an array */
-			for (Enumeration e = toManyRelationshipKeys().objectEnumerator(); e.hasMoreElements();) {
-				String key = (String) e.nextElement();
+			for (String key : toManyRelationshipKeys()) {
 				Object o = storedValueForKey(key);
 				if (o == null || !EOFaultHandler.isFault(o) && o instanceof NSKeyValueCoding.Null) {
 					tranLogWillUpdate.error("Found illegal value in to many " + key + " for " + this + ": " + o);
@@ -419,112 +384,61 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#flushCaches()
-	 */
 	public void flushCaches() {
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#didDelete(com.webobjects.eocontrol.EOEditingContext)
-	 */
 	public void didDelete(EOEditingContext ec) {
 		if (tranLogDidDelete.isDebugEnabled())
 			tranLogDidDelete.debug("Object:" + description());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#didUpdate()
-	 */
 	public void didUpdate() {
 		if (tranLogDidUpdate.isDebugEnabled())
 			tranLogDidUpdate.debug("Object:" + description());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#didInsert()
-	 */
 	public void didInsert() {
 		if (tranLogDidInsert.isDebugEnabled())
 			tranLogDidInsert.debug("Object:" + description());
 		_permanentGlobalID = null;
 		
-		//We're goung to blow the primaryKey cache:
+		// We're going to blow the primaryKey cache:
 		_primaryKey = null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#willRevert()
-	 */
 	public void willRevert() {
 		if (tranLogWillRevert.isDebugEnabled())
 			tranLogWillRevert.debug("Object: " + description());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#didRevert(com.webobjects.eocontrol.EOEditingContext)
-	 */
 	public void didRevert(EOEditingContext ec) {
 		if (tranLogDidRevert.isDebugEnabled())
 			tranLogDidRevert.debug("Object: " + description());
 		flushCaches();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#addObjectsToBothSidesOfRelationshipWithKey(com.webobjects.foundation.NSArray,
-	 *      java.lang.String)
-	 */
-	public void addObjectsToBothSidesOfRelationshipWithKey(NSArray objects, String key) {
+	public void addObjectsToBothSidesOfRelationshipWithKey(NSArray<? extends EOEnterpriseObject> objects, String key) {
 		if (objects != null && objects.count() > 0) {
-			NSArray objectsSafe = objects instanceof NSMutableArray ? (NSArray) objects.immutableClone() : objects;
-			for (Enumeration e = objectsSafe.objectEnumerator(); e.hasMoreElements();) {
-				EOEnterpriseObject eo = (EOEnterpriseObject) e.nextElement();
+			NSArray<? extends EOEnterpriseObject> objectsSafe = objects.immutableClone();
+			for (EOEnterpriseObject eo : objectsSafe) {
 				addObjectToBothSidesOfRelationshipWithKey(eo, key);
 			}
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#removeObjectsFromBothSidesOfRelationshipWithKey(com.webobjects.foundation.NSArray,
-	 *      java.lang.String)
-	 */
-	public void removeObjectsFromBothSidesOfRelationshipWithKey(NSArray objects, String key) {
+	public void removeObjectsFromBothSidesOfRelationshipWithKey(NSArray<? extends EOEnterpriseObject> objects, String key) {
 		if (objects != null && objects.count() > 0) {
-			NSArray objectsSafe = objects instanceof NSMutableArray ? (NSArray) objects.immutableClone() : objects;
-			for (Enumeration e = objectsSafe.objectEnumerator(); e.hasMoreElements();) {
-				EOEnterpriseObject eo = (EOEnterpriseObject) e.nextElement();
+			NSArray<? extends EOEnterpriseObject> objectsSafe = objects.immutableClone();
+			for (EOEnterpriseObject eo : objectsSafe) {
 				removeObjectFromBothSidesOfRelationshipWithKey(eo, key);
 			}
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#removeObjectsFromPropertyWithKey(com.webobjects.foundation.NSArray,
-	 *      java.lang.String)
-	 */
-	public void removeObjectsFromPropertyWithKey(NSArray objects, String key) {
+	public void removeObjectsFromPropertyWithKey(NSArray<? extends EOEnterpriseObject> objects, String key) {
 		if (objects != null && objects.count() > 0) {
-			NSArray objectsSafe = objects instanceof NSMutableArray ? (NSArray) objects.immutableClone() : objects;
-			for (Enumeration e = objectsSafe.objectEnumerator(); e.hasMoreElements();) {
-				EOEnterpriseObject eo = (EOEnterpriseObject) e.nextElement();
+			NSArray<? extends EOEnterpriseObject> objectsSafe = objects.immutableClone();
+			for (EOEnterpriseObject eo : objectsSafe) {
 				removeObjectFromPropertyWithKey(eo, key);
 			}
 		}
@@ -628,7 +542,6 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 	 *            the EOEditingContext in which this new EO is inserted
 	 */
 	protected void init(EOEditingContext ec) {
-
 	}
 
 	/**
@@ -657,7 +570,7 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 	 * Adds a check to make sure that both the object being added and this
 	 * object are in the same editing context. If not then a runtime exception
 	 * is thrown instead of getting the somewhat cryptic NSInternalInconsistency
-	 * excpetion that is thrown when you attempt to save changes to the
+	 * exception that is thrown when you attempt to save changes to the
 	 * database.
 	 * 
 	 * @param eo
@@ -671,12 +584,8 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 		super.addObjectToBothSidesOfRelationshipWithKey(eo, key);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#primaryKey()
-	 */
 	protected String _primaryKey = null;
+	
 	public String primaryKey() {
 	  if (_primaryKey == null) {
 	    _primaryKey = ERXEOControlUtilities.primaryKeyStringForObject(this);
@@ -684,11 +593,6 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 	  return _primaryKey;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#rawPrimaryKeyInTransaction()
-	 */
 	public Object rawPrimaryKeyInTransaction() {
 		Object result = rawPrimaryKey();
 		if (result == null) {
@@ -701,67 +605,44 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#primaryKeyInTransaction()
-	 */
 	public String primaryKeyInTransaction() {
 		return ERXEOControlUtilities._stringForPrimaryKey(rawPrimaryKeyInTransaction());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#rawPrimaryKey()
-	 */
 	public Object rawPrimaryKey() {
 		return ERXEOControlUtilities.primaryKeyObjectForObject(this);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#encryptedPrimaryKey()
-	 */
 	public String encryptedPrimaryKey() {
 		String pk = ERXEOControlUtilities.primaryKeyStringForObject(this);
 		return pk == null ? null : ERXCrypto.crypterForAlgorithm(ERXCrypto.BLOWFISH).encrypt(pk);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#foreignKeyForRelationshipWithKey(java.lang.String)
-	 */
 	public Object foreignKeyForRelationshipWithKey(String rel) {
 		NSDictionary d = EOUtilities.destinationKeyForSourceObject(editingContext(), this, rel);
 		return d != null && d.count() > 0 ? d.allValues().objectAtIndex(0) : null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#primaryKeyAttributeNames()
-	 */
-	@SuppressWarnings("unchecked")
 	public NSArray<String> primaryKeyAttributeNames() {
 		return entity().primaryKeyAttributeNames();
 	}
 
 	/**
 	 * Returns the entity for the current object. Defers to
-	 * {@link ERXEOAccessUtilities#entityNamed ERXEOAccessUtilities.entityNamed()}
+	 * {@link ERXEOAccessUtilities#entityNamed(EOEditingContext, String) ERXEOAccessUtilities.entityNamed()}
 	 * for the actual work.
 	 * 
 	 * @return EOEntity for the current object
 	 */
 	public EOEntity entity() {
-		return ERXEOAccessUtilities.entityNamed(editingContext(), entityName());
+		if(_entity == null) {
+			_entity = ERXEOAccessUtilities.entityNamed(editingContext(), entityName());
+		}
+		return _entity;
 	}
 
 	/** caches the primary key dictionary for the given object */
-	private NSDictionary _primaryKeyDictionary;
+	private NSDictionary<String, Object> _primaryKeyDictionary;
 
 	/**
 	 * Implementation of the interface {@link ERXGeneratesPrimaryKeyInterface}.
@@ -904,11 +785,6 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 		_primaryKeyDictionary = pkDict;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#committedSnapshotValueForKey(java.lang.String)
-	 */
 	public Object committedSnapshotValueForKey(String key) {
 		NSDictionary<String, Object> snapshot = committedSnapshot();
 		return snapshot != null ? snapshot.objectForKey(key) : null;
@@ -934,39 +810,18 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 		return allNullDict;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#localInstanceOf(com.webobjects.eocontrol.EOEnterpriseObject)
-	 */
 	public EOEnterpriseObject localInstanceOf(EOEnterpriseObject eo) {
 		return ERXEOControlUtilities.localInstanceOfObject(editingContext(), eo);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#localInstanceIn(com.webobjects.eocontrol.EOEnterpriseObject)
-	 */
 	public EOEnterpriseObject localInstanceIn(EOEditingContext ec) {
 		return ERXEOControlUtilities.localInstanceOfObject(ec, this);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#localInstancesOf(com.webobjects.foundation.NSArray)
-	 */
-	@SuppressWarnings("unchecked")
-	public NSArray localInstancesOf(NSArray eos) {
+	public NSArray<EOEnterpriseObject> localInstancesOf(NSArray<EOEnterpriseObject> eos) {
 		return ERXEOControlUtilities.localInstancesOfObjects(editingContext(), eos);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#changesFromCommittedSnapshot()
-	 */
 	public NSDictionary<String, Object> changesFromCommittedSnapshot() {
 		return changesFromSnapshot(committedSnapshot());
 	}
@@ -992,7 +847,7 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 	 */
 	public boolean hasKeyChangedFromCommittedSnapshotFromValue(String key, Object oldValue) {
 		NSDictionary<String, Object> d = changesFromCommittedSnapshot();
-		return d.containsKey(key) && ERXExtensions.safeEquals(oldValue, committedSnapshotValueForKey(key));
+		return d.containsKey(key) && ObjectUtils.equals(oldValue, committedSnapshotValueForKey(key));
 	}
 
 	/**
@@ -1006,7 +861,7 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 	 */
 	public boolean hasKeyChangedFromCommittedSnapshotFromValueToNewValue(String key, Object oldValue, Object newValue) {
 		NSDictionary<String, Object> d = changesFromCommittedSnapshot();
-		return d.containsKey(key) && ERXExtensions.safeEquals(newValue, d.objectForKey(key)) && ERXExtensions.safeEquals(oldValue, committedSnapshotValueForKey(key));
+		return d.containsKey(key) && ObjectUtils.equals(newValue, d.objectForKey(key)) && ObjectUtils.equals(oldValue, committedSnapshotValueForKey(key));
 	}
 
 	/**
@@ -1018,15 +873,10 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 	 * @return true if the specified key value has changed to the specified value
 	 */
 	public boolean hasKeyChangedFromCommittedSnapshotToValue(String key, Object newValue) {
-		NSDictionary d = changesFromCommittedSnapshot();
-		return d.containsKey(key) && ERXExtensions.safeEquals(newValue, d.objectForKey(key));
+		NSDictionary<String, Object> d = changesFromCommittedSnapshot();
+		return d.containsKey(key) && ObjectUtils.equals(newValue, d.objectForKey(key));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#parentObjectStoreIsObjectStoreCoordinator()
-	 */
 	public boolean parentObjectStoreIsObjectStoreCoordinator() {
 		return editingContext().parentObjectStore() instanceof EOObjectStoreCoordinator;
 	}
@@ -1042,11 +892,6 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 		return refetchObjectFromDBinEditingContext(editingContext());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#refetchObjectFromDBinEditingContext(com.webobjects.eocontrol.EOEditingContext)
-	 */
 	public ERXEnterpriseObject refetchObjectFromDBinEditingContext(EOEditingContext ec) {
 		EOEntity entity = ERXEOAccessUtilities.entityNamed(ec, entityName());
 		EOQualifier qual = entity.qualifierForPrimaryKey(primaryKeyDictionary(false));
@@ -1069,8 +914,12 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 	 * primary key if necessary. Then we build an EOKeyGlobalID from it. If the
 	 * object already has a permanent global ID, we use that.
 	 * 
-	 * If you pass false for <code>generateIfMissing</code> and this object
-	 * has a temporary global ID, null will be returned.
+	 * If you pass <code>false</code> for <code>generateIfMissing</code> and this object
+	 * has a temporary global ID, <code>null</code> will be returned.
+	 * 
+	 * @param generateIfMissing if <code>false</code> and this object has a
+	 *            temporary global ID, <code>null</code> will be returned.
+	 * @return the permanent global ID or <code>null</code>
 	 */
 	public EOKeyGlobalID permanentGlobalID(boolean generateIfMissing) {
 		if (_permanentGlobalID == null) {
@@ -1106,8 +955,9 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 	}
 
 	/**
-	 * Calls permanentGlobalID(boolean) passing true for generateIfMissing.
+	 * Calls permanentGlobalID(boolean) passing <code>true</code> for generateIfMissing.
 	 * 
+	 * @return the permanent global ID
 	 * @see #permanentGlobalID(boolean)
 	 */
 	public EOKeyGlobalID permanentGlobalID() {
@@ -1126,43 +976,26 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 	 */
 	@Override
 	public String toString() {
-		String pk = primaryKey();
-		pk = (pk == null) ? "null" : pk;
-		return "<" + getClass().getName() + " pk:\"" + pk + "\">";
+		return new StringBuilder().append('<').append(getClass().getName())
+				.append(" pk:\"").append(primaryKey()).append("\">").toString();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#description()
+	/**
+	 * @deprecated use {@link #toString()} instead
 	 */
+	@Deprecated
 	public String description() {
 		return toString();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#toLongString()
-	 */
 	public String toLongString() {
 		return super.toString();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#trimSpaces()
-	 */
 	public void trimSpaces() {
 		ERXEOControlUtilities.trimSpaces(this);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#isDeletedEO()
-	 */
 	public boolean isDeletedEO() {
 		if (log.isDebugEnabled()) {
 			log.debug("editingContext() = " + editingContext() + " this object: " + this);
@@ -1174,7 +1007,7 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 	}
 
 	/**
-	 * @deprecated use {@link ERXGenericRecord#isNewObject()}
+	 * @deprecated use {@link #isNewObject()}
 	 */
 	@SuppressWarnings("dep-ann")
     @Deprecated
@@ -1182,9 +1015,6 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 		return isNewObject();
 	}
 
-	/**
-	 * @see ERXEOControlUtilities#isNewObject(EOEnterpriseObject)
-	 */
 	public boolean isNewObject() {
 		return ERXEOControlUtilities.isNewObject(this);
 	}
@@ -1194,11 +1024,11 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 	 * terms, this means that the EO's snapshot in this EC is not .equals the
 	 * original database snapshot for the EO.
 	 * 
-	 * @return true if this EO's snapshot does not match the original snapshot
+	 * @return <code>true</code> if this EO's snapshot does not match the original snapshot
 	 */
 	public boolean isUpdatedObject() {
-		NSDictionary snapshot = snapshot();
-		NSDictionary originalSnapshot = __originalSnapshot();
+		NSDictionary<String, Object> snapshot = snapshot();
+		NSDictionary<String, Object> originalSnapshot = __originalSnapshot();
 		return originalSnapshot != null && !originalSnapshot.equals(snapshot);
 	}
 
@@ -1231,8 +1061,34 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 	}
 	
 	/**
+	 * Override so that we can handle the case of in-memory qualifier evaluation against a hidden primary key 
+	 * attribute (simple or component of compound). This will allow database qualifiers containing primary key
+	 * attribute names to be used for in-memory sorting and filtering.
+	 * 
+	 * @see com.webobjects.eocontrol.EOCustomObject#handleQueryWithUnboundKey(java.lang.String)
+	 */
+	@Override
+	public Object handleQueryWithUnboundKey(String key) {
+		// Handles primary key attribute values
+		if(entity().primaryKeyAttributeNames().contains(key)) {
+			// Deleted object. Return null.
+			if(editingContext() == null) {
+				return null;
+			}
+			NSDictionary pkDict = EOUtilities.primaryKeyForObject(editingContext(), this);
+			// New object. Return null.
+			if(pkDict == null) {
+				return null;
+			}
+			// Return value for key
+			return pkDict.objectForKey(key);
+		}
+		return super.handleQueryWithUnboundKey(key);
+	}
+	
+	/**
 	 * Overrides the default validation mechanisms to provide a few checks
-	 * before invoking super's implementation, which incidently just invokes
+	 * before invoking super's implementation, which incidentally just invokes
 	 * validateValueForKey on the object's class description. The class
 	 * description for this object should be an
 	 * {@link ERXEntityClassDescription} or subclass. It is that class that
@@ -1251,8 +1107,7 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 	public Object validateValueForKey(Object value, String key) throws NSValidation.ValidationException {
 		if (validation.isDebugEnabled())
 			validation.debug("ValidateValueForKey on eo: " + this + " value: " + value + " key: " + key);
-		if (key == null) // better to raise before calling super which will
-							// crash
+		if (key == null) // better to raise before calling super which will crash
 			throw new RuntimeException("validateValueForKey called with null key on " + this);
 		Object result = null;
 		try {
@@ -1360,20 +1215,11 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 		super.validateForUpdate();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#checkConsistency()
-	 */
-	// CHECKME: This method was very useful at NS, might not be as useful here.
+	@Deprecated
 	public void checkConsistency() throws NSValidation.ValidationException {
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see er.extensions.ERXEnterpriseObject#batchCheckConsistency()
-	 */
+	@Deprecated
 	public void batchCheckConsistency() throws NSValidation.ValidationException {
 	}
 

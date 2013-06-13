@@ -2,7 +2,6 @@ package com.webobjects.jdbcadaptor;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -17,7 +16,6 @@ import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSBundle;
 import com.webobjects.foundation.NSData;
 import com.webobjects.foundation.NSDictionary;
-import com.webobjects.foundation.NSForwardException;
 import com.webobjects.foundation.NSKeyValueCoding;
 import com.webobjects.foundation.NSLog;
 import com.webobjects.foundation.NSPropertyListSerialization;
@@ -153,12 +151,12 @@ public class _DerbyPlugIn extends JDBCPlugIn {
 						value = formatValueForAttribute(adaptorValue, eoattribute);
 					}
 					else {
-						NSLog.err.appendln(this.getClass().getName() + ": Can't convert: " + obj + ":" + obj.getClass() + " -> " + adaptorValue + ":" + adaptorValue.getClass());
+						NSLog.err.appendln(getClass().getName() + ": Can't convert: " + obj + ":" + obj.getClass() + " -> " + adaptorValue + ":" + adaptorValue.getClass());
 						value = obj.toString();
 					}
 				}
 				catch (Exception ex) {
-					NSLog.err.appendln(this.getClass().getName() + ": Exception while converting " + obj.getClass().getName());
+					NSLog.err.appendln(getClass().getName() + ": Exception while converting " + obj.getClass().getName());
 					NSLog.err.appendln(ex);
 					value = obj.toString();
 				}
@@ -424,6 +422,8 @@ public class _DerbyPlugIn extends JDBCPlugIn {
 			}
 			catch (IOException e) {
 				throw new RuntimeException("Failed to load 'JDBCInfo.plist' from this plugin jar: " + e, e);
+			} finally {
+				try { jdbcInfoStream.close(); } catch (IOException e) {}
 			}
 		}
 		else {

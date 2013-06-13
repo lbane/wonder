@@ -6,7 +6,6 @@ import com.webobjects.appserver.WODisplayGroup;
 import com.webobjects.eocontrol.EODataSource;
 
 import er.directtoweb.components.ERDCustomComponent;
-import er.directtoweb.pages.ERD2WListPage;
 import er.directtoweb.pages.ERD2WPage;
 
 /**
@@ -32,6 +31,7 @@ public class PageHeader extends ERDCustomComponent {
         return (String) valueForBinding("displayNameForPageConfiguration");
     }
     
+    @Override
     public boolean synchronizesVariablesWithBindings() {
     	return false;
     }

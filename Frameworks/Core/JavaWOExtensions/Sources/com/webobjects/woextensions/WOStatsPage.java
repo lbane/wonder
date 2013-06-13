@@ -97,6 +97,7 @@ public class WOStatsPage extends WOComponent {
         maxActionCount = _maxServedForDictionary(directActionsDict);
     }
 
+    @Override
     public void appendToResponse(WOResponse aResponse, WOContext aContext)  {
         // ** This should probably be somewhere else.
         _initIvars();
@@ -128,7 +129,7 @@ public class WOStatsPage extends WOComponent {
 
     public long detailPercent() {
         double aTransactionsCount = ((Number)transactions.objectForKey("Transactions") ).doubleValue();
-        double aDetailCount = (double)detailCount();
+        double aDetailCount = detailCount();
         if (aTransactionsCount > 0L) {
             return (long)((aDetailCount / aTransactionsCount) * 100);
         } else {

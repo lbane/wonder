@@ -4,8 +4,8 @@
 package com.rackspacecloud.client.cloudfiles;
 
 import org.apache.http.Header;
-import org.apache.http.StatusLine;
 import org.apache.http.HttpException;
+import org.apache.http.StatusLine;
 
 /**
  * @author lvaughn
@@ -49,7 +49,7 @@ public class FilesException extends HttpException {
     {
     	if (httpHeaders == null) return "";
     	
-        StringBuffer httpHeaderString = new StringBuffer();
+    	StringBuilder httpHeaderString = new StringBuilder();
         for (Header h: httpHeaders)
             httpHeaderString.append(h.getName() + ": " + h.getValue() + "\n"); 
 

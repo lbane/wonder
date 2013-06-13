@@ -580,7 +580,7 @@ public class ERXLocalizer implements NSKeyValueCoding, NSKeyValueCodingAdditions
    * <span class="ja">
    * 使用可能な言語を配列でセットする
    * 
-   * @param value　-　使用可能な言語のNSArray
+   * @param value - 使用可能な言語のNSArray
    * </span>
    */
 	public static void setAvailableLanguages(NSArray<String> value) {
@@ -606,7 +606,7 @@ public class ERXLocalizer implements NSKeyValueCoding, NSKeyValueCodingAdditions
 		  
 		      // Check the Properties and Add it Automatically
 		      String propertyName = "er.extensions." + name + ".hasLocalization";
-		      boolean hasLocalization = ERXProperties.booleanForKeyWithDefault(propertyName, false);
+		      boolean hasLocalization = ERXProperties.booleanForKeyWithDefault(propertyName, true);
 		  
           if(name.equals("ERCoreBusinessLogic") || name.equals("ERDirectToWeb") || name.equals("ERExtensions")){ //|| name.startsWith("Java")
             // do nothing yet, because will add later
@@ -1176,8 +1176,8 @@ public class ERXLocalizer implements NSKeyValueCoding, NSKeyValueCodingAdditions
   /**
    * <span class="ja">
    * キーを使って、ローカライズ・オブジェクトを戻します
-   * @ キーパス <code>session.localizer.@locale.getLanguage</code> で
-   * キーファイルを探すかわりに ERXLocalicer メソッドを実行します。
+   * {@literal @} キーパス <code>session.localizer.{@literal @}locale.getLanguage</code> で
+   * キーファイルを探すかわりに ERXLocalizer メソッドを実行します。
    * @param key - キー
    * 
    * @return ローカライズ済みオブジェクト又は @ キーパス
@@ -1202,17 +1202,17 @@ public class ERXLocalizer implements NSKeyValueCoding, NSKeyValueCodingAdditions
 
 	/**
 	 * <span class="en">
-	 * Returns the localized value for a key. An @ keypath such as 
-	 * <code>session.localizer.@locale.getLanguage</code> indicates that
+	 * Returns the localized value for a key. An {@literal @} keypath such as 
+	 * <code>session.localizer.{@literal @}locale.getLanguage</code> indicates that
 	 * the methods on ERXLocalizer itself should be called instead of
-	 * searching the strings file for a '@locale.getLanguage' key.
+	 * searching the strings file for a '{@literal @}locale.getLanguage' key.
 	 * @param key the keyPath string
 	 * @return a localized string value or the object value of the @ keyPath
 	 * </span>
 	 * 
    * <span class="ja">
    * キーを使って、ローカライズ・オブジェクトを戻します
-   * @ キーパス <code>session.localizer.@locale.getLanguage</code> で
+   * {@literal @} キーパス <code>session.localizer.@locale.getLanguage</code> で
    * キーファイルを探すかわりに ERXLocalicer メソッドを実行します。
    * @param key - キー
    * 
@@ -1223,6 +1223,10 @@ public class ERXLocalizer implements NSKeyValueCoding, NSKeyValueCodingAdditions
 		if(!ERXStringUtilities.stringIsNullOrEmpty(key) && _localizerMethodIndicatorCharacter == key.charAt(0)) {
 			int dotIndex = key.indexOf(NSKeyValueCodingAdditions.KeyPathSeparator);
 			String methodKey = (dotIndex>0)?key.substring(1, dotIndex):key.substring(1, key.length());
+      
+      // KI : This can make bad invoke Errors in D2W Apps, when Rules are like '@count'
+      // If the key is one of operatorNames then don't invoke it.
+      if(!NSArray.operatorNames().contains(methodKey)) {
 			try {
 				Method m = ERXLocalizer.class.getMethod(methodKey);
 				return m.invoke(this, (Object[])null);
@@ -1234,6 +1238,7 @@ public class ERXLocalizer implements NSKeyValueCoding, NSKeyValueCodingAdditions
 				throw NSForwardException._runtimeExceptionForThrowable(ite);
 			}
 		}
+    }
 		Object result = cache.objectForKey(key);
 		if (key == null || result == NOT_FOUND)
 			return null;

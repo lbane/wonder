@@ -1,15 +1,19 @@
 
 package er.erxtest;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
-
 import java.io.OutputStreamWriter;
-
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Vector;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.junit.runner.Description;
 import org.junit.runner.Result;
@@ -55,7 +59,7 @@ public class ERXTestReportListener extends RunListener {
 
         ClassLoader loader = this.getClass().getClassLoader();
 
-        ArrayList<String> found = this.listLoadedClasses(loader);
+        ArrayList<String> found = listLoadedClasses(loader);
 
         ArrayList<String> fixed = new ArrayList<String>();
 
@@ -88,7 +92,7 @@ public class ERXTestReportListener extends RunListener {
 
                         if (verbose) {
                             for (int idx = 0; idx < bytesRead; idx++) {
-                                String num = Integer.toHexString((int)(bytes[idx] & 0xff));
+                                String num = Integer.toHexString(bytes[idx] & 0xff);
                                 while (num.length() < 2) { num = "0"+num; }
                                 System.out.print(" "+num);
                             }
@@ -106,7 +110,7 @@ public class ERXTestReportListener extends RunListener {
             StringBuilder str = new StringBuilder();
 
             for (int idx = 0; idx < digest.length; idx++) {
-                String num = Integer.toHexString((int)(digest[idx] & 0xff));
+                String num = Integer.toHexString(digest[idx] & 0xff);
                 while (num.length() < 2) { num = "0"+num; }
                 str.append(num);
             }
@@ -119,14 +123,18 @@ public class ERXTestReportListener extends RunListener {
         return fixed;
     }
 
+    @Override
     public void testRunStarted(Description description) { start = System.currentTimeMillis(); }
 
+    @Override
     public void testStarted(Description description) { }
 
+    @Override
     public void testFailure(Failure failure) { }
 
     private static java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+    @Override
     public void testRunFinished(Result result) {
 
         String contact = System.getProperty("wo.test.emailAddress");
@@ -173,11 +181,41 @@ public class ERXTestReportListener extends RunListener {
             }
 
             try {
+
+                String url = "https://wocommunity.org/apps/WebObjects/WOTested.woa/wa/addResult";
+                //String url = "http://10.0.1.6:55555/cgi-bin/WebObjects/WOTested.woa/wa/addResult";
+
                 URL homeURL = null;
 
-                homeURL = new URL("http://localhost:55555/cgi-bin/WebObjects/WOTested.woa/wa/addResult");
+                homeURL = new URL(url);
 
-                HttpURLConnection connection = (HttpURLConnection)homeURL.openConnection();
+                HttpURLConnection connection = null;
+
+                if (url.startsWith("http:")) {
+
+                    connection = (HttpURLConnection)homeURL.openConnection();
+                }
+
+                if (url.startsWith("https:")) {
+
+                    final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+                        @Override
+                        public void checkClientTrusted(final X509Certificate[] chain, final String authType) { }
+                        @Override
+                        public void checkServerTrusted(final X509Certificate[] chain, final String authType) { }
+                        @Override
+                        public X509Certificate[] getAcceptedIssuers() { return null; }
+                    } };
+    
+                    final SSLContext sslContext = SSLContext.getInstance("SSL");
+
+                    sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+                    final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+    
+                    connection = (HttpURLConnection)homeURL.openConnection();
+
+                    ((HttpsURLConnection)connection).setSSLSocketFactory(sslSocketFactory);
+                }
 
                 connection.setDoOutput(true);
 
@@ -191,6 +229,10 @@ public class ERXTestReportListener extends RunListener {
 
             } catch (java.io.IOException ioe) {
                 System.out.println("Test results not submitted. No worries.\n"+ioe);
+            } catch (java.security.NoSuchAlgorithmException nsae) {
+                System.out.println("Test results not submitted. No worries.\n"+nsae);
+            } catch (java.security.KeyManagementException kme) {
+                System.out.println("Test results not submitted. No worries.\n"+kme);
             }
         }
     }

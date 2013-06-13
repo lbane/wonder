@@ -1,8 +1,6 @@
 package er.pdfexamples.components;
 
 import com.webobjects.appserver.WOContext;
-
-import er.extensions.components.ERXComponent;
 import com.webobjects.foundation.NSTimestamp;
 
 

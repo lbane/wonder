@@ -6,9 +6,14 @@
  * included with this distribution in the LICENSE.NPL file.  */
 package er.extensions.eof.qualifiers;
 
+import java.util.Enumeration;
+
+import org.apache.log4j.Logger;
+
 import com.webobjects.eoaccess.EOAttribute;
 import com.webobjects.eoaccess.EODatabaseContext;
 import com.webobjects.eoaccess.EOEntity;
+import com.webobjects.eoaccess.EOProperty;
 import com.webobjects.eoaccess.EOQualifierSQLGeneration;
 import com.webobjects.eoaccess.EORelationship;
 import com.webobjects.eoaccess.EOSQLExpression;
@@ -26,9 +31,8 @@ import com.webobjects.foundation.NSCoding;
 import com.webobjects.foundation.NSDictionary;
 import com.webobjects.foundation.NSMutableArray;
 import com.webobjects.foundation.NSMutableSet;
+
 import er.extensions.foundation.ERXStringUtilities;
-import java.util.Enumeration;
-import org.apache.log4j.Logger;
 
 /**
  * A qualifier that qualifies using an EXISTS clause.
@@ -103,6 +107,7 @@ public class ERXExistsQualifier extends EOQualifier implements Cloneable, NSCodi
 	 * @param aSet of qualifier keys
 	 */
 	// FIXME: Should do something here ...
+	@Override
 	public void addQualifierKeysToSet(NSMutableSet aSet) {
         
 	}
@@ -114,6 +119,7 @@ public class ERXExistsQualifier extends EOQualifier implements Cloneable, NSCodi
 	 * @param requiresAll tells if the qualifier requires all bindings
 	 * @return clone of the current qualifier.
 	 */
+	@Override
 	public EOQualifier qualifierWithBindings(NSDictionary someBindings, boolean requiresAll) {
 		return (EOQualifier)clone();
 	}
@@ -123,6 +129,7 @@ public class ERXExistsQualifier extends EOQualifier implements Cloneable, NSCodi
 	 * @param aClassDescription to validation the qualifier keys against.
 	 */
 	// FIXME: Should do something here ...
+	@Override
 	public void validateKeysWithRootClassDescription(EOClassDescription aClassDescription) {
         
 	}
@@ -146,6 +153,7 @@ public class ERXExistsQualifier extends EOQualifier implements Cloneable, NSCodi
          * @param expression to use during SQL generation
          * @return SQL string for the current sub-query
          */
+        @Override
         public String sqlStringForSQLExpression(EOQualifier qualifier, EOSQLExpression expression) {
             if (null == qualifier || null == expression) {
                 return null;
@@ -160,8 +168,7 @@ public class ERXExistsQualifier extends EOQualifier implements Cloneable, NSCodi
 
             // Walk the key path to the last entity.
             if (baseKeyPath != null) {
-                for (Enumeration pathEnum = NSArray.componentsSeparatedByString(baseKeyPath, ".").objectEnumerator(); pathEnum.hasMoreElements();) {
-                    String path = (String)pathEnum.nextElement();
+                for (String path : NSArray.componentsSeparatedByString(baseKeyPath, ".")) {
                     if (null == relationship) {
                         relationship = baseEntity.anyRelationshipNamed(path);
                     } else {
@@ -212,7 +219,7 @@ public class ERXExistsQualifier extends EOQualifier implements Cloneable, NSCodi
                 expression.addBindVariableDictionary((NSDictionary)bindEnumeration.nextElement());
             }
 
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(" EXISTS ( ");
             sb.append(ERXStringUtilities.replaceStringByStringInString("t0.", destTableAlias + ".", subExpression.statement()));
             sb.append(" AND ");
@@ -234,20 +241,20 @@ public class ERXExistsQualifier extends EOQualifier implements Cloneable, NSCodi
          * @return the SQL string for the attribute
          */
         private String sqlStringForAttributeNamedInExpression(String name, EOSQLExpression expression) {
-            NSArray pieces = NSArray.componentsSeparatedByString(name, ".");
+            NSArray<String> pieces = NSArray.componentsSeparatedByString(name, ".");
             EOEntity entity = expression.entity();
             EORelationship rel;
             EOAttribute att;
-            NSMutableArray path = new NSMutableArray();
+            NSMutableArray<EOProperty> path = new NSMutableArray<EOProperty>();
             int numPieces = pieces.count();
 
             if (numPieces == 1 && null == entity.anyRelationshipNamed(name)) {
                 att = entity.anyAttributeNamed(name);
                 if (null == att) { return null; }
                 return expression.sqlStringForAttribute(att);
-            } else {
+            }
                 for (int i = 0; i < numPieces - 1; i++) {
-                    rel = entity.anyRelationshipNamed((String)pieces.objectAtIndex(i));
+                    rel = entity.anyRelationshipNamed(pieces.objectAtIndex(i));
                     if (null == rel) {
                         return null;
                     }
@@ -255,14 +262,13 @@ public class ERXExistsQualifier extends EOQualifier implements Cloneable, NSCodi
                     entity = rel.destinationEntity();
                 }
 
-                String key = (String)pieces.lastObject();
+                String key = pieces.lastObject();
                 if (entity.anyRelationshipNamed(key) != null) { // Test first for a relationship.
                     rel = entity.anyRelationshipNamed(key);
                     if (rel.isFlattened()) {
                         String relPath = rel.relationshipPath();
-                        NSArray relParts = NSArray.componentsSeparatedByString(relPath, ".");
-                        for (int i = 0; i < relParts.count(); i++) {
-                            rel = entity.anyRelationshipNamed((String)pieces.objectAtIndex(i));
+                        for (String relPart : NSArray.componentsSeparatedByString(relPath, ".")) {
+                            rel = entity.anyRelationshipNamed(relPart);
                             path.addObject(rel);
                             entity = rel.destinationEntity();
                         }
@@ -278,7 +284,6 @@ public class ERXExistsQualifier extends EOQualifier implements Cloneable, NSCodi
                     return null;
                 }
                 path.addObject(att);
-            }
 
             return expression.sqlStringForAttributePath(path);
         }
@@ -289,6 +294,7 @@ public class ERXExistsQualifier extends EOQualifier implements Cloneable, NSCodi
          * @return clone of the current qualifier
          */
         // ENHANCEME: This should support restrictive qualifiers on the root entity
+        @Override
         public EOQualifier schemaBasedQualifierWithRootEntity(EOQualifier qualifier, EOEntity entity) {
             return (EOQualifier)qualifier.clone();
         }
@@ -300,6 +306,7 @@ public class ERXExistsQualifier extends EOQualifier implements Cloneable, NSCodi
          * @param relationshipPath upon which to base the migration
          * @return clone of the current qualifier
          */
+        @Override
         public EOQualifier qualifierMigratedFromEntityRelationshipPath(EOQualifier qualifier,
                                                                        EOEntity entity,
                                                                        String relationshipPath) {
@@ -312,12 +319,14 @@ public class ERXExistsQualifier extends EOQualifier implements Cloneable, NSCodi
 	 * Description of the qualifier.
 	 * @return human readable description of the qualifier
 	 */
+	@Override
 	public String toString() { return " <" + getClass().getName() +"> '" + subqualifier.toString() + "' : '" + baseKeyPath + "'"; }
 
 	/**
 	 * Implementation of the Clonable interface. Clones the current qualifier.
 	 * @return cloned qualifier
 	 */
+	@Override
 	public Object clone() {
 		return new ERXExistsQualifier(subqualifier, baseKeyPath);
 	}

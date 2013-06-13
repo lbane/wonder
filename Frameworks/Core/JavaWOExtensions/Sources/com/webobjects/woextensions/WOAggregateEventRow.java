@@ -23,6 +23,7 @@ public class WOAggregateEventRow extends WOEventRow {
         super(aContext);
     }
 
+    @Override
     public boolean synchronizesVariablesWithBindings() {
         // Do not sync with the bindings
         return false;
@@ -65,7 +66,7 @@ public class WOAggregateEventRow extends WOEventRow {
      */
     public EOEvent event()
     {
-        return (EOEvent)object().events().objectAtIndex(0);
+        return object().events().objectAtIndex(0);
     }
 
     /** 

@@ -32,10 +32,12 @@ public class WXOutlineEntry extends WOComponent {
     /////////////
     // No-Sync
     ////////////
+    @Override
     public boolean synchronizesVariablesWithBindings() {
         return false;
     }
 
+    @Override
     public void awake() {
         super.awake();
         Object nestLevelBinding = _WOJExtensionsUtil.valueForBindingOrNull("nestingLevel",this);
@@ -71,7 +73,8 @@ public class WXOutlineEntry extends WOComponent {
     }
 
     public WOComponent toggleExpansion() {
-        NSArray selectionPath = (NSArray)_WOJExtensionsUtil.valueForBindingOrNull("selectionPath",this);
+        @SuppressWarnings("unchecked")
+		NSArray<Object> selectionPath = (NSArray<Object>)_WOJExtensionsUtil.valueForBindingOrNull("selectionPath",this);
 
         selectionPath = selectionPath.subarrayWithRange(new NSRange(0, _nestingLevel));
 
@@ -90,11 +93,13 @@ public class WXOutlineEntry extends WOComponent {
     }
 
 
+    @Override
     public void takeValuesFromRequest(WORequest aRequest, WOContext aContext) {
         session().setObjectForKey(this, "_outlineEntry");
         super.takeValuesFromRequest(aRequest, aContext);
     }
 
+    @Override
     public WOActionResults invokeAction(WORequest aRequest, WOContext aContext) {
         WOActionResults returnElement;
         session().setObjectForKey(this, "_outlineEntry");
@@ -102,6 +107,7 @@ public class WXOutlineEntry extends WOComponent {
         return returnElement;
     }
 
+    @Override
     public void appendToResponse(WOResponse aResponse, WOContext aContext) {
         session().setObjectForKey(this, "_outlineEntry");
         super.appendToResponse(aResponse, aContext);
