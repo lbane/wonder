@@ -5,6 +5,7 @@
 	<classpathentry exported="true" kind="con" path="WOFramework/JavaEOControl"/>
 	<classpathentry exported="true" kind="con" path="WOFramework/JavaFoundation"/>
 	<classpathentry exported="true" kind="con" path="WOFramework/JavaJDBCAdaptor"/>
+	<classpathentry exported="true" kind="lib" path="Libraries/postgresql-9.2-1002.jdbc4.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
