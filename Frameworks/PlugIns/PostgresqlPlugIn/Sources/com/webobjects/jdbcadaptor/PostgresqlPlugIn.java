@@ -2,12 +2,14 @@ package com.webobjects.jdbcadaptor;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.util.Enumeration;
 
 import com.webobjects.eoaccess.EOAttribute;
 import com.webobjects.eoaccess.EOEntity;
 import com.webobjects.eoaccess.EOSQLExpression;
 import com.webobjects.eoaccess.EOSynchronizationFactory;
+import com.webobjects.eoaccess.synchronization.EOSchemaSynchronizationFactory;
 import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSBundle;
 import com.webobjects.foundation.NSData;
@@ -19,10 +21,19 @@ import com.webobjects.foundation.NSPropertyListSerialization;
 
 /**
  * WO runtime plugin with support for Postgresql.
+ * 
+ * <h3>Sequences</h3>
+ * <p>For numeric primary keys the plugin uses native sql sequences. The sequence name to use can be set in the entities
+ * UserInfo dictionary under the key "sequenceName". When not used the normal sequence name is the entities external
+ * name with an "_seq" suffix.</p>
+ * <p>When using the PostgresqlSchemaSynchronizationFactory sequence creation can be suppressed by adding a 
+ * "noSequenceCreation" key to the UserInfo dictionary.</p>
  *
  * @author ak
  * @author giorgio_v
+ * @author Ralf Schuchardt: allow sequence name setting
  */
+@SuppressWarnings("deprecation")
 public class PostgresqlPlugIn extends JDBCPlugIn {
   private static final String QUERY_STRING_USE_BUNDLED_JDBC_INFO = "useBundledJdbcInfo";
   
@@ -35,6 +46,7 @@ public class PostgresqlPlugIn extends JDBCPlugIn {
    */
   public PostgresqlPlugIn(JDBCAdaptor adaptor) {
     super(adaptor);
+    NSLog.debug.appendln("New postgresql plugin loaded");
   }
 
   @Override
@@ -129,6 +141,26 @@ public class PostgresqlPlugIn extends JDBCPlugIn {
       }
     } else {
       jdbcInfo = super.jdbcInfo();
+      final JDBCContext context = adaptor()._cachedAdaptorContext();
+      NSLog.debug.appendln("Called jdbcInfo on PostgreSQL-Plugin "+System.identityHashCode(this)+
+                           " with adaptor "+System.identityHashCode(adaptor())+
+                           " with JDBC Context "+System.identityHashCode(context));
+      if (context != null) {
+          /*
+           * Close JDBC Info connection.
+           * The current JDBCAdaptor doesn't commit the transaction and doesn't close its connection after fetching
+           * the JDBC Info, but instead let the transaction stay in an idle state. Open idle transactions consume 
+           * databse resources better spent elsewhere. So we commit and close the connection used to fetch the info.
+           */
+          try {
+              context.connection().commit();
+          }
+          catch (SQLException e) {
+              NSLog.err.appendln(e);
+          }
+          adaptor()._cachedAdaptorContext().disconnect();
+          NSLog.debug.appendln("Disconnect called on JDBC context "+System.identityHashCode(context));
+      }
     }
     return jdbcInfo;
   }
@@ -137,6 +169,7 @@ public class PostgresqlPlugIn extends JDBCPlugIn {
    * Returns a "pure java" synchronization factory.
    * Useful for testing purposes.
    */
+  @Deprecated
   @Override
   public EOSynchronizationFactory createSynchronizationFactory() {
     try {
@@ -145,6 +178,17 @@ public class PostgresqlPlugIn extends JDBCPlugIn {
     catch (Exception e) {
       throw new NSForwardException(e, "Couldn't create synchronization factory");
     }
+  }
+  
+  @Override
+  public EOSchemaSynchronizationFactory createSchemaSynchronizationFactory()
+  {
+      try {
+          return new PostgresqlSchemaSynchronizationFactory(adaptor());
+      }
+      catch (Exception e) {
+          throw new NSForwardException(e, "Couldn't create schema synchronization factory");
+      }
   }
 
   /**                                                                                                                                                         
@@ -278,7 +322,11 @@ public class PostgresqlPlugIn extends JDBCPlugIn {
      * _SEQ would get converted to _seq because postgresql converts all unquoted identifiers to lower case.
     * In the future we may use enableIdentifierQuoting for sequence names so we need to set the correct case here in the first place
      */
-    return entity.primaryKeyRootName() + "_seq";
+    String sequenceName = (String)entity.userInfo().objectForKey("sequenceName");
+    if (sequenceName == null) {
+        sequenceName = entity.primaryKeyRootName() + "_seq";
+    }
+    return sequenceName;
   }
 
   /**

@@ -21,6 +21,7 @@ import com.webobjects.foundation._NSStringUtilities;
  * 
  * @author giorgio_v
  */
+@Deprecated
 public class PostgresqlSynchronizationFactory extends EOSynchronizationFactory implements EOSchemaGeneration, EOSchemaSynchronization {
     public static final String USING_KEY = "USING";
     
@@ -441,22 +442,26 @@ public class PostgresqlSynchronizationFactory extends EOSynchronizationFactory i
       return statements;
     }
 
+    @Deprecated
     @Override
     public NSArray<EOSQLExpression> statementsToRenameColumnNamed(String columnName, String tableName, String newName, NSDictionary nsdictionary) {
       return new NSArray<EOSQLExpression>(_expressionForString("alter table " + formatTableName(tableName) + " rename column " + formatColumnName(columnName) + " to " + formatColumnName(newName)));
     }
 
+    @Deprecated
     @Override
     public NSArray<EOSQLExpression> statementsToInsertColumnForAttribute(EOAttribute attribute, NSDictionary options) {
       String clause = _columnCreationClauseForAttribute(attribute);
       return new NSArray<EOSQLExpression>(_expressionForString("alter table " + formatTableName(attribute.entity().externalName()) + " add " + clause));
     }
 
+    @Deprecated
     @Override
     public NSArray<EOSQLExpression> statementsToRenameTableNamed(String tableName, String newName, NSDictionary options) {
     	return new NSArray<EOSQLExpression>(_expressionForString("alter table " + formatTableName(tableName) + " rename to " + formatTableName(newName)));
     }
     
+    @Deprecated
     @Override
     public NSArray<EOSQLExpression> statementsToDeleteColumnNamed(String columnName, String tableName, NSDictionary options) {
     	return new NSArray<EOSQLExpression>(_expressionForString("alter table " + formatTableName(tableName) + " drop column " + formatTableName(columnName) + " cascade"));

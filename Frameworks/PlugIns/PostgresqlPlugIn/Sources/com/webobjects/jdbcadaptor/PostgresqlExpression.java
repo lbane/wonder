@@ -37,6 +37,7 @@ import com.webobjects.foundation._NSStringUtilities;
  * @author David Teran: Timestamps handling
  * @author Tim Cummings: case sensitive table and column names
  * @author cug: hacks for identifier quoting while creating tables
+ * @author Ralf Schuchardt: use ilike
  */
 public class PostgresqlExpression extends JDBCExpression {
 
@@ -105,6 +106,7 @@ public class PostgresqlExpression extends JDBCExpression {
      */
     private Boolean _disableBindVariables = null;
     
+    
     /**
      * Holds array of join clauses.
      */
@@ -127,6 +129,8 @@ public class PostgresqlExpression extends JDBCExpression {
 
 	private Boolean _useLowercaseForCaseInsensitiveLike;
     
+    private final boolean _useNativeCaseInsensitiveLike;
+	
     /**
      * Overridden to remove the rtrim usage. The original implementation
      * will remove every trailing space from character based column which 
@@ -141,10 +145,12 @@ public class PostgresqlExpression extends JDBCExpression {
     	
     	String customFunctionName = customFunctionForStringComparison();
 
-		if(customFunctionName != null) {
-			_upperFunctionName = customFunctionName;
-		}
-	}
+    	if(customFunctionName != null) {
+    	    _upperFunctionName = customFunctionName;
+    	}
+		
+	_useNativeCaseInsensitiveLike = useNativeCaseInsenstiveLike();
+    }
     
 	/**
      * Checks the system property
@@ -451,6 +457,7 @@ public class PostgresqlExpression extends JDBCExpression {
      * @param eoattribute   the attribute associated with <code>obj</code>
      * @return  the formatted string
      */
+    @SuppressWarnings("deprecation")
     @Override
     public String formatValueForAttribute(Object obj, EOAttribute eoattribute) {
         String value;
@@ -810,6 +817,7 @@ public class PostgresqlExpression extends JDBCExpression {
       return shouldAllowNull;
     }
 
+    @Deprecated
     @Override
     public void addCreateClauseForAttribute(EOAttribute attribute) {
       NSDictionary userInfo = attribute.userInfo();
@@ -918,6 +926,9 @@ public class PostgresqlExpression extends JDBCExpression {
         if(CASE_INSENSITIVE_REGEX_OPERATOR.name().equals( selector.name() ) || REGEX_OPERATOR.name().equals( selector.name() ) ) {
             return selector.name();
         }
+        if (_useNativeCaseInsensitiveLike && EOQualifier.QualifierOperatorCaseInsensitiveLike.equals(selector)) {
+            return "ILIKE";
+        }
         return super.sqlStringForSelector(selector, value);
     }
     
@@ -985,6 +996,12 @@ public class PostgresqlExpression extends JDBCExpression {
                 return false;
             }
             return toString().equals(obj.toString());
+        }
+        
+        @Override
+        public int hashCode()
+        {
+            return toString().hashCode();
         }
         
     	public void setTable1(String leftTable, String leftAlias) {
@@ -1093,7 +1110,16 @@ public class PostgresqlExpression extends JDBCExpression {
         return convertedString.toString();
     }
     
-	/**
+    @Override
+    public String sqlStringForCaseInsensitiveLike(String aValue, String aKey)
+    {
+        if (_useNativeCaseInsensitiveLike) {
+            return aKey + " ILIKE " + aValue;
+        }
+        return super.sqlStringForCaseInsensitiveLike(aValue, aKey);
+    }
+
+    /**
      * Checks the system property
      * <code>com.webobjects.jdbcadaptor.PostgresqlExpression.useLowercaseForCaseInsensitiveLike</code>
      * to use the "lower" function for caseInsensitive compares
@@ -1119,4 +1145,9 @@ public class PostgresqlExpression extends JDBCExpression {
 	private String customFunctionForStringComparison() {
 		return System.getProperty(getClass().getName() + ".customFunctionForStringComparison");
 	}
+	
+    private boolean useNativeCaseInsenstiveLike() {
+        String pvalue = System.getProperty(getClass().getName()+".useNativeCaseInsensitiveLike", "true");
+        return Boolean.valueOf(pvalue).booleanValue();
+    }
 }
