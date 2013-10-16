@@ -1360,11 +1360,7 @@ public class ERXSQLHelper {
 			try {
 				String nextLine = reader.readLine();
 				while (nextLine != null) {
-					if(!inQuotes) {
-						nextLine = nextLine.trim(); // trim only if we not inQuotes
-					} else {
-						statementBuffer.append('\n'); // we are in Quotes but got a new Line
-					}
+					nextLine = nextLine.trim();
 					
 					// Skip blank lines and new lines starting with the comment pattern
 					if (nextLine.length() == 0 ||
@@ -1432,8 +1428,7 @@ public class ERXSQLHelper {
 	 *             if there is a problem reading the stream
 	 */
 	public NSArray<String> splitSQLStatementsFromInputStream(InputStream is) throws IOException {
-		String encoding = System.getProperty("file.encoding");
-		return splitSQLStatements(ERXStringUtilities.stringIsNullOrEmpty(encoding) ? ERXStringUtilities.stringFromInputStream(is) : ERXStringUtilities.stringFromInputStream(is, encoding));
+		return splitSQLStatements(ERXStringUtilities.stringFromInputStream(is));
 	}
 
 	/**
