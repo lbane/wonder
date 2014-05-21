@@ -158,7 +158,7 @@ public class PostgresqlPlugIn extends JDBCPlugIn {
           catch (SQLException e) {
               NSLog.err.appendln(e);
           }
-          adaptor()._cachedAdaptorContext().disconnect();
+          context.disconnect();
           NSLog.debug.appendln("Disconnect called on JDBC context "+System.identityHashCode(context));
       }
     }
