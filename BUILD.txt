@@ -60,12 +60,15 @@ Ant should be found in /usr/share/ant/bin/ant
 
 4. Invoke ant -projecthelp, but normally you would do for WO:
 
-  ant clean frameworks; sudo ant frameworks.install
-  ant applications; sudo ant applications.install
-  ant examples; sudo ant examples.install
+  export JAVA_HOME=$(/usr/libexec/java_home --version 1.6)
+
+  ant clean frameworks; sudo ant -Dwo.external.root=/Users/ralf/Roots frameworks.install
+  ant applications; sudo ant -Dwo.external.root=/Users/ralf/Roots  applications.install
+  ant examples; sudo ant -Dwo.external.root=/Users/ralf/Roots examples.install
 
 If you have write privileges in /Library/Frameworks, /Library/WebObjects/JavaApplications, and
 /Library/WebServer/Documents/WebObjects/Frameworks, you may do without the "sudo".
+-Dwo.external.root=${HOME}/Roots may be used to set the directory for the previously built frameworks
 
 Building with Maven:
 =========================
