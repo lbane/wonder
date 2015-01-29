@@ -4,3 +4,4 @@ bin
 *.pbxproj
 ant.*
 dist
+build

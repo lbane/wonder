@@ -27,6 +27,7 @@ import com.webobjects.appserver._private.WOHiddenField;
 import com.webobjects.appserver._private.WOImage;
 import com.webobjects.appserver._private.WOImageButton;
 import com.webobjects.appserver._private.WOInput;
+import com.webobjects.appserver._private.WOInputList;
 import com.webobjects.appserver._private.WOJavaScript;
 import com.webobjects.appserver._private.WOPasswordField;
 import com.webobjects.appserver._private.WOPopUpButton;

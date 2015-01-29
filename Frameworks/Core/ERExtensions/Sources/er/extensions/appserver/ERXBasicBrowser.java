@@ -33,7 +33,7 @@ import er.extensions.foundation.ERXStringUtilities;
  * to get an appropriate browser object.
  * <p>
  * You can extends <code>ERXBasicBrowser</code> or its abstract parent <code>ERXBrowser</code>
- * to implement more specific questions for your application. One potencial
+ * to implement more specific questions for your application. One potential
  * example will be to have a question <code>isSupportedBrowser</code> that
  * checks if the client is using one of the supported browsers for your
  * application.
@@ -55,18 +55,24 @@ import er.extensions.foundation.ERXStringUtilities;
  * 
  * <p><strong>IE 5.17 OS 9</strong><br>
  * user-agent = (Mozilla/4.0 (compatible; MSIE 5.17; Mac_PowerPC)); ua-os = (MacOS); ua-cpu = (PPC);
+ * </p>
  * 
- * IE 5.0 OS 9: user-agent = (Mozilla/4.0 (compatible; MSIE 5.0; Mac_PowerPC));
+ * <p><strong>IE 5.0 OS 9</strong><br>
+ * user-agent = (Mozilla/4.0 (compatible; MSIE 5.0; Mac_PowerPC));
  * ua-os = (MacOS); ua-cpu = (PPC);
+ * </p>
  * 
  * <p><strong>FireFox OS X 10.3.3</strong><br>
  * user-agent = (Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; en-US; rv:1.6) Gecko/20040206 Firefox/0.8);
+ * </p>
  * 
  * <p><strong>IE 5.2 MacOS X</strong><br>
  * user-agent = (Mozilla/4.0 (compatible; MSIE 5.23; Mac_PowerPC)); ua-os = (MacOS); ua-cpu = (PPC);
+ * </p>
  * 
  * <p><strong>Safari</strong><br>
  * user-agent = ("Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en-us) AppleWebKit/124 (KHTML, like Gecko) Safari/125.1");
+ * </p>
  * 
  * <p><strong>IE WIndows 6.02</strong><br>
  * user-agent = (Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0));
