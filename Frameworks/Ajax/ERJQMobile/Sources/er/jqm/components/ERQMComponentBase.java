@@ -1,7 +1,5 @@
 package er.jqm.components;
 
-import org.apache.log4j.Logger;
-
 import com.webobjects.appserver.WOComponent;
 import com.webobjects.appserver.WOContext;
 import com.webobjects.foundation.NSArray;
@@ -13,8 +11,8 @@ import er.extensions.foundation.ERXStringUtilities;
 import er.extensions.foundation.ERXValueUtilities;
 
 /**
- * Base for all JQueryMobile Components.<br />
- * <br />
+ * Base for all JQueryMobile Components.
+ * <p>
  * The following bindings are not present for all UI elements. See JQueryMobile documentation for a specific widget.
  * 
  * <pre>
@@ -25,7 +23,6 @@ import er.extensions.foundation.ERXValueUtilities;
  */
 abstract public class ERQMComponentBase extends ERXNonSynchronizingComponent
 {
-	protected static final Logger log = Logger.getLogger(ERQMComponentBase.class);
 	private String _elementID = null;
 	private static Boolean _useShortNamesInLog = Boolean.FALSE;
 
@@ -75,6 +72,14 @@ abstract public class ERQMComponentBase extends ERXNonSynchronizingComponent
 			}
 		}
 		return _elementID;
+	}
+
+	/**
+	 * @return the elementID for jquery usage with leading #
+	 */
+	public String jqJavaScriptElementID()
+	{
+		return "#" + javaScriptElementID();
 	}
 
 	public boolean hasNonNullBinding(String key)

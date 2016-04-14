@@ -6,8 +6,6 @@ import com.webobjects.appserver.WOContext;
 import com.webobjects.appserver._private.WODynamicElementCreationException;
 import com.webobjects.foundation.NSDictionary;
 
-import er.extensions.appserver.ERXWOContext;
-
 /**
  * A jQuery.get() as a link
  * @see jQueryGet
@@ -67,7 +65,7 @@ public class jQueryGetLink extends jQueryGet {
     
     public String href() {
     	if (hasBinding(Bindings.action)) {
-    		return ERXWOContext.ajaxActionUrl(context());
+    		return context().componentActionURL(application().ajaxRequestHandlerKey());
     	} else if (hasBinding(Bindings.directActionName)) {
     		NSDictionary queryDictionary = hasBinding(Bindings.queryDictionary) ? queryDictionary() : null;
     		return context().directActionURLForActionNamed(directActionName(), queryDictionary);

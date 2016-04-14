@@ -15,6 +15,8 @@ import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.eoaccess.EOAttribute;
 import com.webobjects.eoaccess.EOEntity;
@@ -32,10 +34,9 @@ import er.neo4jadaptor.query.lucene.results.LuceneIndexHits;
 
 
 /**
- * <p>
  * Consider EOQualifier:
  * <pre>
- * (((service.dvbOriginalNetworkId = 1536) and (service.dvbTransportStreamId = 2069) and (service.dvbServiceId = 19322)) and (endDateTime >= (com.webobjects.foundation.NSTimestamp)'2012-06-07 04:00:00 Etc/GMT'))
+ * (((service.dvbOriginalNetworkId = 1536) and (service.dvbTransportStreamId = 2069) and (service.dvbServiceId = 19322)) and (endDateTime &gt;= (com.webobjects.foundation.NSTimestamp)'2012-06-07 04:00:00 Etc/GMT'))
  * </pre>
  * 
  * LuceneQueryConverter doesn't support relationships so it would convert it to:
@@ -53,12 +54,9 @@ import er.neo4jadaptor.query.lucene.results.LuceneIndexHits;
  * part with matching service IDs, so we could get in result something like:
  * +(+(+(+#_type:WEPGEvent +#_type:WEPGEvent +#_type:WEPGEvent) +endDateTime:[2012060706:00:00:000 TO ZZZZ]) +#_type:WEPGEvent) +(serviceId:00000000000000002026)
  * instead.
- * </p>
- * 
  * <p>
  * Due to the fact that optimization process makes another Lucene query which has a around-constant overhead, we perform optimization
- * attempt only if the initial number of results exceeds treshold of {@value #OPTIMIZATION_TRESHOLD}.
- * </p>
+ * attempt only if the initial number of results exceeds threshold of {@value #OPTIMIZATION_TRESHOLD}.
  * 
  * TODO: refactor
  * 
@@ -67,7 +65,7 @@ import er.neo4jadaptor.query.lucene.results.LuceneIndexHits;
  * @param <Type>
  */
 public class LuceneOptimizer <Type extends PropertyContainer> {
-	private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(LuceneOptimizer.class);
+	private static final Logger log = LoggerFactory.getLogger(LuceneOptimizer.class);
 	
 	/**
 	 * Perform optimization attempt only if there are more then this many results.
@@ -128,9 +126,7 @@ public class LuceneOptimizer <Type extends PropertyContainer> {
 		}
 		hits = index.query(boolQuery);
 
-		if (log.isDebugEnabled()) {
-			log.debug("Querying lucene with " + q);
-		}
+		log.debug("Querying lucene with {}.", q);
 		
 		return new LuceneIndexHits<Type>(hits);
 	} 

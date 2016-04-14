@@ -1,5 +1,8 @@
 package er.jqm.components.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.webobjects.appserver.WOApplication;
 import com.webobjects.appserver.WOContext;
 import com.webobjects.appserver._private.WOComponentDefinition;
@@ -22,6 +25,7 @@ import er.jqm.components.ERQMComponentBase;
  * isButton	<strong>true</strong> | false
  * string
  * id
+ * updateContainerID if set, only the content of the update container will be replaced
  * 
  * otherTagString tag string added to the container
  * class
@@ -57,6 +61,8 @@ import er.jqm.components.ERQMComponentBase;
  */
 public class ERQMButton extends ERQMComponentBase
 {
+	private static final Logger log = LoggerFactory.getLogger(ERQMButton.class);
+
 	public ERQMButton(WOContext aContext)
 	{
 		super(aContext);
@@ -118,6 +124,11 @@ public class ERQMButton extends ERQMComponentBase
 		return stringValueForBinding("href");
 	}
 
+	public String updateContainerID()
+	{
+		return stringValueForBinding("updateContainerID", null);
+	}
+
 	@Override
 	public void appendCustomTags(StringBuilder sb, NSMutableArray<String> classes, NSMutableArray<String> styles)
 	{
@@ -144,7 +155,7 @@ public class ERQMButton extends ERQMComponentBase
 		{
 			if (booleanValueForBinding("externalLink", false))
 			{
-				log.debug(getClass().getName() + " 'externalLink' binding is deprecated. Use 'data-rel=\"external\"' instead.");
+				log.debug("{} 'externalLink' binding is deprecated. Use 'data-rel=\"external\"' instead.", getClass());
 			}
 		}
 		appendStringTag(sb, "data-transition", null, "transition");

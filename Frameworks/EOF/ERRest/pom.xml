@@ -2,7 +2,7 @@
 	<parent>
 		<groupId>wonder.frameworks</groupId>
 		<artifactId>eof</artifactId>
-		<version>6.1.3-SNAPSHOT</version>
+		<version>7.0.0-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>wonder.eof</groupId>
@@ -38,10 +38,12 @@
 			<groupId>net.sf.json-lib</groupId>
 			<artifactId>json-lib</artifactId>
 			<classifier>jdk15</classifier>
+			<version>2.4</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-beanutils</groupId>
 			<artifactId>commons-beanutils</artifactId>
+			<version>1.8.3</version>
 		</dependency>
 	</dependencies>
 	<build>

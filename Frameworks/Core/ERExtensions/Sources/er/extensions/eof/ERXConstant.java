@@ -11,7 +11,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSData;
@@ -21,18 +22,17 @@ import com.webobjects.foundation.NSMutableArray;
 import com.webobjects.foundation.NSPropertyListSerialization;
 
 import er.extensions.foundation.ERXArrayUtilities;
-import er.extensions.foundation.ERXStringUtilities;
 
 /**
  * General purpose constant class, useful when you want reference object that are not
- * bytes or strings in the DB like what you get with the factory classes. <br />
+ * bytes or strings in the DB like what you get with the factory classes.
  * If you use objects of this class, you might be able to completely remove the EOSharedEditingContext
- * (the google search term for "why does my app lock up").<br />
- * <br>
+ * (the google search term for "why does my app lock up").
+ * <p>
  * To use the Number constants, you need to add an entry <code>ERXConstantClassName=Test.Status</code> to the attribute's userInfo 
  * in question and your EO's class description needs to be a {@link ERXEntityClassDescription}, also
- * you must enable the {@link er.extensions.jdbc.ERXJDBCAdaptor}.<br />
- * <br>
+ * you must enable the {@link er.extensions.jdbc.ERXJDBCAdaptor}.
+ * <p>
  * The String and Byte based constants can be used with a custom class type:<pre><code>
  * 
  * ERCMailMessage.plist:
@@ -78,7 +78,6 @@ import er.extensions.foundation.ERXStringUtilities;
  *     public static ERCMailState PROCESSING_STATE = new ERCMailState("proc", "Processing");
  * }
  * </code></pre>
- * <br />
  * An example would be:
  * <pre><code>
  * public class Test extends EOGenericRecord {
@@ -134,12 +133,11 @@ import er.extensions.foundation.ERXStringUtilities;
  * 
  * // you can compare by equality
  * test.getStatus() == Test.Status.ON
- * </pre></code>
+ * </code></pre>
  * Note that upon class initialization 2500 Integers will be created and cached, from 0 - 2499.
  */
 public abstract class ERXConstant {
-	
-	private static final Logger log = Logger.getLogger(ERXConstant.class);
+	private static final Logger log = LoggerFactory.getLogger(ERXConstant.class);
 
 	/**
 	 * Holds the value store, grouped by class name.
@@ -176,9 +174,7 @@ public abstract class ERXConstant {
         synchronized (_store) {
             Map classMap = keyMap(clazzName, false);
             Constant result = (Constant) classMap.get(value);
-            if(log.isDebugEnabled()) {
-                log.debug("Getting " + result + " for " + clazzName + " and " + value);
-            }
+            log.debug("Getting {} for {} and {}", result, clazzName, value);
             return result;
         }
     }
@@ -208,9 +204,7 @@ public abstract class ERXConstant {
         synchronized (_store) {
             String className = clazz.getName();
             Map classMap = keyMap(className, true);
-            if(log.isDebugEnabled()) {
-                log.debug("Putting " + key + " for " + className);
-            }
+            log.debug("Putting {} for {}", key, className);
             classMap.put(key, value);
         }
     }
@@ -507,16 +501,4 @@ public abstract class ERXConstant {
         return (i>=0 && i<MAX_INT) ? INTEGERS[i] : Integer.valueOf(i);
     }
 
-    /**
-     * Returns an Integer for a given String
-     * @throws NumberFormatException forwarded from the
-     *		parseInt method off of Integer
-     * @return potentially cache Integer for a given String
-     * 
-     * @deprecated use {@link ERXStringUtilities#integerWithString(String)}
-     */
-    @Deprecated
-    public static Integer integerForString(String s) throws NumberFormatException {
-        return integerForInt(Integer.parseInt(s));
-    }
 }

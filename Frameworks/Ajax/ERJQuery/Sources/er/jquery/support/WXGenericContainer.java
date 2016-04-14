@@ -68,14 +68,14 @@ public class WXGenericContainer extends WOComponent {
     }
     
     public String ref() {
-    	return isAjax() ? ERXWOContext.ajaxActionUrl(context()) : null;
+    	return isAjax() ? context().componentActionURL(application().ajaxRequestHandlerKey()) : null;
     }
     
     public boolean omitTags() {
     	return ERXComponentUtilities.booleanValueForBinding(this, Bindings.omitTags, _omitTags);
     }
     
-    // action 
+    // action
     public WOActionResults invokeAction() {
     	context().setActionInvoked(true);
     	_setIsPage(true);
@@ -88,5 +88,5 @@ public class WXGenericContainer extends WOComponent {
     public void awake() {
     	super.awake();
     	_omitTags = false;
-    } 
+    }
 }

@@ -37,9 +37,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.commons.lang.CharEncoding;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
@@ -64,40 +66,37 @@ import com.webobjects.foundation._NSStringUtilities;
 import com.webobjects.foundation._NSUtilities;
 
 /**
- * <p>
  * This class provides static methods that convert between property lists and their string representations, which can be either strings or NSData objects. A property list is a structure that represents organized data. It can be built from a combination of NSArray, NSDictionary, String, and NSData
  * objects.
- * </p>
  * <p>
  * The string representation can be in XML or the ASCII plist format. To distinguish between the two formats, the parser that converts strings to property lists finds out whether the string starts with <code>&lt;?xml</code>. A discussion of the ASCII plist format,
  * <em>A Primer on ASCII Property Lists</em>, is available in the Mac OS X section of the Apple Developer Connection website. A discussion of XML property lists, <em>Property List Services</em>, is also available in the same area of the Apple Developer Connection website.
- * </p>
+ * <p>
  * Some methods do not support XML property list representations, specifically <code>booleanForString</code> and <code>intForString</code>. Also note that XML property lists de-serialize 'integer' value types to java.math.BigInteger and 'real' value types ot java.math.BigDecimal.
  * <p>
  * The ERXPropertyListSerialization class cannot be instantiated. There is an alternative Binary plist format.
- * </p></br>
- *JSON Serialization Example:
+ * <h3>JSON Serialization Example:</h3>
  *
- * <pre>
- * NSDictionary dict<String,Object> = new NSDictionary<String,Object>(new String[] { "one", "two" }, new Object[] {Integer.valueOf(1), Integer.valueOf(2)});
+ * <pre><code>
+ * NSDictionary dict&lt;String,Object&gt; = new NSDictionary&lt;&gt;(new String[] { "one", "two" }, new Object[] {Integer.valueOf(1), Integer.valueOf(2)});
  * String jsonString = ERXPropertyListSerialization.jsonStringFromPropertyList(dict);
- * </pre>
+ * </code></pre>
  *
- * JSON Deserialization Example:
+ * <h3>JSON Deserialization Example:</h3>
  *
- * <pre>
+ * <pre><code>
  * NSDictionary&lt;String, Object&gt;	result	= ERXPropertyListSerialization.&lt;String, Object&gt; dictionaryForJSONString(jsonString);
- * </pre>
+ * </code></pre>
  *
- * If you know that you are recieving a JSON array, you can use the convenience API:
+ * If you know that you are receiving a JSON array, you can use the convenience API:
  *
- * <pre>
+ * <pre><code>
  * NSArray	result	= ERXPropertyListSerialization.arrayForJSONString(jsonString);
- * </pre>
+ * </code></pre>
  *
- * Binary PList Example:
+ * <h3>Binary PList Example:</h3>
  *
- * <pre>
+ * <pre><code>
  * try {
  * 	URLConnection conn = url.openConnection();
  * 	InputStream is = conn.getInputStream();
@@ -107,11 +106,11 @@ import com.webobjects.foundation._NSUtilities;
  * } catch (IOException e) {
  * 	e.printStackTrace();
  * }
- * </pre>
+ * </code></pre>
  *
- * Serialization to an OutputStream:
+ * <h3>Serialization to an OutputStream:</h3>
  *
- * <pre>
+ * <pre><code>
  * File tempFile = File.createTempFile(&quot;myPlist&quot;, &quot;plist&quot;);
  * FileOutputStream out = null;
  * try {
@@ -124,7 +123,7 @@ import com.webobjects.foundation._NSUtilities;
  * 		out.close();
  * 	}
  * }
- * </pre>
+ * </code></pre>
  *
  * @see #booleanForString
  * @see #intForString
@@ -132,7 +131,7 @@ import com.webobjects.foundation._NSUtilities;
  * @see PListFormat#NSPropertyListXMLFormat_v1_0
  */
 public class ERXPropertyListSerialization {
-	static org.apache.log4j.Logger	logger							= org.apache.log4j.Logger.getLogger(ERXPropertyListSerialization.class);
+	private static final Logger log = LoggerFactory.getLogger(ERXPropertyListSerialization.class);
 
 	/**
 	 *
@@ -235,7 +234,7 @@ public class ERXPropertyListSerialization {
 	 * This class is intentionally undocumented
 	 */
 	public static class _XML extends _PListParser {
-		private static org.apache.log4j.Logger	logger2	= org.apache.log4j.Logger.getLogger(_XML.class);
+		private static final Logger log = LoggerFactory.getLogger(_XML.class);
 
 		/**
 		 *
@@ -252,7 +251,7 @@ public class ERXPropertyListSerialization {
 		 */
 		@SuppressWarnings("unqualified-field-access")
 		public static class DictionaryParser extends DefaultHandler {
-			private static org.apache.log4j.Logger	logger1							= org.apache.log4j.Logger.getLogger(DictionaryParser.class);
+			private static final Logger log = LoggerFactory.getLogger(DictionaryParser.class);
 
 			static String							PUBLIC_APPLE_COMPUTER_PLIST_1_0	= "-//Apple Computer//DTD PLIST 1.0//EN";
 
@@ -737,13 +736,13 @@ public class ERXPropertyListSerialization {
 
 			@Override
 			public void error(SAXParseException exception) throws SAXException {
-				logger1.error("Parse error : ", exception);
+				log.error("Parse error : ", exception);
 				// throw exception;
 			}
 
 			@Override
 			public void fatalError(SAXParseException exception) throws SAXException {
-				logger1.error("Parse fatal error : ", exception);
+				log.error("Parse fatal error : ", exception);
 				throw exception;
 			}
 
@@ -875,7 +874,7 @@ public class ERXPropertyListSerialization {
 
 			@Override
 			public void warning(SAXParseException exception) throws SAXException {
-				logger1.warn("Parse warning : ", exception);
+				log.warn("Parse warning : ", exception);
 				// throw exception;
 			}
 
@@ -922,7 +921,7 @@ public class ERXPropertyListSerialization {
 				try {
 					_parserFactory = SAXParserFactory.newInstance();
 				} catch (Exception exception) {
-					logger2.warn("Exception ", exception);
+					log.warn("Exception ", exception);
 				}
 			}
 			return _parserFactory;
@@ -936,7 +935,7 @@ public class ERXPropertyListSerialization {
 				try {
 					return _XML.parserFactory().newSAXParser();
 				} catch (Exception exception) {
-					logger2.warn("Exception ", exception);
+					log.warn("Exception ", exception);
 				}
 			}
 			return null;
@@ -950,7 +949,7 @@ public class ERXPropertyListSerialization {
 				if (parser != null)
 					parser.parse(new InputSource(new StringReader(string)), dictionaryParser);
 			} catch (SAXException exception) {
-				logger2.warn("Exception ", exception);
+				log.warn("Exception ", exception);
 				if (exception instanceof SAXParseException) {
 					throw new RuntimeException("Parsing failed in line " + ((SAXParseException) exception).getLineNumber() + ", column "
 							+ ((SAXParseException) exception).getColumnNumber(), exception);
@@ -1139,7 +1138,7 @@ public class ERXPropertyListSerialization {
         }
 
 		/**
-		 * Validate the string. We need to watch out for the entity references &, <, >, ' and ";
+		 * Validate the string. We need to watch out for the entity references &amp;, &lt;, &gt;, ' and ";
 		 *
 		 * @param toValidate
 		 * @return result string
@@ -1734,7 +1733,7 @@ public class ERXPropertyListSerialization {
 				// ts = new NSTimestamp(_dateFormat.parse(theString));
 				// aobj[0] = ts;
 				// } catch (ParseException e) {
-				// logger.error("Failed to parse JSON date string " + theString + " returning raw string instead.", e);
+				// logger.error("Failed to parse JSON date string {} returning raw string instead.", theString, e);
 				// aobj[0] = theString;
 				// }
 				// } else {
@@ -1771,7 +1770,7 @@ public class ERXPropertyListSerialization {
 							aobj[0] = new BigInteger(theString);
 						}
 					} catch (Exception exception) {
-						logger.error("Exception ", exception);
+						log.error("Exception ", exception);
 						aobj[0] = theString;
 					}
 				}
@@ -1979,7 +1978,7 @@ public class ERXPropertyListSerialization {
 							+ _lineNumber + ", column: " + (aBufferIndex - _startOfLineCharIndex) + ".");
 				aBufferIndex = _skipWhitespaceAndComments(ac, aBufferIndex);
 				if (aBufferIndex == EOT || ac[aBufferIndex] != ':') {
-					logger.info("Exception for key=" + aobj[0] + " with unparsed values=" + new StringBuilder().append(ac, aBufferIndex, ac.length - aBufferIndex));
+					log.info("Exception for key={} with unparsed values={}", aobj[0], new StringBuilder().append(ac, aBufferIndex, ac.length - aBufferIndex));
 
 					throw new IllegalArgumentException("JSON Property list parsing failed while attempting to read dictionary. Read key " + aobj[0] + " with no value. At line number: " + _lineNumber
 							+ ", column: " + (aBufferIndex - _startOfLineCharIndex) + ".  Parsed '" + ac[aBufferIndex] + "' instead.");
@@ -3006,7 +3005,7 @@ public class ERXPropertyListSerialization {
 	/***/
 
 	/**
-	 * Description of the binary plist format derived from http://cvs.opendarwin.org/cgi-bin/cvsweb.cgi/~checkout~/src/CoreFoundation/Parsing.subproj/CFBinaryPList.c?rev=1.1.1.3&content-type=text/plain EBNF description of the file format:
+	 * Description of the binary plist format derived from http://cvs.opendarwin.org/cgi-bin/cvsweb.cgi/~checkout~/src/CoreFoundation/Parsing.subproj/CFBinaryPList.c?rev=1.1.1.3&amp;content-type=text/plain EBNF description of the file format:
 	 *
 	 * <pre>
 	 * bplist ::= header objectTable offsetTable trailer
@@ -3339,13 +3338,13 @@ public class ERXPropertyListSerialization {
 				for (int i = 0; i < _keyref.length; i++) {
 
 					if (_keyref[i] < 0 || _keyref[i] >= _objectTable.size()) {
-						logger.error("Object table is in illegal state.  The key reference " + i + " is larger than the object table size " + _objectTable.size());
+						log.error("Object table is in illegal state.  The key reference {} is larger than the object table size {}", i, _objectTable.size());
 					} else if (_objectTable.get(_keyref[i]) == this) {
-						logger.warn("Encountered reference to 'self' in object table.");
+						log.warn("Encountered reference to 'self' in object table.");
 					}
 					String key = (String) _objectTable.get(_keyref[i]);
 					if (_objref[i] < 0 || _objref[i] >= _objectTable.size()) {
-						logger.error("Object table is in illegal state.  The object reference " + i + " is larger than the object table size " + _objectTable.size());
+						log.error("Object table is in illegal state.  The object reference {} is larger than the object table size {}", i, _objectTable.size());
 					}
 					Object value = _objectTable.get(_objref[i]);
 
@@ -3889,7 +3888,7 @@ public class ERXPropertyListSerialization {
 		 */
 		public void writePropertyListToStream(Object plist, OutputStream out) {
 			if (plist == null || out == null) {
-				logger.warn("Encountered empty plist or null outputstream, returning");
+				log.warn("Encountered empty plist or null outputstream, returning");
 				return;
 			}
 
@@ -3959,7 +3958,6 @@ public class ERXPropertyListSerialization {
 		 * 
 		 * @param url the URL to load
 		 * @return the object represented by the given property list
-		 * @throws IOException if the loading fails
 		 */
 		public Object propertyListWithURL(URL url) {
 			try {
@@ -3983,7 +3981,6 @@ public class ERXPropertyListSerialization {
 		 * 
 		 * @param is the InputStream to load
 		 * @return the object represented by the given property list
-		 * @throws IOException if the loading fails
 		 */
 		public Object propertyListWithStream(InputStream is) {
 			try {
@@ -4004,7 +4001,7 @@ public class ERXPropertyListSerialization {
 		 */
 		protected Object _propertyListWithStream(InputStream is) throws IOException {
 			if (is == null) {
-				logger.error("The stream paramenter cannot be null.");
+				log.error("The stream paramenter cannot be null.");
 				return null;
 			}
 
@@ -4033,7 +4030,7 @@ public class ERXPropertyListSerialization {
 
 		public Document propertyListDocumentWithURL(URL url) {
 			if (url == null) {
-				logger.error("URL paramenter cannot be null");
+				log.error("URL paramenter cannot be null");
 				return null;
 			}
 
@@ -4055,7 +4052,7 @@ public class ERXPropertyListSerialization {
 		
 		public Document propertyListDocumentWithStream(InputStream is) {
 			if (is == null) {
-				logger.error("InputStream paramenter cannot be null");
+				log.error("InputStream paramenter cannot be null");
 				return null;
 			}
 
@@ -4186,29 +4183,29 @@ public class ERXPropertyListSerialization {
 
 			// validate trailer
 			if (numObjects < 1) {
-				logger.error("numObjects < 1");
+				log.error("numObjects < 1");
 				return false;
 			}
 			if (offsetTableOffset < 9) {
-				logger.error("offsetTableOffset < 9");
+				log.error("offsetTableOffset < 9");
 				return false;
 			}
 			if (offsetIntSize < 1) {
-				logger.error("offsetIntSize < 1");
+				log.error("offsetIntSize < 1");
 				return false;
 			}
 			if (objectRefSize < 1) {
-				logger.error("objectRefSize < 1");
+				log.error("objectRefSize < 1");
 				return false;
 			}
 			if (offsetTableOffset < 1) {
-				logger.error("offsetTableOffset < 1");
+				log.error("offsetTableOffset < 1");
 				return false;
 			}
 			int numberOfBytes = (int) offsetIntSize;
 			int expectedLength = (int) (offsetTableOffset + (numObjects * numberOfBytes) + 32);
 			if (theBytes.length != expectedLength) {
-				logger.error("bytes read do not correspond to the expected: " + expectedLength + " got: " + theBytes.length);
+				log.error("bytes read do not correspond to the expected: {} got: {}", expectedLength, theBytes.length);
 				return false;
 			}
 
@@ -4499,13 +4496,13 @@ public class ERXPropertyListSerialization {
 		 */
 		private void parseObject(byte[] bytes, int startIndex) throws IOException {
 			int marker = (int) readByte(bytes, startIndex);
-			if (logger.isDebugEnabled()) {
-				logger.debug("Marker=" + marker + " marker & 0xf0=" + (marker & 0xf0) + " (marker & 0xf0) >> 4)=" + ((marker & 0xf0) >> 4));
+			if (log.isDebugEnabled()) {
+				log.debug("Marker={} marker & 0xf0={} (marker & 0xf0) >> 4)={}", marker, (marker & 0xf0), ((marker & 0xf0) >> 4));
 			}
 
 			Type typeMarker = Type.typeForValue(marker & 0xf0);
 			if (typeMarker == null) {
-				logger.warn("Failed to translate binary plist marker " + marker);
+				log.warn("Failed to translate binary plist marker {}", marker);
 				return;
 			}
 			long count = marker & 0x0f;
@@ -4580,14 +4577,14 @@ public class ERXPropertyListSerialization {
 					break;
 				}
 				default: {
-					logger.debug("Fall through: Marker=" + marker + " marker & 0xf0=" + (marker & 0xf0) + " (marker & 0xf0) >> 4)=" + ((marker & 0xf0) >> 4));
-					logger.warn("Failed to translate binary plist marker " + typeMarker);
+					log.debug("Fall through: Marker={} marker & 0xf0={} (marker & 0xf0) >> 4)={}", marker, (marker & 0xf0), ((marker & 0xf0) >> 4));
+					log.warn("Failed to translate binary plist marker {}", typeMarker);
 				}
 			}
 		}
 
-		static void debugLog(String log) {
-			logger.info(log);
+		static void debugLog(String message) {
+			log.info(message);
 		}
 
 		/**
@@ -4817,8 +4814,8 @@ public class ERXPropertyListSerialization {
 			NSTimestamp ts = new NSTimestamp((long)((date + kCFAbsoluteTimeIntervalSince1970) * 1000));
 			// objectTable.add(new Date(ts.getTime()));
 			objectTable.add(ts);
-			if (logger.isDebugEnabled()) {
-				logger.info("parseDate double=" + date + " long date=" + (long) date + " timestamp=" + ts + " converted=" + new Date(ts.getTime()));
+			if (log.isDebugEnabled()) {
+				log.info("parseDate double={} long date={} timestamp={} converted={}", date, (long) date, ts, new Date(ts.getTime()));
 			}
 		}
 
@@ -5288,20 +5285,6 @@ public class ERXPropertyListSerialization {
 	}
 
 	/**
-	 * Converts the property list <code>object</code> into a string and returns it as an NSData object. This method uses the platform's default character encoding to convert the result string to byte.
-	 *
-	 * @deprecated use {@link #dataFromPropertyList(Object, String)}
-	 * @param plist
-	 *            property list object
-	 * @return <code>object</code> converted to an NSData
-	 * @see #propertyListFromData(NSData, java.lang.String)
-	 */
-	@Deprecated
-	public static NSData dataFromPropertyList(Object plist) {
-		return dataFromPropertyList(plist, (String)null);
-	}
-
-	/**
 	 * Converts the property list <code>object</code> into a string using a character encoding and returns it as an NSData object.
 	 *
 	 * @param plist
@@ -5334,22 +5317,6 @@ public class ERXPropertyListSerialization {
 		_NSStreamingOutputData data = new _NSStreamingOutputData();
 		writePropertyListToStream(plist, data, type, encoding);
 		return data.dataNoCopy();
-	}
-
-	/**
-	 * Converts an NSData into a property list and returns it.
-	 * <p>
-	 * This method uses the platform's default character encoding to convert the bytes in <code>data</code> byte array to characters in a string representation.
-	 *
-	 * @deprecated use {@link #propertyListFromData(NSData, String)}
-	 * @param data
-	 *            the byte array to be converted to a property list
-	 * @return <code>data</code> as a property list
-	 * @see #dataFromPropertyList(Object, java.lang.String)
-	 */
-	@Deprecated
-	public static Object propertyListFromData(NSData data) {
-		return propertyListFromData(data, (String)null);
 	}
 
 	/**
@@ -5596,20 +5563,6 @@ public class ERXPropertyListSerialization {
 		NSDictionary<K, V> ret = (NSDictionary<K, V>) parser.propertyListWithURL(url);
 		return (ret != null) ? ret : NSDictionary.<K, V> emptyDictionary();
 	}
-
-	/**
-	 * Return NSDictionary for a valid plist when passed a binary plist stream.
-	 *
-	 * @param <K>
-	 * @param <V>
-	 * @param is
-	 * @return binary plists dictionary decoded as an NSDictionary or empty dictionary if invalid.
-	 * @since 5.5
-	 */
-	@Deprecated
-	public static <K, V> NSDictionary<K, V> dictionaryForBinaryStream(InputStream is) {
-		return dictionaryWithBinaryStream(is);
-	}
 	
 	/**
 	 * Return NSDictionary for a valid plist when passed a binary plist stream.
@@ -5628,19 +5581,6 @@ public class ERXPropertyListSerialization {
 		_BinaryPListParser parser = new _BinaryPListParser();
 		NSDictionary<K, V> ret = (NSDictionary<K, V>) parser.propertyListWithStream(is);
 		return (ret != null) ? ret : NSDictionary.<K, V> emptyDictionary();
-	}
-
-	/**
-	 * Parse binary plist to XML Document
-	 *
-	 * @param url
-	 * @return Document for binary plist
-	 * @see Document
-	 * @since 5.5
-	 */
-	@Deprecated
-	public static Document documentForBinaryPropertyListURL(URL url) {
-		return documentWithBinaryPropertyListURL(url);
 	}
 	
 	/**
@@ -5672,19 +5612,6 @@ public class ERXPropertyListSerialization {
 		_BinaryPListParser parser = new _BinaryPListParser();
 		NSArray<?> ret = (NSArray<?>)parser.propertyListWithStream(is);
 		return (ret != null) ? ret : NSArray.EmptyArray;
-	}
-
-	/**
-	 * Parse binary plist to XML Document
-	 *
-	 * @param url
-	 * @return Document for binary plist
-	 * @see Document
-	 * @since 5.5
-	 */
-	@Deprecated
-	public static String xmlStringForBinaryPropertyListURL(URL url) {
-		return xmlStringWithBinaryPropertyListURL(url);
 	}
 		
 	/**
@@ -5791,23 +5718,6 @@ public class ERXPropertyListSerialization {
 	public static Object propertyListWithData(NSData data, PListFormat type, String encoding) {
 		return propertyListWithStream(data.stream(), type, encoding);
 	}
-
-	/**
-	 * For a specified property list format, write a plist to the provided outputstream.
-	 *
-	 * @param plist the object to write
-	 * @param out output stream for plist
-	 * @param type type of plist to generate
-	 * @see PListFormat#NSPropertyListJsonFormat_v1_0
-	 * @see PListFormat#NSPropertyListBinaryFormat_v1_0
-	 * @see PListFormat#NSPropertyListXMLFormat_v1_0
-	 * @see PListFormat#NSPropertyListOpenStepFormat
-	 * @since 5.5
-	 */
-	@Deprecated
-	public static void propertyListWriteToStream(Object plist, OutputStream out, PListFormat type) {
-		writePropertyListToStream(plist, out, type, _NSStringUtilities.defaultEncoding());
-	}
 	
 	/**
 	 * For a specified property list format, write a plist to the provided outputstream.
@@ -5888,34 +5798,6 @@ public class ERXPropertyListSerialization {
 				break;
 		}
 
-	}
-
-	/**
-	 * Read a plist from an InputStream and return NSDictionary of values.
-	 *
-	 * @param <K>
-	 * @param <V>
-	 * @param is
-	 * @return dictionary or null if there is an error with parsing
-	 * @since 5.5
-	 */
-	@Deprecated
-	public static <K, V> NSDictionary<K, V> dictionaryForInputStream(InputStream is) {
-		return dictionaryWithInputStream(is);
-	}
-	
-	/**
-	 * Read a plist from an InputStream and return NSDictionary of values.
-	 *
-	 * @param <K>
-	 * @param <V>
-	 * @param is
-	 * @return dictionary or null if there is an error with parsing
-	 * @since 5.5
-	 */
-	@Deprecated
-	public static <K, V> NSDictionary<K, V> dictionaryWithInputStream(InputStream is) {
-		return dictionaryWithInputStream(is, CharEncoding.UTF_8);
 	}
 	
 	/**

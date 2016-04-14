@@ -2,7 +2,8 @@ package er.extensions.components;
 
 import java.io.Serializable;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.appserver.WOApplication;
 import com.webobjects.appserver.WOComponent;
@@ -19,25 +20,25 @@ import er.extensions.foundation.ERXMutableDictionary;
 import er.extensions.foundation.ERXSimpleTemplateParser;
 
 /**
- * ERXInlineTemplate allows to specify a component's template dynamically. <br />
+ * ERXInlineTemplate allows to specify a component's template dynamically.
+ * <p>
  * The content which would usually go into the ".html" file within a WOComponent's bundle, is specified using the "html"
- * binding, the ".wod" part is pecified by the "wod" binding. <br />
- * <br />
+ * binding, the ".wod" part is specified by the "wod" binding.
+ * <p>
  * When using {@link WOOgnl} with "ognl.helperFunctions = true" and "ognl.inlineBindings = true", you can leave out the
- * WOD part. <br />
- * <br />
+ * WOD part.
+ * <p>
  * When keys are accessed, the component first determines the first element of the path (e.g. key "foo" for path
- * "foo.bar") and looks, if there is a binding with that key. <br />
+ * "foo.bar") and looks, if there is a binding with that key.
  * If there is such a binding, the value is retrieved and the rest of the keyPath applied to it
- * (valueForBinding("foo").valueForKeyPath("bar")). <br />
- * If there is no binding with that name and "proxyParent" is true, the keyPath is resolved against the parent component.<br />
- * Otherwise, dynamicBindings ({@link ERXComponent#dynamicBindings()}) are used. <br />
+ * (valueForBinding("foo").valueForKeyPath("bar")).
+ * If there is no binding with that name and "proxyParent" is true, the keyPath is resolved against the parent component.
+ * Otherwise, dynamicBindings ({@link ERXComponent#dynamicBindings()}) are used.
  * You can switch off the usage of dynamicBindings by setting the binding "defaultToDynamicBindings" to false. 
- * Then a warning will be logged for unknown keys.<br />
- * <br />
+ * Then a warning will be logged for unknown keys.
+ * <p>
  * When an error occurs, an error message is displayed. The message can be altered using the "errorTemplate" binding.
- * <br />
- * <br />
+ * <p>
  * Optionally, a "cacheKey" (String) can be specified, under which the parsed WOElement will be cached. To allow
  * updating, a "cacheVersion" (Object) is available. When the version changes, the value is recalculated.
  * 
@@ -51,7 +52,6 @@ import er.extensions.foundation.ERXSimpleTemplateParser;
  * @binding defaultToDynamicBindings whether to use dynamicBindings for unknown keys (default is true)
  * 
  * @author th
- * 
  */
 public class ERXInlineTemplate extends ERXNonSynchronizingComponent {
 	/**
@@ -61,7 +61,7 @@ public class ERXInlineTemplate extends ERXNonSynchronizingComponent {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private static Logger log = Logger.getLogger(ERXInlineTemplate.class);
+	private static final Logger log = LoggerFactory.getLogger(ERXInlineTemplate.class);
 
 	private static final String ERROR_TEMPLATE_DEFAULT = "<div class=\"ERXInlineTemplateError\" style=\"background-color: #faa; border: 2px dotted red;\">@@message@@</div>";
 
@@ -124,31 +124,23 @@ public class ERXInlineTemplate extends ERXNonSynchronizingComponent {
 				if (keyPathComponents.count() > 0) {
 					Object o = valueForBinding(firstKey);
 					String remainingKeyPath = keyPathComponents.componentsJoinedByString(".");
-					if (log.isDebugEnabled()) {
-						log.debug("set binding using keypath " + firstKey + " / " + remainingKeyPath);
-					}
+					log.debug("set binding using keypath {} / {}", firstKey, remainingKeyPath);
 					NSKeyValueCodingAdditions.Utility.takeValueForKeyPath(o, value, remainingKeyPath);
 				}
 				else {
-					if (log.isDebugEnabled()) {
-						log.debug("set binding value " + firstKey);
-					}
+					log.debug("set binding value {}", firstKey);
 					setValueForBinding(value, firstKey);
 				}
 			}
 			else if (proxyParent()) {
-				if (log.isDebugEnabled()) {
-					log.debug("set parent binding " + keyPath);
-				}
+				log.debug("set parent binding {}", keyPath);
 				parent().takeValueForKeyPath(value, keyPath);
 			}
 			else if (defaultToDynamicBindings()){
-				if (log.isDebugEnabled()) {
-					log.debug("set dynamic binding " + keyPath);
-				}
+				log.debug("set dynamic binding {}", keyPath);
 				dynamicBindings().takeValueForKeyPath(value, keyPath);
 			} else {
-				log.warn("Unknown keyPath: "+keyPath);
+				log.warn("Unknown keyPath: {}", keyPath);
 			}
 		}
 		catch (Throwable t) {
@@ -166,32 +158,24 @@ public class ERXInlineTemplate extends ERXNonSynchronizingComponent {
 				Object o = valueForBinding(firstKey);
 				if (keyPathComponents.count() > 0) {
 					String remainingKeyPath = keyPathComponents.componentsJoinedByString(".");
-					if (log.isDebugEnabled()) {
-						log.debug("get binding using keypath " + firstKey + " / " + remainingKeyPath);
-					}
+					log.debug("get binding using keypath {} / {}", firstKey, remainingKeyPath);
 					value = NSKeyValueCodingAdditions.Utility.valueForKeyPath(o, remainingKeyPath);
 				}
 				else {
-					if (log.isDebugEnabled()) {
-						log.debug("get binding value " + firstKey);
-					}
+					log.debug("get binding value {}", firstKey);
 					value = o;
 				}
 			}
 			else if (proxyParent()) {
-				if (log.isDebugEnabled()) { 
-					log.debug("get parent binding " + keyPath);
-				}
+				log.debug("get parent binding {}", keyPath);
 				value = parent().valueForKeyPath(keyPath);
 			}
 			else if (defaultToDynamicBindings()) {
-				if (log.isDebugEnabled()) {
-					log.debug("get dynamic binding " + keyPath);
-				}
+				log.debug("get dynamic binding {}", keyPath);
 				value = dynamicBindings().valueForKeyPath(keyPath);
 			}
 			else {
-				log.warn("Unknown keyPath: " + keyPath);
+				log.warn("Unknown keyPath: {}", keyPath);
 			}
 
 			return value;
@@ -223,24 +207,18 @@ public class ERXInlineTemplate extends ERXNonSynchronizingComponent {
 				Object requestedVersion = valueForBinding(CACHE_VERSION_BINDING);
 				if (cacheEntry != null && (requestedVersion == null || requestedVersion.equals(cacheEntry.version()))) {
 					// requestedVersion matches or is null
-					if (log.isDebugEnabled()) {
-						log.debug("using cache: " + cacheKey + " / " + cacheEntry.version());
-					}
+					log.debug("using cache: {} / {}", cacheKey, cacheEntry.version());
 					element = cacheEntry.element();
 				}
 				else { // no matching cache entry
-					if (log.isDebugEnabled()) {
-						log.debug("updating cache: " + cacheKey + " / " + (cacheEntry == null ? null : cacheEntry.version()) + " -> " + requestedVersion);
-					}
+					log.debug("updating cache: {} / {} -> {}", cacheKey, (cacheEntry == null ? null : cacheEntry.version()), requestedVersion);
 					element = _template();
 					cacheEntry = new CacheEntry(requestedVersion, element);
 					_cache.takeValueForKey(cacheEntry, cacheKey);
 				}
 			}
 			else { // no caching
-				if (log.isDebugEnabled()) {
-					log.debug("caching disabled");
-				}
+				log.debug("caching disabled");
 				element = _template();
 			}
 
@@ -293,7 +271,7 @@ public class ERXInlineTemplate extends ERXNonSynchronizingComponent {
 		private String _method;
 
 		public Error(String method, Throwable t) {
-			ERXInlineTemplate.log.error(method + ": " + t, t);
+			log.error("{}: {}", method, t, t);
 			_t = t;
 			_method = method;
 		}

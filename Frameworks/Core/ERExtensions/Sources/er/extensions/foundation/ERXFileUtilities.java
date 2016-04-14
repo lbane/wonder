@@ -39,8 +39,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.lang.CharEncoding;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.CharEncoding;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.appserver.WOApplication;
 import com.webobjects.appserver.WOResourceManager;
@@ -66,8 +67,7 @@ public class ERXFileUtilities {
     //	Class Constants
     //	---------------------------------------------------------------------------
 
-    /** logging support */
-    public static final Logger log = Logger.getLogger(ERXFileUtilities.class);
+    private static final Logger log = LoggerFactory.getLogger(ERXFileUtilities.class);
 
     private static Charset charset = null;
 
@@ -84,7 +84,7 @@ public class ERXFileUtilities {
         try {
             charset = Charset.forName(name);
         } catch (Exception e) {
-            log.error("Unable to set default charset to \""+name+"\"");
+            log.error("Unable to set default charset to '{}'", name);
             charset = original;
         }
     }
@@ -286,14 +286,6 @@ public class ERXFileUtilities {
             bytesRead += fis.read(data, bytesRead, n - bytesRead);
         return data;
     }
-    
-    /**
-     * @deprecated use {@link #writeInputStreamToFile(InputStream, File)}
-     */
-    @Deprecated
-	public static void writeInputStreamToFile(File f, InputStream is) throws IOException {
-        writeInputStreamToFile(is, f);
-    }
 
 	/**
 	 * Writes the contents of an InputStream to a temporary file.
@@ -326,12 +318,12 @@ public class ERXFileUtilities {
 	        }
 	        catch (RuntimeException e) {
 	            if (! tempFile.delete())
-	                log.error("RuntimeException occured, but cannot delete tempFile \""+tempFile.getPath()+"\"");
+	                log.error("RuntimeException occured, but cannot delete tempFile '{}'", tempFile);
 	            throw e;
 	        }
 	        catch (IOException e) {
 	            if (! tempFile.delete())
-	                log.error("IOException occured, but cannot delete tempFile \""+tempFile.getPath()+"\"");
+	                log.error("IOException occured, but cannot delete tempFile '{}'", tempFile);
 	            throw e;
 	        }
 	    }
@@ -579,7 +571,7 @@ public class ERXFileUtilities {
         String path = null;
         NSBundle bundle = "app".equals(frameworkName) ? NSBundle.mainBundle() : NSBundle.bundleForName(frameworkName);
         if(bundle != null && bundle.isJar()) {
-            log.warn("Can't get path when run as jar: " + frameworkName + " - " + fileName);
+            log.warn("Can't get path when run as jar: {} - {}", frameworkName, fileName);
         } else {
         	WOApplication application = WOApplication.application();
         	if (application != null) {
@@ -824,7 +816,7 @@ public class ERXFileUtilities {
         		result = NSPropertyListSerialization.propertyListFromString(stringFromFile);
             }
         } catch (IOException ioe) {
-            log.error("ConfigurationManager: Error reading file <"+fileName+"> from framework " + aFrameWorkName);
+            log.error("ConfigurationManager: Error reading file <{}> from framework {}", fileName, aFrameWorkName);
         } finally {
         	try {if(stream != null) {stream.close();}} catch(IOException e) { log.error("Failed attempt to close stream.");}
         }
@@ -1024,18 +1016,17 @@ public class ERXFileUtilities {
                             if (dstFile.exists() || dstFile.mkdirs()) {
                                 copyFilesFromDirectory(srcFile, dstFile, deleteOriginals, replaceExistingFiles, recursiveCopy, filter);
                             } else {
-                                log.error("Error creating directories for destination \""+dstDirectory.getPath()+"\"");
+                                log.error("Error creating directories for destination '{}'", dstDirectory);
                             }
                         }
                     } else if (!srcFile.isDirectory()) {
                     	if (replaceExistingFiles || ! dstFile.exists()) {
                             copyFileToFile(srcFile, dstFile, deleteOriginals, true);
                     	} else if (log.isDebugEnabled()) {
-                            log.debug("Destination file: " + dstFile + " skipped as it exists and replaceExistingFiles is set to false.");
+                            log.debug("Destination file: {} skipped as it exists and replaceExistingFiles is set to false.", dstFile);
                       }
                     } else if (log.isDebugEnabled()) {
-                        log.debug("Source file: " + srcFile + " is a directory inside: "
-                                  + dstDirectory + " and recursive copy is set to false.");
+                        log.debug("Source file: {} is a directory inside: {} and recursive copy is set to false.", srcFile, dstDirectory);
                     }
                 }
             }
@@ -1147,10 +1138,10 @@ public class ERXFileUtilities {
         File f = createTempDir("WonderTempDir", "");
 
         if (f.delete() || f.delete())
-            log.debug("Could not delete temporary directory: \""+f.getPath()+"\"");
+            log.debug("Could not delete temporary directory: '{}'", f);
 
         if (! f.mkdirs())
-            log.error("Could not create temporary directory: \""+f.getPath()+"\"");
+            log.error("Could not create temporary directory: '{}'", f);
 
         return f;
     }
@@ -1169,10 +1160,10 @@ public class ERXFileUtilities {
         File f = File.createTempFile(prefix, suffix);
 
         if (f.delete() || f.delete()) 
-            log.debug("Could not delete temporary directory: \""+f.getPath()+"\"");
+            log.debug("Could not delete temporary directory: '{}'", f);
 
         if (! f.mkdirs())
-            log.error("Could not create temporary directory: \""+f.getPath()+"\"");
+            log.error("Could not create temporary directory: '{}'", f);
 
         return f;
     }
@@ -1297,16 +1288,14 @@ public class ERXFileUtilities {
                 File d = new File(absolutePath + name);
                 if (! d.mkdirs())
                     throw new IOException("Cannot create directory: \""+d.getPath()+"\"");
-                if (log.isDebugEnabled()) {
-                    log.debug("created directory "+d.getAbsolutePath());
-                }
+                log.debug("created directory {}", d);
             } else {
                 InputStream is = null;
                 try {
                 	is = zipFile.getInputStream(ze);
 	                writeInputStreamToFile(is, new File(absolutePath, name));
 	                if (log.isDebugEnabled()) {
-	                    log.debug("unzipped file "+ze.getName()+" into "+(absolutePath + name));
+	                    log.debug("unzipped file {} into {}", ze.getName(), absolutePath + name);
 	                }
                 } finally {
                 	if (is != null) {
@@ -1481,7 +1470,7 @@ public class ERXFileUtilities {
         return length;
     }
     
-    /** shortens a filename, for example aVeryLongFileName.java -> aVer...Name.java
+    /** shortens a filename, for example aVeryLongFileName.java -&gt; aVer...Name.java
      * @param name the name to modify
      * @param maxLength the maximum length of the name.
      * <code>maxLength</code> values under 4 have no effect, the returned string is

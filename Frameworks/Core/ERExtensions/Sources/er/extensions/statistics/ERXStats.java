@@ -32,7 +32,7 @@ import er.extensions.foundation.ERXUtilities;
  * As an example, you may want to track stats on keypaths in your components.  In your
  * base components, you could add:
  * </p>
- * <code><pre>
+ * <pre><code>
  * public Object valueForKeyPath(String keyPath) {
  *   Object value;
  *   if (_shouldTrackStats) {
@@ -46,7 +46,7 @@ import er.extensions.foundation.ERXUtilities;
  *   }
  *   return value;
  * }
- * </pre></code>
+ * </code></pre>
  * 
  * @author anjo
  * @author mschrag
@@ -65,7 +65,7 @@ public class ERXStats {
     public static final String STATS_ENABLED_KEY = "er.extensions.erxStats.enabled";
     public static final String STATS_TRACE_COLLECTING_ENABLED_KEY = "er.extensions.erxStats.traceCollectingEnabled";
 
-	public static final Logger log = Logger.getLogger(ERXStats.class);
+    public static final Logger log = Logger.getLogger(ERXStats.class);
 
 	public interface Group {
 		public String Default = " ";
@@ -428,7 +428,7 @@ public class ERXStats {
 				_lastMark = 0;
 			}
 			else {
-				ERXStats.log.info("You called ERXStats.end before calling ERXStats.start.");
+				log.info("You called ERXStats.end before calling ERXStats.start.");
 			}
 		}
 

@@ -3,6 +3,10 @@ package er.extensions.eof;
 import java.math.BigDecimal;
 import java.util.Locale;
 
+import com.webobjects.eoaccess.EOAttribute;
+import com.webobjects.eoaccess.EOModel;
+import com.webobjects.eoaccess.EORelationship;
+import com.webobjects.eocontrol.EOEnterpriseObject;
 import com.webobjects.eocontrol.EOQualifier;
 import com.webobjects.eocontrol.EOSortOrdering;
 import com.webobjects.foundation.NSArray;
@@ -13,6 +17,7 @@ import com.webobjects.foundation.NSTimestamp;
 
 import er.extensions.eof.ERXSortOrdering.ERXSortOrderings;
 import er.extensions.eof.qualifiers.ERXExistsQualifier;
+import er.extensions.foundation.ERXArrayUtilities;
 import er.extensions.qualifiers.ERXAndQualifier;
 import er.extensions.qualifiers.ERXKeyComparisonQualifier;
 import er.extensions.qualifiers.ERXKeyValueQualifier;
@@ -22,13 +27,11 @@ import er.extensions.qualifiers.ERXPrefixQualifierTraversal;
 import er.extensions.qualifiers.ERXTrueQualifier;
 
 /**
- * <p>
  * ERXKey provides a rich wrapper around a keypath. When combined with chainable
  * qualifiers, ERXKey provides a starting point for the qualifier chain. As an
  * example:
- * </p>
  * 
- * <pre>
+ * <pre><code>
  * public class Person extends ERXGenericRecord {
  *   ...
  *   public static final ERXKey&lt;Country&gt; country = new ERXKey&lt;Country&gt;(Person.COUNTRY_KEY);
@@ -39,10 +42,10 @@ import er.extensions.qualifiers.ERXTrueQualifier;
  *   Country germany = ...;
  *   NSTimestamp someRandomDate = ...;
  *   EOQualifier qualifier = Person.country.is(germany).and(Person.birthDate.after(someRandomDate));
- * </pre>
+ * </code></pre>
  * 
  * @param <T> the type of the value of this key
- *  
+ * 
  * @author mschrag
  */
 public class ERXKey<T> {
@@ -136,22 +139,18 @@ public class ERXKey<T> {
 	}
 	
 	/**
-	 * <p>
 	 * Creates a new ERXKey that prepends the {@code key} with
 	 * ERXArrayUtilities' {@code @fetchSpec} operator and the
 	 * {@code fetchSpecName}.
-	 * </p>
 	 * <p>
 	 * This ERXKey does not perform a fetch itself. It simply makes use of an
 	 * EOFetchSpecification that is defined on the {@code key}'s Entity for its
 	 * qualifier(s) and sortOrdering(s) and uses them to filter and sort the
 	 * values for {@code key}
-	 * </p>
 	 * <p>
 	 * For example, if the {@code fetchSpecName} is "newHomes" and the
 	 * {@code key} is "price" this will return a new ERXKey wrapping
 	 * "@fetchSpec.newHomes.price".
-	 * </p>
 	 * 
 	 * @param <U>
 	 *            the type of the next key
@@ -170,22 +169,18 @@ public class ERXKey<T> {
 	}
 	
 	/**
-	 * <p>
 	 * Creates a new ERXKey that appends ERXArrayUtilities'
 	 * {@code @fetchSpec} operator, the {@code fetchSpecName} and
 	 * the {@code key} to this key.
-	 * </p>
 	 * <p>
 	 * This ERXKey does not perform a fetch itself. It simply makes use of an
 	 * EOFetchSpecification that is defined on the {@code key}'s Entity for its
 	 * qualifier(s) and sortOrdering(s) and uses them to filter and sort the
 	 * values for {@code key}
-	 * </p>
 	 * <p>
 	 * For example, if the {@code fetchSpecName} is "newHomes" and the
 	 * {@code key} is "price" this will return a new ERXKey wrapping
 	 * "thisKey.@fetchSpec.newHomes.price".
-	 * </p>
 	 * 
 	 * @param fetchSpecName
 	 *            the fetchSpec name
@@ -205,20 +200,16 @@ public class ERXKey<T> {
 	}
 	
 	/**
-	 * <p>
 	 * Creates a new ERXKey that appends the {@code fetchSpecName} to
 	 * ERXArrayUtilities' {@code @fetchSpec} operator.
-	 * </p>
 	 * <p>
 	 * This ERXKey does not perform a fetch itself. It simply makes use of an
 	 * EOFetchSpecification that is defined on the {@code key}'s Entity for its
 	 * qualifier(s) and sortOrdering(s) and uses them to filter and sort the
 	 * values for {@code key}
-	 * </p>
 	 * <p>
 	 * For example, if the {@code fetchSpecName} is "newHomes" this will return
 	 * a new ERXKey wrapping "@fetchSpec.newHomes".
-	 * </p>
 	 * 
 	 * @param fetchSpecName
 	 *            the fetchSpec name
@@ -236,20 +227,16 @@ public class ERXKey<T> {
 	}
 	
 	/**
-	 * <p>
 	 * Creates a new ERXKey that appends ERXArrayUtilities' {@code @fetchSpec}
 	 * operator and the {@code fetchSpecName} to this key.
-	 * </p>
 	 * <p>
 	 * This ERXKey does not perform a fetch itself. It simply makes use of an
 	 * EOFetchSpecification that is defined on the {@code key}'s Entity for its
 	 * qualifier(s) and sortOrdering(s) and uses them to filter and sort the
 	 * values for {@code key}
-	 * </p>
 	 * <p>
 	 * For example, if the {@code fetchSpecName} is "newHomes" this will return
 	 * a new ERXKey wrapping {@code thisKey.@fetchSpec.newHomes} keypath
-	 * </p>
 	 * 
 	 * @param fetchSpecName
 	 *            the fetchSpec name
@@ -272,13 +259,11 @@ public class ERXKey<T> {
 	 * Creates a new ERXKey that prepends the {@code key} with
 	 * ERXArrayUtilities' {@code @flatten} operator. The {@code key} should
 	 * resolve to an {@code NSArray<U>} when used.
-	 * </p>
 	 * <p>
 	 * <b>Note:</b> the {@code @flatten} operator is applied to the array it is
 	 * called on or the key immediately preceding it, not the key (if any)
 	 * following it. This method is useful for flattening an existing array or
 	 * key that is already included in a keypath.
-	 * </p>
 	 * <p>
 	 * For example, if you are chaining ERXKeys such as
 	 * {@code Customer.ORDERS.dot(Order.ORDER_LINES)} which if called on a
@@ -286,7 +271,6 @@ public class ERXKey<T> {
 	 * dot(ERXKey.flatten(OrderLine.PRICE) to get a new ERXKey wrapping the
 	 * {@code orders.orderlines.@flatten.price}, which will return an array of
 	 * prices when called on any Customer object.
-	 * </p>
 	 * 
 	 * @param <U>
 	 *            the type of the next key
@@ -308,15 +292,12 @@ public class ERXKey<T> {
 	 * Creates a new ERXKey that appends ERXArrayUtilities' {@code @flatten}
 	 * operator and the {@code key} to this key. The {@code key} should resolve
 	 * to an {@code NSArray<U>} when used.
-	 * </p>
 	 * <p>
 	 * <b>Note:</b> the {@code @flatten} operator will be applied to this key,
 	 * not the key specified by the {@code key} parameter.
-	 * </p>
 	 * <p>
 	 * For example, if the {@code key} is "price" this will return a new ERXKey
 	 * wrapping the {@code thisKey.@flatten.price} keypath.
-	 * </p>
 	 * 
 	 * @param <U>
 	 *            the type of the next key
@@ -338,7 +319,6 @@ public class ERXKey<T> {
 	 * <p>
 	 * Creates a new ERXKey that wraps ERXArrayUtilities' {@code @flatten}
 	 * aggregate operator.
-	 * </p>
 	 * 
 	 * @param <U>
 	 *            the type of the next key
@@ -357,7 +337,6 @@ public class ERXKey<T> {
 	 * <p>
 	 * Creates a new ERXKey that appends ERXArrayUtilities'
 	 * {@code @flatten} operator to this key.
-	 * </p>
 	 * 
 	 * @param <U>
 	 *            the type of the next key
@@ -377,10 +356,8 @@ public class ERXKey<T> {
 	 * <p>
 	 * Creates a new ERXKey that wraps ERXArrayUtilities' {@code @isEmpty}
 	 * aggregate operator.
-	 * </p>
 	 * <p>
 	 * <b>Note:</b> any key(path) following {@code @isEmpty} is ignored.
-	 * </p>
 	 * 
 	 * @return an {@code ERXKey<Boolean>} wrapping the {@code @isEmpty} key
 	 * 
@@ -396,10 +373,8 @@ public class ERXKey<T> {
 	 * <p>
 	 * Creates a new ERXKey that appends this key with ERXArrayUtilities'
 	 * {@code @isEmpty} operator.
-	 * </p>
 	 * <p>
 	 * <b>Note:</b> any key(path) following {@code @isEmpty} is ignored.
-	 * </p>
 	 * 
 	 * @return an {@code ERXKey<Boolean>} wrapping the {@code thisKey.@isEmpty}
 	 *         keypath
@@ -418,16 +393,13 @@ public class ERXKey<T> {
 	 * Creates a new ERXKey that appends ERXArrayUtilities' {@code @limit}
 	 * operator and then the {@code limit} quantity and then the {@code key},
 	 * which should resolve to an {@code NSArray<U>} when used.
-	 * </p>
 	 * <p>
 	 * <b>Note:</b> the {@code @limit} operator will be applied to the array it
 	 * is called on or the key immediately preceding it, not the key specified
 	 * by the {@code key} parameter.
-	 * </p>
 	 * <p>
 	 * For example, if the {@code key} is "price" and limit is 3 this will
 	 * return a new ERXKey {@code @limit.3.price}.
-	 * </p>
 	 * 
 	 * @param <U>
 	 *            the type of the next key
@@ -447,19 +419,15 @@ public class ERXKey<T> {
 	}
 	
 	/**
-	 * <p>
 	 * Creates a new ERXKey that appends this key with ERXArrayUtilities'
 	 * {@code @limit} operator and then the {@code limit} quantity and then the
 	 * {@code key}, which should resolve to an {@code NSArray<U>} when used.
-	 * </p>
 	 * <p>
 	 * <b>Note:</b> the {@code @limit} operator will be applied to this key not
 	 * the key specified by the {@code key} parameter.
-	 * </p>
 	 * <p>
 	 * For example, if the {@code key} is "price" and limit is 3 this will
 	 * return a new ERXKey {@code thiskey.@limit.3.price}.
-	 * </p>
 	 * 
 	 * @param <U>
 	 *            the type of the next key
@@ -484,16 +452,13 @@ public class ERXKey<T> {
 	 * <p>
 	 * Creates a new ERXKey that appends ERXArrayUtilities' {@code @limit}
 	 * operator and then the {@code limit} quantity.
-	 * </p>
 	 * <p>
 	 * <b>Note:</b> the {@code @limit} operator will be applied to the array it
 	 * is called on or the key immediately preceding it, not the key (if any)
 	 * following it.
-	 * </p>
 	 * <p>
 	 * For example, if the {@code key} is "price" and limit is 3 this will
 	 * return a new ERXKey {@code @limit.3}.
-	 * </p>
 	 * 
 	 * @param limit
 	 *            the maximum number of objects allowed by the limit
@@ -513,18 +478,14 @@ public class ERXKey<T> {
 	}
 	
 	/**
-	 * <p>
 	 * Creates a new ERXKey that appends this key with ERXArrayUtilities'
 	 * {@code @limit} operator and then the {@code limit} quantity.
-	 * </p>
 	 * <p>
 	 * <b>Note:</b> the {@code @limit} operator will be applied to this key not
 	 * the key specified by the {@code key} parameter.
-	 * </p>
 	 * <p>
 	 * For example, if the {@code key} is "price" and limit is 3 this will
 	 * return a new ERXKey {@code thiskey.@limit.3}.
-	 * </p>
 	 * 
 	 * @param limit
 	 *            the maximum number of objects allowed by the limit
@@ -558,10 +519,8 @@ public class ERXKey<T> {
 	}
 
 	/**
-	 * <p>
 	 * Creates a new ERXKey that appends the given {@code key} to
 	 * ERXArrayUtilities' {@code @median} aggregate operator.
-	 * </p>
 	 * 
 	 * @param key
 	 *            the key(path) to the value to be averaged
@@ -1029,19 +988,16 @@ public class ERXKey<T> {
 	 * <b>Will filter an array or a key it is appended to</b>
 	 * <p>
 	 * Creates a new ERXKey that appends ERXArrayUtilities' {@code @unique}
-	 * operator with the {@code key}, which should resolve to an NSArray<U> when
+	 * operator with the {@code key}, which should resolve to an NSArray&lt;U&gt; when
 	 * used.
-	 * </p>
 	 * <p>
 	 * <b>Note:</b> the {@code @unique} operator is applied to the array it is
 	 * called on or the key immediately preceding it, not the key (if any)
 	 * following it. This method is useful for flattening an existing array or
 	 * key that is already included in a keypath.
-	 * </p>
 	 * <p>
 	 * For example, if the {@code key} is "price" this will return a new ERXKey
 	 * wrapping the {@code @unique.price} keypath.
-	 * </p>
 	 * 
 	 * @param <U>
 	 *            the type of the next key
@@ -1063,15 +1019,12 @@ public class ERXKey<T> {
 	 * Creates a new ERXKey that appends this key with ERXArrayUtilities'
 	 * {@code @unique} operator and then with the {@code key}, which should
 	 * resolve to an {@code NSArray<U>} when used.
-	 * </p>
 	 * <p>
 	 * <b>Note:</b> the {@code @unique} operator will be applied to this key,
 	 * not the key specified by the {@code key} parameter.
-	 * </p>
 	 * <p>
 	 * For example, if the {@code key} is "price" this will return a new ERXKey
 	 * wrapping the {@code thisKey.@unique.price} keypath.
-	 * </p>
 	 * 
 	 * @param <U>
 	 *            the type of the next key
@@ -1094,7 +1047,6 @@ public class ERXKey<T> {
 	 * <p>
 	 * Creates a new ERXKey that wraps ERXArrayUtilities' {@code @unique}
 	 * aggregate operator.
-	 * </p>
 	 * 
 	 * @param <U>
 	 *            the type of the next key
@@ -1113,7 +1065,6 @@ public class ERXKey<T> {
 	 * <p>
 	 * Creates a new ERXKey that appends this key with ERXArrayUtilities'
 	 * {@code @unique} operator.
-	 * </p>
 	 * 
 	 * @param <U>
 	 *            the type of the next key
@@ -1477,7 +1428,6 @@ public class ERXKey<T> {
 	 * operator.
 	 * <p>
 	 * <b>Note:</b> any key(path) following {@code @count} is ignored.
-	 * </p>
 	 * 
 	 * @return an {@code ERXKey<BigDecimal>} wrapping the {@code @count} key
 	 */
@@ -1490,7 +1440,6 @@ public class ERXKey<T> {
 	 * aggregate operator
 	 * <p>
 	 * <b>Note:</b> any key(path) following {@code @count} is ignored.
-	 * </p>
 	 * 
 	 * @return an {@code ERXKey<Integer>} wrapping the {@code thisKey.@count}
 	 *         keypath
@@ -1500,12 +1449,102 @@ public class ERXKey<T> {
 	}
 	
 	/**
-	 * Enums to desribe the type of key this represents.
+	 * Enums to describe the type of key this represents.
 	 * 
 	 * @author mschrag
 	 */
 	public static enum Type {
-		Attribute, ToOneRelationship, ToManyRelationship
+		/**
+		 * Indicates that this key represents an {@link EOAttribute} defined in
+		 * the {@link EOModel}. Since it is defined in the model it can be used
+		 * when instantiating Objects that impact SQL generation, e.g.,
+		 * {@link EOQualifier} and {@link EOSortOrdering}.
+		 */
+		Attribute, 
+		/**
+		 * Indicates that this key represents an {@link EORelationship} defined
+		 * in the {@link EOModel} that will return <code>false</code> for
+		 * {@link EORelationship#isToMany()}. Since it is defined in the model
+		 * it can be used when instantiating Objects that impact SQL generation,
+		 * e.g., {@link EOQualifier} and {@link EOSortOrdering}.
+		 */
+		ToOneRelationship, 
+		/**
+		 * Indicates that this key represents an {@link EORelationship} defined
+		 * in the {@link EOModel} that will return <code>true</code> for
+		 * {@link EORelationship#isToMany()}. Since it is defined in the model
+		 * it can be used when instantiating Objects that impact SQL generation,
+		 * e.g., {@link EOQualifier} and {@link EOSortOrdering}.
+		 */
+		ToManyRelationship, 
+		/**
+		 * Indicates that this key represents an {@link NSArray.Operator}, e.g.,
+		 * {@link NSArray._SumNumberOperator @sum},
+		 * {@link ERXArrayUtilities.FlattenOperator @flatten},
+		 * {@link ERXArrayUtilities.FlattenOperator @fetchSpec},
+		 * {@link NSArray._MinOperator @min}
+		 * <p>
+		 * <em>Note:</em> this Type is not recognized by the
+		 * {@link ERXKeyFilter#matches(ERXKey, Type)} and will not be included
+		 * in {@link ERXKeyFilter#includeAll()},
+		 * {@link ERXKeyFilter#includeAttributes()} nor
+		 * {@link ERXKeyFilter#includeAttributesAndToOneRelationships()} because
+		 * {@link ERXKeyFilter} can only be used with {@link ERXKey}s that
+		 * represent a single key {@link NSArray.Operator}s represent a keypath.
+		 */
+		Operator,
+		/**
+		 * Indicates that this key represents a visible method or ivar that
+		 * returns an object of type T, but does not have a corresponding
+		 * relationship entry in the {@link EOModel} and therefore cannot be
+		 * used to instantiate objects that will impact SQL generation. e.g.,
+		 * {@link EOQualifier} and {@link EOSortOrdering}.
+		 * <p>
+		 * <em>Note:</em> this ERXKey.Type is not recognized by the
+		 * {@link ERXKeyFilter#matches(ERXKey, Type)} and will not be included
+		 * in {@link ERXKeyFilter#includeAll()},
+		 * {@link ERXKeyFilter#includeAttributes()} nor
+		 * {@link ERXKeyFilter#includeAttributesAndToOneRelationships()}.
+		 * <p>
+		 * TODO: Additional work needs to be done to validate that ERRest's use
+		 * of ERXKeyFilter is compatible with this ERXKey.Type.
+		 */
+		NonModelAttribute,
+		/**
+		 * Indicates that this key represents a visible instance member that
+		 * returns an instance of {@link EOEnterpriseObject} of type T, but does
+		 * not have a corresponding relationship entry in the {@link EOModel}
+		 * and therefore cannot be used to instantiate objects that will impact
+		 * SQL generation. e.g., {@link EOQualifier} and {@link EOSortOrdering}.
+		 * <p>
+		 * <em>Note:</em> this ERXKey.Type is not recognized by the
+		 * {@link ERXKeyFilter#matches(ERXKey, Type)} and will not be included
+		 * in {@link ERXKeyFilter#includeAll()},
+		 * {@link ERXKeyFilter#includeAttributes()} nor
+		 * {@link ERXKeyFilter#includeAttributesAndToOneRelationships()}.
+		 * <p>
+		 * TODO: Additional work needs to be done to validate that ERRest's use
+		 * of ERXKeyFilter is compatible with this ERXKey.Type.
+		 */
+		NonModelToOneRelationship, 
+		/**
+		 * Indicates that this key represents a visible instance member that
+		 * returns an array of {@link EOEnterpriseObject} instances of type T,
+		 * but does not have a corresponding relationship entry in the
+		 * {@link EOModel} and therefore cannot be used to instantiate objects
+		 * that will impact SQL generation. e.g., {@link EOQualifier} and
+		 * {@link EOSortOrdering}.
+		 * <p>
+		 * <em>Note:</em> this ERXKey.Type is not recognized by the
+		 * {@link ERXKeyFilter#matches(ERXKey, Type)} and will not be included
+		 * in {@link ERXKeyFilter#includeAll()},
+		 * {@link ERXKeyFilter#includeAttributes()} nor
+		 * {@link ERXKeyFilter#includeAttributesAndToOneRelationships()}.
+		 * <p>
+		 * TODO: Additional work needs to be done to validate that ERRest's use
+		 * of ERXKeyFilter is compatible with this ERXKey.Type.
+		 */
+		NonModelToManyRelationship
 	}
 	
 	public interface ValueCoding {
@@ -1515,6 +1554,7 @@ public class ERXKey<T> {
 	}
 
 	private String _key;
+	private Type _type;
 
 	/**
 	 * Constructs an ERXKey.
@@ -1527,6 +1567,32 @@ public class ERXKey<T> {
 	}
 
 	/**
+	 * Constructs an ERXKey, specifying what {@link Type} it is.
+	 * 
+	 * You can have EOGenerator use this constructor by using the following code
+	 * in the EOGenerator template that generates your _Entity.java files.
+	 * Replace the existing code that creates the ERXKeys declarations for the
+	 * Entity's attributes, to-one relationships and to-many relationships.
+	 * 
+	 * <pre>{@code
+	 *     public static final ERXKey<$attribute.javaClassName> ${attribute.uppercaseUnderscoreName} = new ERXKey<$attribute.javaClassName>("$attribute.name", ERXKey.Type.Attribute);
+	 * 
+	 *     public static final ERXKey<$relationship.actualDestination.classNameWithDefault> ${relationship.uppercaseUnderscoreName} = new ERXKey<$relationship.actualDestination.classNameWithDefault>("$relationship.name", ERXKey.Type.ToOneRelationship);
+	 * 
+	 *     public static final ERXKey<$relationship.actualDestination.classNameWithDefault> ${relationship.uppercaseUnderscoreName} = new ERXKey<$relationship.actualDestination.classNameWithDefault>("$relationship.name", ERXKey.Type.ToManyRelationship);
+	 * }</pre>
+	 * 
+	 * @param key
+	 *            the underlying key or keypath
+	 * @param type
+	 *            the {@link Type}
+	 */
+	public ERXKey(String key, Type type) {
+		_key = key;
+		_type = type;
+	}
+
+	/**
 	 * Constructs a localized ERXKey.
 	 * 
 	 * @param key
@@ -1536,6 +1602,23 @@ public class ERXKey<T> {
 	 */
 	public ERXKey(String key, String locale) {
 		_key = key + "_" + locale;
+	}
+
+	/**
+	 * Constructs a localized ERXKey, specifying what {@link Type} it is.
+	 * 
+	 * @param key
+	 *            the underlying keypath
+	 * @param locale
+	 *            the locale for the key
+	 * @param type
+	 *            the {@link Type}
+	 *            
+	 * @see #ERXKey(String, Type)
+	 */
+	public ERXKey(String key, String locale, Type type) {
+		_key = key + "_" + locale;
+		_type = type;
 	}
 
 	/**
@@ -2124,7 +2207,7 @@ public class ERXKey<T> {
 
 	
 	/**
-	 * Equivalent to key > lowerBound and key < upperBound (exclusive). Note
+	 * Equivalent to key &gt; lowerBound and key &lt; upperBound (exclusive). Note
 	 * that this does not return an ERXBetweenQualifier.
 	 * 
 	 * @param lowerBound
@@ -2138,7 +2221,7 @@ public class ERXKey<T> {
 	}
 
 	/**
-	 * Equivalent to key >= lowerBound and key <= upperBound (inclusive). Note
+	 * Equivalent to key &gt;= lowerBound and key &lt;= upperBound (inclusive). Note
 	 * that this does not return an ERXBetweenQualifier.
 	 * 
 	 * @param lowerBound
@@ -2214,7 +2297,7 @@ public class ERXKey<T> {
 	}
 
 	/**
-	 * Return a qualifier that evalutes to true when the value of the given key
+	 * Return a qualifier that evaluates to true when the value of the given key
 	 * contains any of the given tokens (insensitively) in the search string.
 	 * The search string will be tokenized by splitting on space characters.
 	 * 
@@ -2227,7 +2310,7 @@ public class ERXKey<T> {
 	}
 
 	/**
-	 * Return a qualifier that evalutes to true when the value of the given key
+	 * Return a qualifier that evaluates to true when the value of the given key
 	 * contains any of the given tokens (insensitively).
 	 * 
 	 * @param tokens
@@ -2239,7 +2322,7 @@ public class ERXKey<T> {
 	}
 
 	/**
-	 * Return a qualifier that evalutes to true when the value of the given key
+	 * Return a qualifier that evaluates to true when the value of the given key
 	 * contains all of the given tokens (insensitively) in the search string.
 	 * The search string will be tokenized by splitting on space characters.
 	 * 
@@ -2252,7 +2335,7 @@ public class ERXKey<T> {
 	}
 
 	/**
-	 * Return a qualifier that evalutes to true when the value of the given key
+	 * Return a qualifier that evaluates to true when the value of the given key
 	 * contains all of the given tokens (insensitively).
 	 * 
 	 * @param tokens
@@ -2297,16 +2380,13 @@ public class ERXKey<T> {
 	}
 
 	/**
-	 * <p>
 	 * Equivalent to <code>new ERXExistsQualifier(qualifier, key)</code>.
-	 * </p>
 	 * <p>
 	 * Since this qualifier will <em>not</em> result in a join in the database,
 	 * it can be very useful when testing relationships that use the
 	 * <code>InnerJoin</code> {@link EORelationship#joinSemantic() joinSemantic}
 	 * yet the relationship may be empty (to-many relationships) or
 	 * <code>null</code> (to-one relationships).
-	 * </p>
 	 * 
 	 * @param qualifier
 	 *            a qualifier for the {@link EORelationship#destinationEntity()
@@ -2324,10 +2404,8 @@ public class ERXKey<T> {
 	}
 
 	/**
-	 * <p>
 	 * Determines if there are any objects in the to-one or to-many
 	 * {@link EORelationship} that this ERXKey represents.
-	 * </p>
 	 * 
 	 * @return a qualifier that evaluates to <code>true</code> when the
 	 *         {@link EORelationship} represented by this ERXKey contains at
@@ -2341,17 +2419,14 @@ public class ERXKey<T> {
 	}
 
 	/**
-	 * <p>
 	 * Determines if there are any objects in the to-one or to-many
 	 * EORelationship that this ERXKey represents.
-	 * </p>
 	 * <p>
 	 * Since this qualifier will <em>not</em> result in a join in the database,
 	 * it can be very useful when testing relationships that use the
 	 * <code>InnerJoin</code> {@link EORelationship#joinSemantic() joinSemantic}
 	 * and the relationship could be empty (to-many relationships) or
 	 * <code>null</code> (to-one relationships).
-	 * </p>
 	 * 
 	 * @return a qualifier that evaluates to <code>true</code> when the
 	 *         {@link EORelationship} represented by this ERXKey is empty
@@ -2388,7 +2463,7 @@ public class ERXKey<T> {
 	 * Return a new ERXKey that appends the given key to this keypath. For
 	 * instance, if this key is "person" and you add "firstName" to it, this
 	 * will return a new ERXKey "person.firstName".
-	 * 
+	 * <p>
 	 * Note: ERXKey has a limitation that it will not return the proper generic
 	 * type if you attempt to build a keypath extension of an NSArray. For
 	 * instance,
@@ -2424,7 +2499,7 @@ public class ERXKey<T> {
 	 * Return a new ERXKey that appends the given key to this keypath. For
 	 * instance, if this key is "person" and you add "firstName" to it, this
 	 * will return a new ERXKey "person.firstName".
-	 * 
+	 * <p>
 	 * Note: ERXKey has a limitation that it will not return the proper generic
 	 * type if you attempt to build a keypath extension of an NSArray. For
 	 * instance,
@@ -2461,7 +2536,7 @@ public class ERXKey<T> {
 	 * instance, if this key is "person" and you add "firstName" to it, this
 	 * will return a new ERXKey "person.firstName".
 	 * 
-	 * <pre>
+	 * <pre><code>
 	 * 		ERXKey&lt;String&gt; k = new ERXKey&lt;String&gt;(&quot;foo&quot;);
 	 * 		ERXKey&lt;NSArray&lt;String&gt;&gt; a = new ERXKey&lt;NSArray&lt;String&gt;&gt;(&quot;foos&quot;);
 	 * 		k = k.append(k);
@@ -2471,7 +2546,7 @@ public class ERXKey<T> {
 	 * 		a = k.appendAsArray(a);
 	 * 		a = a.appendAsArray(k);
 	 * 		a = a.appendAsArray(a);
-	 * </pre>
+	 * </code></pre>
 	 * 
 	 * @param <U> the type of the next key in the array 
 	 * 
@@ -2498,7 +2573,7 @@ public class ERXKey<T> {
 
 	/**
 	 * Return the value of this keypath on the given object.
-	 * 
+	 * <p>
 	 * Note: If you ERXKey representation a keypath through an NSArray, this
 	 * method will result in a ClassCastException. See the 'Note' on .append(..)
 	 * for further explanation.
@@ -2642,5 +2717,97 @@ public class ERXKey<T> {
 	 */
 	public ERXSortOrderings dot(NSArray<EOSortOrdering> sortOrderings) {
 		return prefix(sortOrderings);
+	}
+
+	/**
+	 * See {@link #ERXKey(String, Type)} for information on how to automatically
+	 * set this.
+	 * 
+	 * @return the {@link Type}, if specified, for this key.
+	 */
+	public Type type() {
+		return _type;
+	}
+
+	public void setType(Type type) {
+		_type = type;
+	}
+	
+	/**
+	 * Checks this key's {@link Type} to determine if it represents an
+	 * {@link EOAttribute}.
+	 * <p>
+	 * <em>Note:</em> if {@link #type()} has not been set, then this will return
+	 * <code>false</code>. To set it, you have the following options:
+	 * <ul>
+	 * <li>Set it manually using {@link #setType(Type)}</li>
+	 * <li>Set it using the {@link #ERXKey(String, Type)} constructor. If this
+	 * key was declared in code generated by EOGenerator (i.e. in a _Entity.java
+	 * class), you will need to modify your EOGenerator template. See
+	 * {@link #ERXKey(String, Type)} for details.</li>
+	 * </ul>
+	 * 
+	 * @return <code>true</code> if {@link #type()} returns either
+	 *         {@link ERXKey.Type.Attribute} or
+	 *         {@link ERXKey.Type.NonModelAttribute}, <code>false</code>
+	 *         otherwise.
+	 *         
+	 * @see isToOneRelationship
+	 * @see isToManyRelationship
+	 */
+	public boolean isAttribute() {
+		return type() == ERXKey.Type.Attribute || type() == ERXKey.Type.NonModelAttribute;
+	}
+	
+	/**
+	 * Checks this key's {@link ERXKey.Type} to determine if it represents a
+	 * to-one {@link EORelationship}.
+	 * <p>
+	 * <em>Note:</em> if {@link #type()} has not been set, then this will return
+	 * <code>false</code>. To set it, you have the following options:
+	 * <ul>
+	 * <li>Set it manually using {@link #setType(Type)}</li>
+	 * <li>Set it using the {@link #ERXKey(String, Type)} constructor. If this
+	 * key was declared in code generated by EOGenerator (i.e. in a _Entity.java
+	 * class), you will need to modify your EOGenerator template. See
+	 * {@link #ERXKey(String, Type)} for details.</li>
+	 * </ul>
+	 * 
+	 * @return <code>true</code> if {@link #type()} returns either
+	 *         {@link ERXKey.Type.ToOneRelationship} or
+	 *         {@link ERXKey.Type.NonModelToOneRelationship}, <code>false</code>
+	 *         otherwise.
+	 * 
+	 * @see isAttribute
+	 * @see isToManyRelationship
+	 */
+	public boolean isToOneRelationship() {
+		return type() == ERXKey.Type.ToOneRelationship || type() == ERXKey.Type.NonModelToOneRelationship;
+	}
+	
+	/**
+	 * Checks this key's {@link ERXKey.Type} to determine if it represents a
+	 * to-many {@link EORelationship}.
+	 * <p>
+	 * <em>Note:</em> if {@link #type()} has not been set, then this will return
+	 * <code>false</code>. To set it, you have the following options:
+	 * <ul>
+	 * <li>Set it manually using {@link #setType(Type)}</li>
+	 * <li>Set it using the {@link #ERXKey(String, Type)} constructor. If this
+	 * key was declared in code generated by EOGenerator (i.e. in a _Entity.java
+	 * class), you will need to modify your EOGenerator template. See
+	 * {@link #ERXKey(String, Type)} for details.</li>
+	 * </ul>
+	 * 
+	 * @return <code>true</code> if {@link #type()} returns either
+	 *         {@link ERXKey.Type.ToOneRelationship} or
+	 *         {@link ERXKey.Type.NonModelToOneRelationship}, <code>false</code>
+	 *         otherwise.
+	 *         
+	 * @see isAttribute
+	 * @see isToOneRelationship
+	 */
+	public boolean isToManyRelationship() {
+		return type() == ERXKey.Type.ToManyRelationship || type() == ERXKey.Type.NonModelToManyRelationship;
 	}
 }

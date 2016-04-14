@@ -1,7 +1,5 @@
 package er.extensions.components._private;
 
-import org.apache.log4j.Logger;
-
 import com.webobjects.appserver.WOActionResults;
 import com.webobjects.appserver.WOAssociation;
 import com.webobjects.appserver.WOComponent;
@@ -23,10 +21,12 @@ import er.extensions.foundation.ERXProperties;
 /**
  * Clone of WOSubmitButton that should emit <code>&lt;button&gt;</code> tags instead of 
  * <code>&lt;input&gt;</code> tags. This allows you to use HTML content and superior style
- * features. <br />
+ * features.
+ * <p>
  * Unfortunately, IE is totally broken and always submits all buttons on a page,
  * which makes it unusable for actions. So this component inserts some javascript to fix this.
- * Of course, this means your button is only usable with scripting turned on in IE.<br />
+ * Of course, this means your button is only usable with scripting turned on in IE.
+ * <p>
  * You can add this class via ERXPatcher.setClassForName(ERXSubmitButton.class, "WOSubmitButton");
  * and see how this works out or use it explicitely. If you just patch it into the system,
  * the value is used as the content, otherwise you can put any html you like into it.
@@ -35,9 +35,6 @@ import er.extensions.foundation.ERXProperties;
  * @property 	er.extensions.components._private.ERXSubmitButton.useIEFix		opt-out
  */
 public class ERXSubmitButton extends WOInput {
-
-	public static final Logger log = Logger.getLogger(ERXSubmitButton.class);
-
 	public static final String STYLE_PREFIX = "ERXSubmitButton-";
 	private static boolean useIEFix = ERXProperties.booleanForKeyWithDefault("er.extensions.components._private.ERXSubmitButton.useIEFix", true);
 	

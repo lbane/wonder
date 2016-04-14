@@ -557,14 +557,6 @@ public interface ERXEnterpriseObject extends EOEnterpriseObject {
             EOEditingContext ec);
 
     /**
-     * Cover method to return <code>toString</code>.
-     * @return the results of calling toString.
-     * @deprecated use {@link #toString()} instead
-     */
-    @Deprecated
-    public abstract String description();
-
-    /**
      * Returns the super classes implementation of toString
      * which prints out the current key-value pairs for all
      * of the attributes and relationships for the current
@@ -602,34 +594,6 @@ public interface ERXEnterpriseObject extends EOEnterpriseObject {
      * @return if the object is a new enterprise object.
      */
     public abstract boolean isNewObject();
-
-    /**
-     * Debugging method that will be called on an object before it is
-     * saved to the database if the property key: <b>ERDebuggingEnabled</b>
-     * is enabled. This allows for adding in a bunch of expensive validation
-     * checks that should only be enabled in development and testing
-     * environments.
-     * @throws NSValidation.ValidationException if the object is not consistent
-     */
-    @Deprecated
-    public abstract void checkConsistency()
-            throws NSValidation.ValidationException;
-
-    /**
-     * This method is very similar to the <code>checkConsistency</code> method
-     * except that this method is only called from an outside process, usually
-     * a batch process, to verify that the data this object holds is consistent.
-     * JUnit tests are great for testing that all of the methods of a single
-     * object function correctly, batch checking of consistency is a good way
-     * of checking that all of the data in a given database is consistent. Hopefully
-     * in the future we will add a batch check consistency application to demonstrate
-     * the use of this method.
-     * @throws NSValidation.ValidationException if the object fails consistency
-     */
-    @Deprecated
-    public abstract void batchCheckConsistency()
-            throws NSValidation.ValidationException;
-
 	
     /**
      * Toggles whether or not inverse relationships should be updates.  This is

@@ -6,16 +6,15 @@ import java.util.Map;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import er.extensions.foundation.ERXProperties;
 
 /**
- * <p>
  * Provides database instances with all its settings, except for the filesystem location, being read from
  * system properties. Additionally it can perform database warm up, which can be useful especially in
  * cases where the entire database is cached in memory.
- * </p>
- * 
  * <p>
  * Configuration system properties:
  * <ul>
@@ -24,13 +23,12 @@ import er.extensions.foundation.ERXProperties;
  * <li><code>{@value #WARMUP_PROPERTY_KEY}</code> - boolean flag denoting whether to perform initial database warm up (iterates over all properties for
  * all nodes), defaults to {@value #WARMUP_DEFAULT_VALUE}</li>
  * </ul>
- * </p>
  * 
  * 
  * @author Jedrzej Sobanski
  */
 public class DatabasePool {
-	private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(DatabasePool.class);
+	private static final Logger log = LoggerFactory.getLogger(DatabasePool.class);
 	
 	/**
 	 * Singleton instance.

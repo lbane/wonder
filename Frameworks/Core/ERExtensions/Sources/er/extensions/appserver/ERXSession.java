@@ -12,7 +12,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.TimeZone;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.appserver.WOApplication;
 import com.webobjects.appserver.WOContext;
@@ -60,16 +61,8 @@ public class ERXSession extends ERXAjaxSession implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-  /** logging support */
-  public static final Logger log = Logger.getLogger(ERXSession.class);
+  private static final Logger log = LoggerFactory.getLogger(ERXSession.class);
 
-  /**
-   * Notification name that is posted after a session wakes up.
-   * 
-   * @deprecated use {@link WOSession#SessionDidRestoreNotification} instead
-   */
-  @Deprecated
-  public static final String SessionWillAwakeNotification = "SessionWillAwakeNotification";
   /**
    * Notification name that is posted when a session is about to sleep.
    */
@@ -164,9 +157,7 @@ public class ERXSession extends ERXAjaxSession implements Serializable {
 
       String currentLanguage = session._localizer.language();
       session._localizer = ERXLocalizer.localizerForLanguage(currentLanguage);
-      if (log.isDebugEnabled()) {
-        log.debug("Detected changes in the localizers. Reset reference to " + currentLanguage + " localizer for session " + session.sessionID());
-      }
+      log.debug("Detected changes in the localizers. Reset reference to {} localizer for session {}", currentLanguage, session.sessionID());
     }
 
     /** 
@@ -396,8 +387,7 @@ public class ERXSession extends ERXAjaxSession implements Serializable {
       // FIXME: Shouldn't be hardcoded form value.
       String js = request.stringFormValueForKey("javaScript");
       if (js != null) {
-        if (log.isDebugEnabled())
-          log.debug("Received javascript form value " + js);
+        log.debug("Received javascript form value {}", js);
       }
       else {
         try {
@@ -434,12 +424,12 @@ public class ERXSession extends ERXAjaxSession implements Serializable {
     super.awake();
     ERXSession.setSession(this);
     ERXLocalizer.setCurrentLocalizer(localizer());
-    NSNotificationCenter.defaultCenter().postNotification(SessionWillAwakeNotification, this);
+    NSNotificationCenter.defaultCenter().postNotification(SessionDidRestoreNotification, this);
 
     WORequest request = context() != null ? context().request() : null;
     if (request != null && log.isDebugEnabled() && request.headerForKey("content-type") != null) {
       if ((request.headerForKey("content-type")).toLowerCase().indexOf("multipart/form-data") == -1)
-        log.debug("Form values " + request.formValues());
+        log.debug("Form values {}", request.formValues());
       else
         log.debug("Multipart Form values found");
     }
@@ -593,9 +583,7 @@ public class ERXSession extends ERXAjaxSession implements Serializable {
       ERXBrowserFactory.factory().releaseBrowser(_browser);
       _browser = null;
     }
-    if (log.isDebugEnabled()) {
-      log.debug("Will terminate, sessionId is " + sessionID());
-    }
+    log.debug("Will terminate, sessionId is {}", sessionID());
     super.terminate();
   }
 
@@ -675,8 +663,7 @@ public class ERXSession extends ERXAjaxSession implements Serializable {
     stream.defaultReadObject();
     if (_serializableLanguageName != null)
       setLanguage(_serializableLanguageName);
-    if (log.isDebugEnabled())
-      log.debug("Session has been deserialized: " + toString());
+    log.debug("Session has been deserialized: {}", this);
   }
 
   @Override
@@ -729,7 +716,7 @@ public class ERXSession extends ERXAjaxSession implements Serializable {
    * will be sent over HTTP.  So if someone manages to do an HTTP injection that causes an HTTP 
    * request to be made, they can compromise your session id. For example, if you have a CMS on 
    * https://www.mycms.com and you set a session id, and I hack in and trick your site and manage to 
-   * do an injection where i do an <img src="http://www.mycms.com/whatever"/> in the content, like I post 
+   * do an injection where i do an &lt;img src="http://www.mycms.com/whatever"/&gt; in the content, like I post 
    * in a comment and you don't strip out HTML tags.  secure-only just gives you peace-of-mind.  If you 
    * intended the cookies to only be behind HTTPS, secure-only makes it actually true and enforced.
    * 
@@ -835,7 +822,7 @@ public class ERXSession extends ERXAjaxSession implements Serializable {
    * set the current Look for this Session
    * 
    * <pre>
-   * 90 : *true* => look = "session.currentD2WLook" 
+   * 90 : *true* =&gt; look = "session.currentD2WLook" 
    *    [er.directtoweb.assignments.delayed.ERDDelayedKeyValueAssignment]
    * </pre>
    * 

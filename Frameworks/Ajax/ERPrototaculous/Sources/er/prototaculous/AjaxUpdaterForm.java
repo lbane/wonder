@@ -6,7 +6,6 @@ import com.webobjects.appserver.WOContext;
 import com.webobjects.appserver.WORequest;
 import com.webobjects.appserver._private.WOForm;
 
-import er.extensions.appserver.ERXWOContext;
 import er.extensions.components.ERXComponentUtilities;
 import er.extensions.foundation.ERXProperties;
 
@@ -46,7 +45,7 @@ public class AjaxUpdaterForm extends AjaxUpdater {
 	public boolean _omitTags;
     
     public String href() {    // action
-		return ERXWOContext.ajaxActionUrl(context());
+		return context().componentActionURL(application().ajaxRequestHandlerKey());
     }
     
     public String classString() {

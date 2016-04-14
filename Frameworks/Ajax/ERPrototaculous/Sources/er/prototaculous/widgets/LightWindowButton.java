@@ -7,8 +7,6 @@ import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSDictionary;
 import com.webobjects.foundation.NSMutableArray;
 
-import er.extensions.appserver.ERXWOContext;
-
 /**
  * Encapsulates http://www.stickmanlabs.com/lightwindow 2.0
  *
@@ -57,7 +55,7 @@ public class LightWindowButton extends LightWindow {
     @SuppressWarnings("unchecked")
 	public String href() {
     	if (hasBinding(Bindings.action))
-    		return ERXWOContext.ajaxActionUrl(context());
+    		return context().componentActionURL(application().ajaxRequestHandlerKey());
     	else if (hasBinding(Bindings.directActionName)) {
     		String directActionName = (String) valueForBinding(Bindings.directActionName);
     		NSDictionary queryDictionary = (NSDictionary) valueForBinding(Bindings.queryDictionary);
