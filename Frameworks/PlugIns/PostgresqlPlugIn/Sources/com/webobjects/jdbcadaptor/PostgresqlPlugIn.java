@@ -182,17 +182,6 @@ public class PostgresqlPlugIn extends JDBCPlugIn {
     }
   }
   
-  @Override
-  public EOSchemaSynchronizationFactory createSchemaSynchronizationFactory()
-  {
-      try {
-          return new PostgresqlSchemaSynchronizationFactory(adaptor());
-      }
-      catch (Exception e) {
-          throw new NSForwardException(e, "Couldn't create schema synchronization factory");
-      }
-  }
-
   /**
    * Expression class to create. We have custom code, so we need our own class.
    */
