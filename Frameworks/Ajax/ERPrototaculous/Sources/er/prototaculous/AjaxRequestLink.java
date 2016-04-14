@@ -6,8 +6,6 @@ import com.webobjects.appserver.WOContext;
 import com.webobjects.appserver._private.WODynamicElementCreationException;
 import com.webobjects.foundation.NSDictionary;
 
-import er.extensions.appserver.ERXWOContext;
-
 /**
  * An Ajax.Request as a link
  * @see AjaxRequest
@@ -58,7 +56,7 @@ public class AjaxRequestLink extends AjaxRequest {
     
     public String href() {
     	if (hasBinding(Bindings.action)) {
-    		return ERXWOContext.ajaxActionUrl(context());
+    		return context().componentActionURL(application().ajaxRequestHandlerKey());
     	} else if (hasBinding(Bindings.directActionName)) {
     		NSDictionary queryDictionary = hasBinding(Bindings.queryDictionary) ? queryDictionary() : null;
     		return context().directActionURLForActionNamed(directActionName(), queryDictionary);

@@ -145,7 +145,7 @@ public class _MySQLPlugIn extends JDBCPlugIn {
 		/**
 		 * Overriding to 
 		 * <ul>
-		 * <li>add LIMIT clause if _fetchLimit > 0</li>
+		 * <li>add LIMIT clause if _fetchLimit &gt; 0</li>
 		 * <li>support MySQL JOIN syntax (similar syntax to what PostgreSQL PlugIn generates)</li>
 		 * </ul>
 		 *
@@ -673,7 +673,7 @@ public class _MySQLPlugIn extends JDBCPlugIn {
 	}
 
 	@Override
-	public Class<MySQLExpression> defaultExpressionClass() {
+	public Class<? extends JDBCExpression> defaultExpressionClass() {
 		try {
 			if (NSProperties.booleanForKey("com.webobjects.jdbcadaptor.MySQLExpression.enable")) {
 				return com.webobjects.jdbcadaptor.MySQLPlugIn.MySQLExpression.class;

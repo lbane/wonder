@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.eoaccess.EOEntityClassDescription;
 import com.webobjects.eocontrol.EOClassDescription;
@@ -39,7 +40,7 @@ import er.rest.format.IERXRestWriter;
  * @author mschrag
  */
 public class ERXRestRequestNode implements NSKeyValueCoding, NSKeyValueCodingAdditions {
-    private static final Logger log = Logger.getLogger(ERXRestRequestNode.class);
+    private static final Logger log = LoggerFactory.getLogger(ERXRestRequestNode.class);
     
 	private boolean _array;
 	private String _name;
@@ -149,7 +150,7 @@ public class ERXRestRequestNode implements NSKeyValueCoding, NSKeyValueCodingAdd
 	 * @param delegate
 	 *            the format delegate to notify during rendering
 	 * @param conversionMap
-	 *            the conversion map to use to record object => request node mappings
+	 *            the conversion map to use to record object =&gt; request node mappings
 	 * 
 	 * @return the Java object that corresponds to this node hierarchy
 	 */
@@ -163,7 +164,7 @@ public class ERXRestRequestNode implements NSKeyValueCoding, NSKeyValueCodingAdd
 	 * @param delegate
 	 *            the format delegate to notify during rendering
 	 * @param conversionMap
-	 *            the conversion map to use to record object => request node mappings
+	 *            the conversion map to use to record object =&gt; request node mappings
 	 * @param associatedObjects
 	 *            the associatedObjects map (to prevent infinite loops)
 	 * @return the Java object that corresponds to this node hierarchy
@@ -887,7 +888,7 @@ public class ERXRestRequestNode implements NSKeyValueCoding, NSKeyValueCodingAdd
                         childrenObjects = EOSortOrdering.sortedArrayUsingKeyOrderArray((NSArray<?>)childrenObjects, sortOrderings);
                 }
                 else {
-                        log.warn("Skipping sort orderings for '" + key + "' on " + obj + " because sort orderings are only supported for NSArrays.");
+                    log.warn("Skipping sort orderings for '{}' on {} because sort orderings are only supported for NSArrays.", key, obj);
                 }
         }
         for (Object childObj : childrenObjects) {

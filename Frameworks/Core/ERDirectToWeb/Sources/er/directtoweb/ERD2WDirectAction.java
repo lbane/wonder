@@ -42,7 +42,6 @@ import com.webobjects.foundation.NSForwardException;
 import com.webobjects.foundation.NSKeyValueCoding;
 import com.webobjects.foundation.NSMutableArray;
 import com.webobjects.foundation.NSMutableDictionary;
-import com.webobjects.foundation.NSNumberFormatter;
 import com.webobjects.foundation.NSSelector;
 import com.webobjects.foundation.NSTimestampFormatter;
 
@@ -59,8 +58,8 @@ import er.extensions.foundation.ERXStringUtilities;
 import er.extensions.foundation.ERXValueUtilities;
 
 /**
- * Automatically creates page configurations from URLs.<br />
- * Examples:
+ * Automatically creates page configurations from URLs.
+ * <h3>Examples:</h3>
  * <ul>
  *   <li><code>http://localhost/cgi-bin/WebObjects/MyApp.woa/wa/QueryAll</code><br >
  * will create an query page all entities.
@@ -79,14 +78,14 @@ import er.extensions.foundation.ERXValueUtilities;
  *   <li><code>http://localhost/cgi-bin/WebObjects/MyApp.woa/wa/CreateArticle</code><br >
  * will create an edit page for a newly created article.
  *
- *   <li><code>http://localhost/cgi-bin/WebObjects/MyApp.woa/wa/ListArticle?__key=&lt;userid&gt;&__keypath=User.articles</code><br >
+ *   <li><code>http://localhost/cgi-bin/WebObjects/MyApp.woa/wa/ListArticle?__key=&lt;userid&gt;&amp;__keypath=User.articles</code><br >
  * will list the articles of the given user.
  *
- *   <li><code>http://localhost/cgi-bin/WebObjects/MyApp.woa/wa/ListArticle?__fs=recentArticles&authorName=*foo*</code><br >
+ *   <li><code>http://localhost/cgi-bin/WebObjects/MyApp.woa/wa/ListArticle?__fs=recentArticles&amp;authorName=*foo*</code><br >
  * will list the articles by calling the fetch spec "recentArticles". When the
  * fetch spec has an "authorName" binding, it is set to "*foo*".
  *
- *   <li><code>http://localhost/cgi-bin/WebObjects/MyApp.woa/wa/ListArticle?__fs=&author.name=*foo*&__fs_fetchLimit=0</code><br >
+ *   <li><code>http://localhost/cgi-bin/WebObjects/MyApp.woa/wa/ListArticle?__fs=&amp;author.name=*foo*&amp;__fs_fetchLimit=0</code><br >
  * will list the articles by creating a fetch spec with the supplied attributes. 
  * When the value contains "*", then it will be regarded as a LIKE query, otherwise as a EQUAL
  *   <li><code>http://localhost/cgi-bin/WebObjects/MyApp.woa/wa/ErrorSomeStuff?__message=Some+Test</code><br >
@@ -225,12 +224,6 @@ public abstract class ERD2WDirectAction extends ERXDirectAction {
     		}
     	}
     	return fs;
-    }
-
-    /** @deprecated use {@link #primaryKeyFromRequest(EOEditingContext, String)} */
-    @Deprecated
-    public Number primaryKeyFromRequest() {
-        return context().request().numericFormValueForKey(primaryKeyKey, new NSNumberFormatter("#"));
     }
 
     public NSDictionary primaryKeyFromRequest(EOEditingContext ec, String entityName) {

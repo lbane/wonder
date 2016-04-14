@@ -6,8 +6,6 @@
  * included with this distribution in the LICENSE.NPL file.  */
 package er.extensions.eof.qualifiers;
 
-import org.apache.log4j.Logger;
-
 import com.webobjects.eoaccess.EOEntity;
 import com.webobjects.eoaccess.EOEntityClassDescription;
 import com.webobjects.eoaccess.EOQualifierSQLGeneration;
@@ -24,11 +22,11 @@ import er.extensions.eof.ERXEOAccessUtilities;
  * a qualifier that can be used to filter a result set
  * for a given set of primary keys. Note that this uses
  * the IN expression and as such may not work with some
- * databases. <br/>
- * <br/>
+ * databases.
+ * <p>
  * Given a list of EOs, this generates a query looking like
  *
- *   ...  t0.ID in (< the list of primary Keys for EOs in the list>) ..
+ *   ...  t0.ID in (&lt; the list of primary Keys for EOs in the list &gt;) ..
  *
  * this is useful for pre-fetching type uses.
  */
@@ -39,9 +37,6 @@ public class ERXPrimaryKeyListQualifier extends ERXInQualifier {
 	 * <a href="http://java.sun.com/j2se/1.4/pdf/serial-spec.pdf">Java Object Serialization Spec</a>
 	 */
 	private static final long serialVersionUID = 1L;
-    
-    /** logging support */
-    protected static final Logger log = Logger.getLogger(ERXPrimaryKeyListQualifier.class);
 
     public static final String IsContainedInArraySelectorName = "isContainedInArray";
     

@@ -18,8 +18,9 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.foundation.NSForwardException;
 
@@ -42,7 +43,7 @@ public final class ERXEmailValidator implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private static final Logger log = Logger.getLogger(ERXEmailValidator.class);
+	private static final Logger log = LoggerFactory.getLogger(ERXEmailValidator.class);
 
 	// RFC 2822 2.2.2 Structured Header Field Bodies
 	private static final String wsp = "[ \\t]"; // space or tab
@@ -109,7 +110,7 @@ public final class ERXEmailValidator implements Serializable {
 	 * It seems that after about 25 chars, the regular expression matching
 	 * takes exponentially longer to match the string. The same address with
 	 * quoting does not exhibit the problem. 
-	 * Ex. "Blah blah" <blahblahblahblahblahblahblah@blah.com>
+	 * Ex. "Blah blah" &lt;blahblahblahblahblahblahblah@blah.com&gt;
 	 * 
 	 * Nor does using a validator that does not allow quoted identifiers. In
 	 * order to work around this problem, a second internal validator is

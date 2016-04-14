@@ -19,7 +19,8 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.WeakHashMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
@@ -81,21 +82,19 @@ public class ERXEC extends EOEditingContext {
 	 */
 	private static final long serialVersionUID = 1L;
 
-
-	/** general logging */
-	public static final Logger log = Logger.getLogger(ERXEC.class);
+	private static final Logger log = LoggerFactory.getLogger(ERXEC.class);
 
 	/**
 	 * Logs a message when set to DEBUG and an EC is locked/unlocked. Logs a message with
 	 * trace if {@link #lockTrace} is also set to DEBUG.
 	 */
-	public static final Logger lockLogger = Logger.getLogger("er.extensions.ERXEC.LockLogger");
+	public static final Logger lockLogger = LoggerFactory.getLogger("er.extensions.ERXEC.LockLogger");
 
 	/** 
 	 * Logs a message with trace when set to DEBUG if autoLocking is enabled and an EC is
 	 * used without a lock. Adds traces to messages by {@link #lockLogger} if it is also set to DEBUG.
 	 */
-	public static final Logger lockTrace = Logger.getLogger("er.extensions.ERXEC.LockTrace");
+	public static final Logger lockTrace = LoggerFactory.getLogger("er.extensions.ERXEC.LockTrace");
 
 	/** Name of the notification that is posted after editing context is created. */
 	public static final String EditingContextDidCreateNotification = "EOEditingContextDidCreate";
@@ -144,7 +143,7 @@ public class ERXEC extends EOEditingContext {
 	 */
 	private Boolean coalesceAutoLocks;
 
-	/** if > 0, there is an autolock on this editingContext */ 
+	/** if &gt; 0, there is an autolock on this editingContext */ 
 	private int autoLocked;
 
 	/**
@@ -224,7 +223,7 @@ public class ERXEC extends EOEditingContext {
 			synchronized (ERXEC.class) {
 				if(useUnlocker == null) {
 			useUnlocker = Boolean.valueOf(ERXProperties.booleanForKey("er.extensions.ERXEC.useUnlocker") || ERXEC.safeLocking());
-			log.debug("setting useUnlocker to " + useUnlocker);
+			log.debug("setting useUnlocker to {}", useUnlocker);
 		}
 			}
 		}
@@ -248,7 +247,7 @@ public class ERXEC extends EOEditingContext {
 			synchronized (ERXEC.class) {
 				if(traceOpenLocks == null) {
 			traceOpenLocks = Boolean.valueOf(ERXProperties.booleanForKeyWithDefault("er.extensions.ERXEC.traceOpenLocks", false));
-			log.debug("setting traceOpenLocks to " + traceOpenLocks);
+			log.debug("setting traceOpenLocks to {}", traceOpenLocks);
 		}
 			}
 		}
@@ -269,7 +268,7 @@ public class ERXEC extends EOEditingContext {
 			synchronized (ERXEC.class) {
 				if(markOpenLocks == null) {
 			markOpenLocks = Boolean.valueOf(ERXProperties.booleanForKeyWithDefault("er.extensions.ERXEC.markOpenLocks", false));
-			log.debug("setting markOpenLocks to " + markOpenLocks);
+			log.debug("setting markOpenLocks to {}", markOpenLocks);
 		}
 			}
 		}
@@ -310,9 +309,7 @@ public class ERXEC extends EOEditingContext {
 		if (useUnlocker() && ec != null) {
 			List ecs = locks.get();
 			ecs.add(ec);
-			if (log.isDebugEnabled()) {
-				log.debug("After pushing: " + ecs);
-			}
+			log.debug("After pushing: {}", ecs);
 		}
 	}
 
@@ -332,12 +329,10 @@ public class ERXEC extends EOEditingContext {
 					ecs.remove(index);
 				}
 				else {
-					log.error("Should pop, but ec not found in Vector! " + Thread.currentThread().getName() + ", ec: " + ec + ", ecs:" + ecs);
+					log.error("Should pop, but ec not found in Vector! {}, ec: {}, ecs: {}", Thread.currentThread().getName(), ec, ecs);
 				}
 			}
-			if (log.isDebugEnabled()) {
-				log.debug("After popping: " + ecs);
-			}
+			log.debug("After popping: {}", ecs);
 		}
 	}
 
@@ -348,26 +343,24 @@ public class ERXEC extends EOEditingContext {
 	public static void unlockAllContextsForCurrentThread() {
 		List ecs = locks.get();
 		if (useUnlocker() && ecs != null && ecs.size() > 0) {
-			if (log.isDebugEnabled()) {
-				log.debug("Unlock remaining: " + ecs);
-			}
+			log.debug("Unlock remaining: {}", ecs);
 			// we can't use an iterator, because calling unlock() will remove
 			// the EC from end of the vector
 			for (int i = ecs.size() - 1; i >= 0; i--) {
 				EOEditingContext ec = (EOEditingContext) ecs.get(i);
 				boolean openAutoLocks = (ec instanceof ERXEC && ((ERXEC) ec).isAutoLocked());
 				if (openAutoLocks) {
-					log.debug("Unlocking autolocked editing context: " + ec);
+					log.debug("Unlocking autolocked editing context: {}", ec);
 					((ERXEC) ec).autoLocked--;
 				}
 				else {
-					log.warn("Unlocking context that wasn't unlocked in RR-Loop!: " + ec);
+					log.warn("Unlocking context that wasn't unlocked in RR-Loop: {}", ec);
 				}
 				try {
 					ec.unlock();
 				}
 				catch (IllegalStateException ex) {
-					log.error("Could not unlock EC: " + ec, ex);
+					log.error("Could not unlock EC: {}", ec, ex);
 				}
 				
 			}
@@ -578,10 +571,10 @@ public class ERXEC extends EOEditingContext {
 		}
 		if (!isAutoLocked() && lockLogger.isDebugEnabled()) {
 			if (lockTrace.isDebugEnabled()) {
-				lockLogger.debug("locked " + this, new Exception());
+				lockLogger.debug("locked {}", this, new Exception());
 			}
 			else {
-				lockLogger.debug("locked " + this);
+				lockLogger.debug("locked {}", this);
 			}
 		}
 	}
@@ -630,7 +623,7 @@ public class ERXEC extends EOEditingContext {
 					openLockTraces.removeObjectForKey(lockingThread);
 				}
 			} else {
-				log.error("Missing lock: " + lockingThread);
+				log.error("Missing lock: {}", lockingThread);
 			}
 			if (openLockTraces.count() == 0) {
 				openLockTraces = null;
@@ -654,10 +647,10 @@ public class ERXEC extends EOEditingContext {
 		}
 		if (!isAutoLocked() && lockLogger.isDebugEnabled()) {
 			if (lockTrace.isDebugEnabled()) {
-				lockLogger.debug("unlocked " + this, new Exception());
+				lockLogger.debug("unlocked {}", this, new Exception());
 			}
 			else {
-				lockLogger.debug("unlocked " + this);
+				lockLogger.debug("unlocked {}", this);
 			}
 		}
 		super.unlock();
@@ -705,10 +698,10 @@ public class ERXEC extends EOEditingContext {
 
 			if (!isFinalizing) {
 				if (lockTrace.isDebugEnabled()) {
-					lockTrace.debug("called method " + method + " without a lock, ec=" + this, new Exception());
+					lockTrace.debug("called method {} without a lock, ec={}", method, this, new Exception());
 				}
 				else {
-					//lockLogger.warn("called method " + method + " without a lock, ec=" + this);
+					//lockLogger.warn("called method {} without a lock, ec={}", method, this);
 				}
 			}
 		}
@@ -746,13 +739,13 @@ public class ERXEC extends EOEditingContext {
 		NSMutableDictionary<Thread, NSMutableArray<Exception>> traces = openLockTraces;
 		if (traces != null && traces.count() != 0) {
 			String instance = getClass().getSimpleName() + "@" + System.identityHashCode(this);
-			log.error(instance + " Disposed with " + traces.count() + " locks (finalizing = " + isFinalizing + ")");
+			log.error("{} Disposed with {} locks (finalizing = {})", instance, traces.count(), isFinalizing);
 			for (NSMutableArray<Exception> actual : traces.values()) {
 				for (Exception existingOpenLockTrace : actual) {
-					log.error(instance + " Existing lock: ", existingOpenLockTrace);
+					log.error("{} Existing lock.", instance, existingOpenLockTrace);
 				}
 			}
-			log.error(instance + " Created: ", creationTrace);
+			log.error("{} Created.", instance, creationTrace);
 		}
 	}
 
@@ -769,12 +762,12 @@ public class ERXEC extends EOEditingContext {
 		isFinalizing = true;
 		try {
 			if (markOpenLocks()) {
-				// log.info("Finalize " + getClass().getSimpleName() + "@" + System.identityHashCode(this));
+				// log.info("Finalize {}@{}", getClass(), System.identityHashCode(this));
 				_checkOpenLockTraces();
 			}
 		} catch(Throwable ex) {
 			// we *must* not fail in a finalizer
-			log.error("Error finalizing: " + ex, ex);
+			log.error("Error finalizing.", ex);
 		} finally {
 			super.finalize();
 		}
@@ -1181,7 +1174,7 @@ public class ERXEC extends EOEditingContext {
 		catch (EOGeneralAdaptorException e) {
 			saved = false;
 			if (_recoversFromException) {
-				log.warn("_saveChangesTolerantly: Exception occurred: " + e, e);
+				log.warn("_saveChangesTolerantly: Exception occurred", e);
 				if (ERXEOAccessUtilities.isOptimisticLockingFailure(e)) {
 					EOEnterpriseObject eo = ERXEOAccessUtilities.refetchFailedObject(this, e);
 					if (_mergesChanges) {
@@ -1419,19 +1412,6 @@ public class ERXEC extends EOEditingContext {
 		}
 	}
 
-	/** @deprecated use {@link #saveChanges()} */
-    @Override
-    @Deprecated
-	public void saveChanges(Object obj) {
-		boolean wasAutoLocked = autoLock("saveChanges");
-		try {
-			saveChanges();
-		}
-		finally {
-			autoUnlock(wasAutoLocked);
-		}
-	}
-
     @Override
 	public void refreshObject(EOEnterpriseObject eoenterpriseobject) {
 		boolean wasAutoLocked = autoLock("refreshObject");
@@ -1596,7 +1576,7 @@ public class ERXEC extends EOEditingContext {
 	@Override
 	public void setDelegate(Object d) {
 		if (log.isDebugEnabled()) {
-			log.debug("setting delegate to " + d);
+			log.debug("setting delegate to {}", d);
 			log.debug(ERXUtilities.stackTrace());
 		}
 		super.setDelegate(d);
@@ -1604,9 +1584,7 @@ public class ERXEC extends EOEditingContext {
 
 	/** Default implementation of the Factory interface. */
 	public static class DefaultFactory implements Factory {
-
-		/** logging support */
-		public static final Logger log = Logger.getLogger(DefaultFactory.class);
+		private static final Logger log = LoggerFactory.getLogger(DefaultFactory.class);
 
 		/** holds a reference to the default ec delegate */
 		protected Object defaultEditingContextDelegate;
@@ -1645,9 +1623,7 @@ public class ERXEC extends EOEditingContext {
 		 */
 		public void setDefaultEditingContextDelegate(Object delegate) {
 			defaultEditingContextDelegate = delegate;
-			if (log.isDebugEnabled()) {
-				log.debug("setting defaultEditingContextDelegate to " + delegate);
-			}
+			log.debug("setting defaultEditingContextDelegate to {}", delegate);
 		}
 
 		/**
@@ -1686,9 +1662,7 @@ public class ERXEC extends EOEditingContext {
 		 *            validation on objects being saved.
 		 */
 		public void setDefaultDelegateOnEditingContext(EOEditingContext ec, boolean validation) {
-			if (log.isDebugEnabled()) {
-				log.debug("Setting default delegate on editing context: " + ec + " allows validation: " + validation);
-			}
+			log.debug("Setting default delegate on editing context: {} allows validation: {}", ec, validation);
 			if (ec != null) {
 				if (validation) {
 					ec.setDelegate(defaultEditingContextDelegate());
@@ -1825,7 +1799,7 @@ public class ERXEC extends EOEditingContext {
 		public boolean useSharedEditingContext() {
 			if (useSharedEditingContext == null) {
 				useSharedEditingContext = ERXProperties.booleanForKeyWithDefault("er.extensions.ERXEC.useSharedEditingContext", true) ? Boolean.TRUE : Boolean.FALSE;
-				log.debug("setting useSharedEditingContext to " + useSharedEditingContext);
+				log.debug("setting useSharedEditingContext to {}", useSharedEditingContext);
 			}
 			return useSharedEditingContext.booleanValue();
 		}
@@ -1906,9 +1880,6 @@ public class ERXEC extends EOEditingContext {
 			ERXEC erxec = (ERXEC) ec;
 			erxec.saveChangesTolerantly(doesRetry, mergesChanges);
 		}
-		else {
-			ERXTolerantSaver.save(ec, doesRetry, mergesChanges);
-		}
 	}
 
 	public static void saveChangesTolerantly(EOEditingContext ec) {
@@ -1921,7 +1892,9 @@ public class ERXEC extends EOEditingContext {
 	 * flag passed in. This method is useful when creating nested editing
 	 * contexts. After creating the editing context the default delegate is set
 	 * on the editing context if validation is enabled or the default no
-	 * validation delegate is set if validation is disabled.<br/> <br/> Note:
+	 * validation delegate is set if validation is disabled.
+	 * <p>
+	 * Note:
 	 * an {@link com.webobjects.eocontrol.EOEditingContext EOEditingContext} is
 	 * a subclass of EOObjectStore so passing in another editing context to this
 	 * method is completely kosher.
@@ -1958,7 +1931,9 @@ public class ERXEC extends EOEditingContext {
 	 * Creates a new editing context with the specified object store as the
 	 * parent object store. This method is useful when creating nested editing
 	 * contexts. After creating the editing context the default delegate is set
-	 * on the editing context.<br/> <br/> Note: an {@link EOEditingContext} is
+	 * on the editing context.
+	 * <p>
+	 * Note: an {@link EOEditingContext} is
 	 * a subclass of EOObjectStore so passing in another editing context to this
 	 * method is completely kosher.
 	 * 

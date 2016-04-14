@@ -6,8 +6,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
 
-import org.apache.commons.lang.CharEncoding;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.CharEncoding;
 
 import com.webobjects.appserver.WOContext;
 import com.webobjects.appserver.WOResponse;
@@ -33,9 +32,6 @@ public class ERXExternalContent extends ERXStatelessComponent {
 	 */
 	private static final long serialVersionUID = 1L;
 
-    /** logging support */
-    private static final Logger log = Logger.getLogger(ERXExternalContent.class);
-	
     /**
      * Public constructor
      * @param context the context

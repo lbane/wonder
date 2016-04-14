@@ -8,7 +8,8 @@ package er.extensions.qualifiers;
 
 import java.util.Enumeration;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.eocontrol.EOAndQualifier;
 import com.webobjects.eocontrol.EOKeyComparisonQualifier;
@@ -17,14 +18,14 @@ import com.webobjects.eocontrol.EONotQualifier;
 import com.webobjects.eocontrol.EOOrQualifier;
 import com.webobjects.eocontrol.EOQualifierEvaluation;
 
+import er.extensions.eof.qualifiers.ERXExistsQualifier;
+
 /**
  * Traverse a network of qualifiers until a traversal method returns false.
  * Subclass and implement the methods you need.
  */
 public class ERXQualifierTraversal {
-
-	/** logging support */
-	public static final Logger log = Logger.getLogger(ERXQualifierTraversal.class);
+	private static final Logger log = LoggerFactory.getLogger(ERXQualifierTraversal.class);
 
 	/**
 	 * Catch-all visitor, will get called for each qualifier.
@@ -44,7 +45,7 @@ public class ERXQualifierTraversal {
 	 * @return should traverse boolean qualifier
 	 */
 	protected boolean traverseUnknownQualifier(EOQualifierEvaluation q) {
-		log.error("Found unknown qualifier type:" + q.getClass().getName());
+		log.error("Found unknown qualifier type: {}", q.getClass().getName());
 		return true;
 	}
 
@@ -126,6 +127,17 @@ public class ERXQualifierTraversal {
 	}
 
 	/**
+	 * Should traverse exists qualifier?
+	 *
+	 * @param q
+	 *            the qualifier to process
+	 * @return should traverse exists qualifier
+	 */
+	protected boolean traverseExistsQualifier(ERXExistsQualifier q) {
+		return true;
+	}
+
+	/**
 	 * Traverses the supplied qualifier
 	 * 
 	 * @param q
@@ -198,6 +210,9 @@ public class ERXQualifierTraversal {
 			}
 			else if (q instanceof ERXFalseQualifier) {
 				result = traverseFalseQualifier((ERXFalseQualifier) q) ? Boolean.TRUE : Boolean.FALSE;
+			}
+			else if (q instanceof ERXExistsQualifier) {
+				result = traverseExistsQualifier((ERXExistsQualifier) q) ? Boolean.TRUE : Boolean.FALSE;
 			}
 			else {
 				result = traverseUnknownQualifier(q) ? Boolean.TRUE : Boolean.FALSE;

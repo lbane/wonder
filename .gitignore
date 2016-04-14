@@ -4,4 +4,4 @@ bin
 *.pbxproj
 ant.*
 dist
-build
+.DS_Store

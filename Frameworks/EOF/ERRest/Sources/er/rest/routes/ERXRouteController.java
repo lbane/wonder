@@ -8,7 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.appserver.WOAction;
 import com.webobjects.appserver.WOActionResults;
@@ -48,6 +49,7 @@ import er.extensions.foundation.ERXProperties;
 import er.extensions.foundation.ERXStringUtilities;
 import er.extensions.localization.ERXLocalizer;
 import er.extensions.validation.ERXValidationException;
+import er.rest.ERXBasicAuthenticationException;
 import er.rest.ERXNotAllowedException;
 import er.rest.ERXRequestFormValues;
 import er.rest.ERXRestClassDescriptionFactory;
@@ -85,7 +87,7 @@ import er.rest.util.ERXRestTransactionRequestAdaptor;
  * @author mschrag
  */
 public class ERXRouteController extends WODirectAction {
-	protected static final Logger log = Logger.getLogger(ERXRouteController.class);
+	private static final Logger log = LoggerFactory.getLogger(ERXRouteController.class);
 
 	private ERXRouteRequestHandler _requestHandler;
 	private ERXRoute _route;
@@ -874,7 +876,7 @@ public class ERXRouteController extends WODirectAction {
 			((ERXRouteResults)results).setHeaderForKey(value, key);
 		}
 		else {
-			ERXRouteController.log.info("Unable to set a header on an action results of type '" + results.getClass().getName() + "'.");
+			log.info("Unable to set a header on an action results of type '{}'.", results.getClass().getName());
 		}
 	}
 	
@@ -1157,7 +1159,7 @@ public class ERXRouteController extends WODirectAction {
 		} else {
 			response.setHeader("application/json", "Content-Type");			
 		}
-		log.error("Request failed: " + request().uri(), t);
+		log.error("Request failed: {}", request().uri(), t);
 		return response;
 	}
 
@@ -1174,7 +1176,7 @@ public class ERXRouteController extends WODirectAction {
 		String formattedErrorMessage = format().toString(errorMessage, null, null);
 		WOResponse response = stringResponse(formattedErrorMessage);
 		response.setStatus(status);
-		log.error("Request failed: " + request().uri() + ", " + errorMessage);
+		log.error("Request failed: {}, {}", request().uri(), errorMessage);
 		return response;
 	}
 	
@@ -1187,7 +1189,7 @@ public class ERXRouteController extends WODirectAction {
 	public WOActionResults errorResponse(int status) {
 		WOResponse response = WOApplication.application().createResponseInContext(context());
 		response.setStatus(status);
-		log.error("Request failed: " + request().uri() + ", " + status);
+		log.error("Request failed: {}, {}", request().uri(), status);
 		return response;
 	}
 
@@ -1436,17 +1438,17 @@ public class ERXRouteController extends WODirectAction {
 			try {
 				results = pageWithName(pageName);
 				if (!(results instanceof IERXRouteComponent)) {
-					log.error(pageName + " does not implement IERXRouteComponent, so it will be ignored.");
+					log.error("{} does not implement IERXRouteComponent, so it will be ignored.", pageName);
 					results = null;
 				}
 			}
 			catch (WOPageNotFoundException e) {
-				log.info(pageName + " does not exist, falling back to route controller.");
+				log.info("{} does not exist, falling back to route controller.", pageName);
 				results = null;
 			}
 		}
 		else {
-			log.info(pageName + " does not exist, falling back to route controller.");
+			log.info("{} does not exist, falling back to route controller.", pageName);
 		}
 		
 		if (results == null && shouldFailOnMissingHtmlPage()) {
@@ -1589,8 +1591,13 @@ public class ERXRouteController extends WODirectAction {
 		if (meaningfulThrowble instanceof ObjectNotAvailableException || meaningfulThrowble instanceof FileNotFoundException || meaningfulThrowble instanceof NoSuchElementException) {
 			results = errorResponse(meaningfulThrowble, ERXHttpStatusCodes.NOT_FOUND);
 		}
+		else if (meaningfulThrowble instanceof ERXBasicAuthenticationException) {
+			WOResponse response = (WOResponse) errorResponse(meaningfulThrowble, ERXHttpStatusCodes.UNAUTHORIZED);
+			response.setHeader("Basic realm=\"" +  ((ERXBasicAuthenticationException) meaningfulThrowble).realm() +  "\"", "WWW-Authenticate");
+			results = response;
+		}
 		else if (meaningfulThrowble instanceof SecurityException) {
-			results = errorResponse(meaningfulThrowble, ERXHttpStatusCodes.STATUS_FORBIDDEN);
+			results = errorResponse(meaningfulThrowble, ERXHttpStatusCodes.FORBIDDEN);
 		}
 		else if (meaningfulThrowble instanceof ERXNotAllowedException) {
 			results = errorResponse(ERXHttpStatusCodes.METHOD_NOT_ALLOWED);

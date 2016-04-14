@@ -9,7 +9,8 @@ package er.extensions.components._private;
 
 import java.util.Enumeration;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.appserver.WOActionResults;
 import com.webobjects.appserver.WOApplication;
@@ -25,8 +26,6 @@ import com.webobjects.foundation.NSDictionary;
 import com.webobjects.foundation.NSKeyValueCoding.UnknownKeyException;
 import com.webobjects.foundation._NSDictionaryUtilities;
 
-import er.extensions.appserver.ERXBrowser;
-import er.extensions.appserver.ERXBrowserFactory;
 import er.extensions.appserver.ERXWOContext;
 import er.extensions.appserver.ajax.ERXAjaxApplication;
 import er.extensions.foundation.ERXProperties;
@@ -102,7 +101,7 @@ import er.extensions.foundation.ERXStringUtilities;
  * @author Mike Schrag (idea to secure binding)
  */  
 public class ERXWOForm extends com.webobjects.appserver._private.WOHTMLDynamicElement {
-	static final Logger log = Logger.getLogger(ERXWOForm.class);
+	private static final Logger log = LoggerFactory.getLogger(ERXWOForm.class);
 
 	WOAssociation _formName;
 	WOAssociation _enctype;
@@ -275,13 +274,13 @@ public class ERXWOForm extends com.webobjects.appserver._private.WOHTMLDynamicEl
 		if (_shouldAppendFormTags(context, wasInForm)) {
 			boolean wasFormSubmitted = context.wasFormSubmitted();
 			_enterFormInContext(context);
-			// log.info(this._formName + "->" + this.toString().replaceAll(".*(keyPath=\\w+).*", "$1"));
+			// log.info("{}->{}", _formName, toString().replaceAll(".*(keyPath=\\w+).*", "$1"));
 			String previousFormName = _setFormName(context, wasInForm);
 			try {
 				super.takeValuesFromRequest(request, context);
 			}
 			finally {
-				// log.info(context.elementID() + "->" + context.senderID() + "->" + context._wasFormSubmitted());
+				// log.info("{}->{}->{}", context.elementID(), context.senderID(), context._wasFormSubmitted());
 				_exitFormInContext(context, wasInForm, wasFormSubmitted);
 				_clearFormName(context, previousFormName, wasInForm);
 			}
@@ -374,7 +373,9 @@ public class ERXWOForm extends com.webobjects.appserver._private.WOHTMLDynamicEl
 		WOComponent wocomponent = context.component();
 		super.appendAttributesToResponse(response, context);
 		boolean generatingCompleteURLs = context.doesGenerateCompleteURLs();
-		if (secure && !generatingCompleteURLs) {
+		boolean requestIsSecure = context.secureMode();
+		boolean switchToCompleteURLs = secure ^ requestIsSecure;
+		if (switchToCompleteURLs && !generatingCompleteURLs) {
 			context.generateCompleteURLs();
 		}
 		try {
@@ -405,7 +406,7 @@ public class ERXWOForm extends com.webobjects.appserver._private.WOHTMLDynamicEl
 			}
 		}
 		finally {
-			if (secure && !generatingCompleteURLs) {
+			if (switchToCompleteURLs && !generatingCompleteURLs) {
 				context.generateRelativeURLs();
 			}
 		}
@@ -421,13 +422,7 @@ public class ERXWOForm extends com.webobjects.appserver._private.WOHTMLDynamicEl
 				_appendOpenTagToResponse(response, context);
 				if (_multipleSubmit != null && _multipleSubmit.booleanValueInComponent(context.component())) {
 					if (_addDefaultSubmitButton != null && _addDefaultSubmitButton.booleanValueInComponent(context.component()) || (_addDefaultSubmitButton == null && addDefaultSubmitButtonDefault)) {
-						ERXBrowser browser = ERXBrowserFactory.factory().browserMatchingRequest(context.request());
-						boolean useDisplayNone = !(browser.isSafari() && browser.version().compareTo("3.0.3") > 0);
-						if(useDisplayNone) {
-							response._appendContentAsciiString("<div style=\"position: absolute; left: -10000px; display: none;\"><input type=\"submit\" name=\"WOFormDummySubmit\" value=\"WOFormDummySubmit\" /></div>");
-						} else {
-							response._appendContentAsciiString("<div style=\"position: absolute; left: -10000px; visibility: hidden\"><input type=\"submit\" name=\"WOFormDummySubmit\" value=\"WOFormDummySubmit\" /></div>");
-						}
+						response._appendContentAsciiString("<div style=\"position:absolute;left:-100000px\"><input type=\"submit\" name=\"WOFormDummySubmit\" value=\"WOFormDummySubmit\" /></div>");
 					}
 				}
 				appendChildrenToResponse(response, context);
@@ -441,9 +436,9 @@ public class ERXWOForm extends com.webobjects.appserver._private.WOHTMLDynamicEl
 		}
 		else {
 			if (!_disabled(context)) {
-				log.warn("This form is embedded inside another form, so the inner form with these bindings is being omitted: " + toString());
-				log.warn("    page: " + context.page());
-				log.warn("    component: " + context.component());
+				log.warn("This form is embedded inside another form, so the inner form with these bindings is being omitted: {}", this);
+				log.warn("    page: {}", context.page());
+				log.warn("    component: {}", context.component());
 			}
 			appendChildrenToResponse(response, context);
 		}

@@ -10,7 +10,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.appserver.WOActionResults;
 import com.webobjects.appserver.WOApplication;
@@ -46,9 +47,7 @@ import er.testrunner.ERXWOTestInterface;
  * you need to give an argument "pw" that matches the corresponding system property for the action.
  */
 public class ERXDirectAction extends WODirectAction {
-
-    /** logging support */
-    public final static Logger log = Logger.getLogger(ERXDirectAction.class);
+    private final static Logger log = LoggerFactory.getLogger(ERXDirectAction.class);
 
     /** holds a reference to the current browser used for this session */
     private ERXBrowser browser;
@@ -68,7 +67,7 @@ public class ERXDirectAction extends WODirectAction {
     	}
     	String password = ERXProperties.decryptedStringForKey(passwordKey);
     	if(password == null || password.length() == 0) {
-    		log.error("Attempt to use action when key is not set: " + passwordKey);
+    		log.error("Attempt to use action when key is not set: {}", passwordKey);
     		return false;
     	}
     	String requestPassword = request().stringFormValueForKey("pw");
@@ -85,15 +84,13 @@ public class ERXDirectAction extends WODirectAction {
 
     /**
      * Action used for junit tests. This method is only active when WOCachingEnabled is
-     * disabled (we take this to mean that the application is not in production).<br/>
-     * <br/>
-     * Synopsis:<br/>
-     * pw=<i>aPassword</i>&case=<i>classNameOfTestCase</i>
-     * <br/>
-     * Form Values:<br/>
+     * disabled (we take this to mean that the application is not in production).
+     * <h3>Synopsis:</h3>
+     * pw=<i>aPassword</i>&amp;case=<i>classNameOfTestCase</i>
+     * <h3>Form Values:</h3>
      * <b>pw</b> password to be checked against the system property <code>er.extensions.ERXJUnitPassword</code>.
-     * <b>case</b> class name for unit test to be performed.<br/>
-     * <br/>
+     * <b>case</b> class name for unit test to be performed.
+     * 
      * @return {@link er.testrunner.ERXWOTestInterface ERXWOTestInterface} 
      * with the results after performing the given test.
      */
@@ -182,13 +179,11 @@ public class ERXDirectAction extends WODirectAction {
 
     
     /**
-     * Action used for turning EOAdaptorDebugging output on or off.<br/>
-     * <br/>
-     * Synopsis:<br/>
+     * Action used for turning EOAdaptorDebugging output on or off.
+     * <h3>Synopsis:</h3>
      * pw=<i>aPassword</i>
-     * <br/>
-     * Form Values:<br/>
-     * <strong>pw</strong> password to be checked against the system property <code>er.extensions.ERXEOAdaptorDebuggingPassword</code>.<br/>
+     * <h3>Form Values:</h3>
+     * <strong>pw</strong> password to be checked against the system property <code>er.extensions.ERXEOAdaptorDebuggingPassword</code>.<br>
      * <strong>debug</strong> flag signaling whether to turn EOAdaptorDebugging on or off (defaults to off).  The value should be one of:
      * <ul>
      *  <li>on</li>
@@ -201,9 +196,10 @@ public class ERXDirectAction extends WODirectAction {
      *  <li>0</li>
      *  <li>n</li>
      *  <li>no</li>
-     * <ul>
-     * <br/>
+     * </ul>
+     * <p>
      * Note: this action must be invoked against a specific instance (the instance number must be in the request URL).
+     * 
      * @return a page showing what action was taken (with regard to EOAdaptorDebugging), if any.
      */
     public WOActionResults eoAdaptorDebuggingAction() {
@@ -219,7 +215,7 @@ public class ERXDirectAction extends WODirectAction {
                         "<p>Your url should look like: <code>.../WebObjects/1/wa/...</code>, where '1' would be the first instance of the target application.</p>";
             } else {
                 String debugParam = request().stringFormValueForKey("debug");
-                log.debug("EOAdaptorDebuggingAction requested with 'debug' param:" + debugParam);
+                log.debug("EOAdaptorDebuggingAction requested with 'debug' param: {}", debugParam);
                 if (debugParam == null || debugParam.trim().length() == 0) {
                     message = "<p>EOAdaptorDebugging is currently <strong>" + (currentState ? "ON" : "OFF") + "</strong> for instance <strong>" + instance + "</strong>.</p>";
                     message += "<p>To change the setting, provide the 'debug' parameter to this action, e.g.: <code>...eoAdaptorDebugging?debug=on&pw=secret</code></p>";
@@ -231,7 +227,7 @@ public class ERXDirectAction extends WODirectAction {
                     }
 
                     boolean desiredState = ERXValueUtilities.booleanValueWithDefault(debugParam, false);
-                    log.debug("EOAdaptorDebuggingAction requested 'debug' state change to: '" + desiredState + "' for instance: " + instance + ".");
+                    log.debug("EOAdaptorDebuggingAction requested 'debug' state change to: '{}' for instance: {}.", desiredState, instance);
                     if (currentState != desiredState) {
                         ERXExtensions.setAdaptorLogging(desiredState);
                         message = "<p>Turned EOAdaptorDebugging <strong>" + (desiredState ? "ON" : "OFF") + "</strong> for instance <strong>" + instance + "</strong>.</p>";
@@ -252,14 +248,12 @@ public class ERXDirectAction extends WODirectAction {
     /**
      * Action used for changing logging settings at runtime. This method is only active
      * when WOCachingEnabled is disabled (we take this to mean that the application is
-     *                                    not in production).<br/>
-     * <br/>
-     * Synopsis:<br/>
+     *                                    not in production).
+     * <h3>Synopsis:</h3>
      * pw=<i>aPassword</i>
-     * <br/>
-     * Form Values:<br/>
+     * <h3>Form Values:</h3>
      * <b>pw</b> password to be checked against the system property <code>er.extensions.ERXLog4JPassword</code>.
-     * <br/>
+     * 
      * @return {@link ERXLog4JConfiguration} for modifying current logging settings.
      */
     public WOActionResults log4jAction() {
@@ -272,14 +266,11 @@ public class ERXDirectAction extends WODirectAction {
 
     /**
      * Action used for sending shell commands to the server and receive the result
-     * <br/>
-     * <br/>
-     * Synopsis:<br/>
+     * <h3>Synopsis:</h3>
      * pw=<i>aPassword</i>
-     * <br/>
-     * Form Values:<br/>
+     * <h3>Form Values:</h3>
      * <b>pw</b> password to be checked against the system property <code>er.extensions.ERXRemoteShellPassword</code>.
-     * <br/>
+     * 
      * @return {@link ERXLog4JConfiguration} for modifying current logging settings.
      */
     public WOActionResults remoteShellAction() {
@@ -292,14 +283,11 @@ public class ERXDirectAction extends WODirectAction {
 
     /**
      * Action used for accessing the database console
-     * <br/>
-     * <br/>
-     * Synopsis:<br/>
+     * <h3>Synopsis:</h3>
      * pw=<i>aPassword</i>
-     * <br/>
-     * Form Values:<br/>
+     * <h3>Form Values:</h3>
      * <b>pw</b> password to be checked against the system property <code>er.extensions.ERXRemoteShellPassword</code>.
-     * <br/>
+     * 
      * @return {@link ERXLog4JConfiguration} for modifying current logging settings.
      */
     public WOActionResults databaseConsoleAction() {
@@ -312,14 +300,12 @@ public class ERXDirectAction extends WODirectAction {
 
     /**
      * Action used for forcing garbage collection. If WOCachingEnabled is true (we take this to mean 
-     * that the application is in production) you need to give a password to access it.<br/>
-     * <br/>
-     * Synopsis:<br/>
+     * that the application is in production) you need to give a password to access it.
+     * <h3>Synopsis:</h3>
      * pw=<i>aPassword</i>
-     * <br/>
-     * Form Values:<br/>
+     * <h3>Form Values:</h3>
      * <b>pw</b> password to be checked against the system property <code>er.extensions.ERXGCPassword</code>.
-     * <br/>
+     * 
      * @return short info about free and used memory before and after GC.
      */
     public WOActionResults forceGCAction() {
@@ -348,7 +334,7 @@ public class ERXDirectAction extends WODirectAction {
             info += decimalFormatter.format(runtime.freeMemory()) + " free\n";
 
             result.setValue(info);
-            log.info("GC forced\n"+info);
+            log.info("GC forced\n{}", info);
             return result;
         }
         return forbiddenResponse();
@@ -356,7 +342,7 @@ public class ERXDirectAction extends WODirectAction {
 
     /**
      * Returns a list of the traces of open editing context locks.  This is only useful if
-     * er.extensions.ERXApplication.traceOpenEditingContextLocks is enabled and 
+     * er.extensions.ERXEC.traceOpenLocks is enabled and 
      * er.extensions.ERXOpenEditingContextLocksPassword is set.
      * 
      * @return list of lock traces
@@ -424,9 +410,9 @@ public class ERXDirectAction extends WODirectAction {
     /**
      * Sets a System property. This is also active in deployment mode because one might want to change a System property
      * at runtime.
-     * Synopsis:<br/>
-     * pw=<i>aPassword</i>&key=<i>someSystemPropertyKey</i>&value=<i>someSystemPropertyValue</i>
-     *
+     * <h3>Synopsis:</h3>
+     * pw=<i>aPassword</i>&amp;key=<i>someSystemPropertyKey</i>&amp;value=<i>someSystemPropertyValue</i>
+     * 
      * @return either null when the password is wrong or a new page showing the System properties
      */
     public WOActionResults systemPropertyAction() {
@@ -549,6 +535,6 @@ public class ERXDirectAction extends WODirectAction {
 	 * @return 403 response
 	 */
 	protected WOResponse forbiddenResponse() {
-		return new ERXResponse(null, ERXHttpStatusCodes.STATUS_FORBIDDEN);
+		return new ERXResponse(null, ERXHttpStatusCodes.FORBIDDEN);
 	}
 }

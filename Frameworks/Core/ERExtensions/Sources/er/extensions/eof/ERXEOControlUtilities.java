@@ -2,7 +2,8 @@ package er.extensions.eof;
 
 import java.util.Enumeration;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.eoaccess.EOAdaptorChannel;
 import com.webobjects.eoaccess.EOAttribute;
@@ -70,10 +71,7 @@ import er.extensions.validation.ERXValidationFactory;
  * EOControl provides infrastructure for creating and managing enterprise objects.
  */
 public class ERXEOControlUtilities {
-
-    /** logging support */
-    public static final Logger log = Logger.getLogger(ERXEOControlUtilities.class);
-
+    private static final Logger log = LoggerFactory.getLogger(ERXEOControlUtilities.class);
 
     /**
      * Provides the same functionality as the equivalent method
@@ -103,8 +101,8 @@ public class ERXEOControlUtilities {
 
     /**
      * Simple utility method that will convert an array
-     * of enterprise objects into an EOArrayDataSource.<br/>
-     * <br/>
+     * of enterprise objects into an EOArrayDataSource.
+     * <p>
      * Note that the data source that is constructed uses the
      * class description and editing context of the first object
      * of the array.
@@ -162,7 +160,8 @@ public class ERXEOControlUtilities {
      * from the relationship. If an array data source were used
      * then the list would not reflect the changes made, however
      * the detail data source will reflect changes made to the
-     * relationship.<br/>
+     * relationship.
+     * <p>
      * Note: the relationship key does not have to be an eo
      * relationship, instead it just has to return an array of
      * enterprise objects.
@@ -313,8 +312,7 @@ public class ERXEOControlUtilities {
     public static EOEnterpriseObject createAndInsertObject(EOEditingContext editingContext,
                                                            String entityName,
                                                            NSDictionary objectInfo) {
-        if (log.isDebugEnabled())
-            log.debug("Creating object of type: " + entityName);
+        log.debug("Creating object of type: {}", entityName);
         EOClassDescription cd=EOClassDescription.classDescriptionForEntityName(entityName);
         if (cd==null)
             throw new RuntimeException("Could not find class description for entity named "+entityName);
@@ -329,9 +327,8 @@ public class ERXEOControlUtilities {
      * Creates an object using the utility method <code>createEO</code>
      * from this utility class. After creating the enterprise object it
      * is added to the relationship of the enterprise object passed in.
-     * For instance:<br/>
-     * <code>createAndAddObjectToRelationship(ec, foo, "toBars", "Bar", dictValues);</code><br/>
-     * <br/>
+     * For instance:<br>
+     * <code>createAndAddObjectToRelationship(ec, foo, "toBars", "Bar", dictValues);</code><br>
      * will create an instance of Bar, set all of the key-value pairs
      * from the dictValues dictionary, insert it into an editing context
      * and then add it to both sides of the relationship "toBars" off of
@@ -1033,8 +1030,8 @@ public class ERXEOControlUtilities {
     public static EOEnterpriseObject sharedObjectMatchingKeyAndValue(String entityName, String key, Object value) {
         NSArray filtered = sharedObjectsMatchingKeyAndValue(entityName, key, value);
         if (filtered.count() > 1)
-            log.warn("Found multiple shared objects for entityName: " + entityName + " matching key: "
-                     + key + " value: " + value + " matched against: " + filtered);
+            log.warn("Found multiple shared objects for entityName: {} matching key: {} value: {} matched against: {}",
+                    entityName, key, value, filtered);
         return filtered.count() > 0 ? (EOEnterpriseObject)filtered.lastObject() : null;
     }
 
@@ -1054,7 +1051,7 @@ public class ERXEOControlUtilities {
         if (sharedEos != null) {
             filtered = EOQualifier.filteredArrayWithQualifier(sharedEos, qualifier);
         } else {
-            log.warn("Unable to find any shared objects for entity name: " + entityName);
+            log.warn("Unable to find any shared objects for entity name: {}", entityName);
         }
         return filtered != null ? filtered : NSArray.EmptyArray;
     }
@@ -1078,7 +1075,7 @@ public class ERXEOControlUtilities {
         }
 
         if (sharedEos == null) {
-            log.warn("Unable to find any shared objects for the entity named: " + entityName);
+            log.warn("Unable to find any shared objects for the entity named: {}", entityName);
         }
         return sharedEos != null ? sharedEos : NSArray.EmptyArray;
     }
@@ -1246,7 +1243,7 @@ public class ERXEOControlUtilities {
 		            if (arr != null) {
 		                primaryKey = arr.lastObject();
 		            } else {
-		                log.warn("Could not get primary key array for entity: " + entityName);
+		                log.warn("Could not get primary key array for entity: {}", entityName);
 		            }
 		            willRetryAfterHandlingDroppedConnection = false;
 	            }
@@ -1267,7 +1264,7 @@ public class ERXEOControlUtilities {
 	            }
             }
         } catch (Exception e) {
-            log.error("Caught exception when generating primary key for entity: " + entityName, e);
+            log.error("Caught exception when generating primary key for entity: {}", entityName, e);
             throw new NSForwardException(e);
         } finally {
             dbContext.unlock();
@@ -1928,8 +1925,7 @@ public class ERXEOControlUtilities {
      /**
      * Determines if an enterprise object is a new object and
      * hasn't been saved to the database yet. 
-     * 
-     * <br/>
+     * <p>
      * Note: An object that has been deleted will have it's
      * editing context set to null which means this method
      * would report true for an object that has been deleted
@@ -2342,13 +2338,13 @@ public class ERXEOControlUtilities {
 	 * with the same values on the given key paths.
 	 * 
 	 * Should be combined with a constraint on the corresponding database
-	 * columns. <br />
-	 * <br />
-	 * Based on Zak Burke's idea he posted to WOCode a while ago. <br />
-	 * <br />
+	 * columns.
+	 * <p>
+	 * Based on Zak Burke's idea he posted to WOCode a while ago.
+	 * <p>
 	 * Use in <code>validateForSave</code> like this:
 	 * 
-	 * <pre>
+	 * <pre><code>
 	 *       ...
 	 *       public class WikiPage extends _WikiPage {
 	 *       ...
@@ -2358,7 +2354,7 @@ public class ERXEOControlUtilities {
 	 *       	}
 	 *       ...
 	 *       }
-	 * </pre>
+	 * </code></pre>
 	 * 
 	 * Combine with entries in <code>ValidationTemplate.strings</code> like:
 	 * 

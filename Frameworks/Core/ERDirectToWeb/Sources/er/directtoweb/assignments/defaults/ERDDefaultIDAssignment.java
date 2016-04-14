@@ -1,7 +1,5 @@
 package er.directtoweb.assignments.defaults;
 
-import org.apache.log4j.Logger;
-
 import com.webobjects.directtoweb.D2WContext;
 import com.webobjects.eocontrol.EOGenericRecord;
 import com.webobjects.eocontrol.EOKeyValueUnarchiver;
@@ -41,9 +39,6 @@ public class ERDDefaultIDAssignment extends ERDAssignment {
 	 * <a href="http://java.sun.com/j2se/1.4/pdf/serial-spec.pdf">Java Object Serialization Spec</a>
 	 */
 	private static final long serialVersionUID = 1L;
-
-    /** logging support */
-    public final static Logger log = Logger.getLogger(ERDDefaultIDAssignment.class);
 
     /** holds the array of keys this assignment depends upon */
     protected static final NSDictionary keys = ERXDictionaryUtilities.dictionaryWithObjectsAndKeys( new Object [] {
@@ -94,10 +89,10 @@ public class ERDDefaultIDAssignment extends ERDAssignment {
     public ERDDefaultIDAssignment (String key, Object value) { super(key,value); }
     
     /**
-     * a DOM id based on the triple <task, entity, propertyKey>
+     * a DOM id based on the triple &lt;task, entity, propertyKey&gt;
      * 
      * @param c d2w context
-     * @return an id representing the <task, entity, propertyKey>
+     * @return an id representing the &lt;task, entity, propertyKey&gt;
      * 
      * TODO Maybe change to pageConfig + propertyKey?
      */
@@ -106,10 +101,10 @@ public class ERDDefaultIDAssignment extends ERDAssignment {
     }
     
     /**
-     * a DOM id based on the triple <task, entity, propertyKey, pk>
+     * a DOM id based on the triple &lt;task, entity, propertyKey, pk&gt;
      * 
      * @param c d2w context
-     * @return an id representing the <task, entity, propertyKey, pk>
+     * @return an id representing the &lt;task, entity, propertyKey, pk&gt;
      * 
      * TODO Maybe change to pageConfig + propertyKey?
      */
@@ -121,7 +116,7 @@ public class ERDDefaultIDAssignment extends ERDAssignment {
      * A DOM id based on the pageConfig
      * 
      * @param c d2w context
-     * @return an id representing the <task, entity>
+     * @return an id representing the &lt;task, entity&gt;
      */
     public Object idForPageConfiguration(D2WContext c) {
     	String _idForPageConfiguration = (c.dynamicPage() != null) ? c.dynamicPage() : c.task() + "_" + c.entity().name();
@@ -132,7 +127,7 @@ public class ERDDefaultIDAssignment extends ERDAssignment {
      * A DOM id based on the pageConfig + primaryKey
      * 
      * @param c d2w context
-     * @return an id representing the <task, entity, pk>
+     * @return an id representing the &lt;task, entity, pk&gt;
      */
     public Object idForEmbeddedPageConfiguration(D2WContext c) {
     	return idForPageConfiguration(c) + "_" + ERXEOControlUtilities.primaryKeyStringForObject((EOGenericRecord) c.valueForKey("object"));

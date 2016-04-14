@@ -7,14 +7,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 
-import org.jgroups.Channel;
-import org.jgroups.ChannelClosedException;
-import org.jgroups.ChannelException;
-import org.jgroups.ChannelNotConnectedException;
-import org.jgroups.ExtendedReceiverAdapter;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
+import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.appserver.WOApplication;
 import com.webobjects.foundation.NSArray;
@@ -53,162 +51,148 @@ import er.extensions.remoteSynchronizer.ERXRemoteSynchronizer;
  * @author mschrag
  */
 public class ERJGroupsSynchronizer extends ERXRemoteSynchronizer {
-  private String _groupName;
-  private JChannel _channel;
+	private static final Logger log = LoggerFactory.getLogger(ERXRemoteSynchronizer.class);
 
-  public ERJGroupsSynchronizer(IChangeListener listener) throws ChannelException {
-    super(listener);
-    String jgroupsPropertiesFile = ERXProperties.stringForKey("er.extensions.jgroupsSynchronizer.properties");
-    String jgroupsPropertiesFramework = null;
-    if (jgroupsPropertiesFile == null) {
-      jgroupsPropertiesFile = "jgroups-default.xml";
-      jgroupsPropertiesFramework = "ERJGroupsSynchronizer";
-    }
-    _groupName = ERXProperties.stringForKeyWithDefault("er.extensions.jgroupsSynchronizer.groupName", WOApplication.application().name());
+	private String _groupName;
+	private JChannel _channel;
 
-    String localBindAddressStr = ERXProperties.stringForKey("er.extensions.jgroupsSynchronizer.localBindAddress");
-    if (localBindAddressStr == null) {
-      System.setProperty("bind.address", WOApplication.application().hostAddress().getHostAddress());
-    }
-    else {
-      System.setProperty("bind.address", localBindAddressStr);
-    }
+	public ERJGroupsSynchronizer(IChangeListener listener) throws Exception {
+		super(listener);
+		String jgroupsPropertiesFile = ERXProperties.stringForKey("er.extensions.jgroupsSynchronizer.properties");
+		String jgroupsPropertiesFramework = null;
+		if (jgroupsPropertiesFile == null) {
+			jgroupsPropertiesFile = "jgroups-default.xml";
+			jgroupsPropertiesFramework = "ERJGroupsSynchronizer";
+		}
+		_groupName = ERXProperties.stringForKeyWithDefault("er.extensions.jgroupsSynchronizer.groupName", WOApplication.application().name());
 
-    URL propertiesUrl = WOApplication.application().resourceManager().pathURLForResourceNamed(jgroupsPropertiesFile, jgroupsPropertiesFramework, null);
-    _channel = new JChannel(propertiesUrl);
-    _channel.setOpt(Channel.LOCAL, Boolean.FALSE);
-    if (ERXProperties.booleanForKeyWithDefault("er.extensions.jgroupsSynchronizer.autoReconnect", true)) {
-      _channel.setOpt(Channel.AUTO_RECONNECT, Boolean.TRUE);
-    }
+		String localBindAddressStr = ERXProperties.stringForKey("er.extensions.jgroupsSynchronizer.localBindAddress");
+		if (localBindAddressStr == null) {
+			System.setProperty("bind.address", WOApplication.application().hostAddress().getHostAddress());
+		}
+		else {
+			System.out.println("localBindAddressStr = " + localBindAddressStr);
+			System.setProperty("bind.address", localBindAddressStr);
+		}
 
-    _registerForCleanup();
-  }
+		URL propertiesUrl = WOApplication.application().resourceManager().pathURLForResourceNamed(jgroupsPropertiesFile, jgroupsPropertiesFramework, null);
+		_channel = new JChannel(propertiesUrl);
+		_channel.setDiscardOwnMessages(Boolean.FALSE);
 
-  @Override
-  public void join() throws ChannelException {
-    _channel.connect(_groupName);
-  }
+		_registerForCleanup();
+	}
 
-  @Override
-  public void leave() {
-    _channel.disconnect();
-  }
+	@Override
+	public void join() throws Exception {
+		_channel.connect(_groupName);
+	}
 
-  @Override
-  public void listen() {
-    _channel.setReceiver(new ExtendedReceiverAdapter() {
+	@Override
+	public void leave() {
+		_channel.disconnect();
+	}
 
-      @Override
-      public void receive(Message message) {
-        try {
-          byte[] buffer = message.getBuffer();
-          ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
-          DataInputStream dis = new DataInputStream(bais);
-          int transactionCount = dis.readInt();
-          RemoteChange remoteChange = new RemoteChange("AnotherInstance", -1, transactionCount);
-          for (int transactionNum = 0; transactionNum < transactionCount; transactionNum++) {
-            _readCacheChange(remoteChange, dis);
-          }
-          addChange(remoteChange);
-          if (ERXRemoteSynchronizer.log.isInfoEnabled()) {
-            ERXRemoteSynchronizer.log.info("Received " + transactionCount + " changes from " + message.getSrc());
-          }
-          if (ERXRemoteSynchronizer.log.isDebugEnabled()) {
-            ERXRemoteSynchronizer.log.info("  Changes = " + remoteChange.remoteCacheChanges());
-          }
-        }
-        catch (IOException e) {
-          ERXRemoteSynchronizer.log.error("Failed to apply remote changes.  This is bad.", e);
-        }
-      }
+	@Override
+	public void listen() {
+		_channel.setReceiver(new ReceiverAdapter() {
 
-      @Override
-      public void viewAccepted(View view) {
-        // System.out.println(".viewAccepted: " + view);
-      }
-    });
-  }
+			public void receive(Message message) {
+				try {
+					byte[] buffer = message.getBuffer();
+					ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
+					DataInputStream dis = new DataInputStream(bais);
+					int transactionCount = dis.readInt();
+					RemoteChange remoteChange = new RemoteChange("AnotherInstance", -1, transactionCount);
+					for (int transactionNum = 0; transactionNum < transactionCount; transactionNum++) {
+						_readCacheChange(remoteChange, dis);
+					}
+					addChange(remoteChange);
+					log.info("Received {} changes from {}", transactionCount, message.getSrc());
+					if (log.isDebugEnabled()) {
+						log.debug("  Changes = {}", remoteChange.remoteCacheChanges());
+					}
+				}
+				catch (IOException e) {
+					log.error("Failed to apply remote changes.  This is bad.", e);
+				}
+			}
 
-  @Override
-  protected void _writeCacheChanges(int transactionID, NSArray cacheChanges) throws ChannelNotConnectedException, ChannelClosedException, IOException {
-    if (!_channel.isConnected()) {
-      if (ERXRemoteSynchronizer.log.isInfoEnabled()) {
-        ERXRemoteSynchronizer.log.info("Channel not connected: Not Sending " + cacheChanges.count() + " changes.");
-      }
-      if (ERXRemoteSynchronizer.log.isDebugEnabled()) {
-        ERXRemoteSynchronizer.log.info("Channel not connected: Changes = " + cacheChanges);
-      }
-      return;
-    }
-    if (cacheChanges.count() == 0) {
-    	if (ERXRemoteSynchronizer.log.isInfoEnabled()) {
-    		ERXRemoteSynchronizer.log.info("No changes to send!");
-    	}
-    	return;
-    }
-    RefByteArrayOutputStream baos = new RefByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
-    dos.writeInt(cacheChanges.count());
-    for (Enumeration cacheChangesEnum = cacheChanges.objectEnumerator(); cacheChangesEnum.hasMoreElements();) {
-      ERXDatabase.CacheChange cacheChange = (ERXDatabase.CacheChange) cacheChangesEnum.nextElement();
-      _writeCacheChange(dos, cacheChange);
-    }
-    dos.flush();
-    dos.close();
-    if (ERXRemoteSynchronizer.log.isInfoEnabled()) {
-      ERXRemoteSynchronizer.log.info("Sending " + cacheChanges.count() + " changes.");
-    }
-    if (ERXRemoteSynchronizer.log.isDebugEnabled()) {
-      ERXRemoteSynchronizer.log.info("  Changes = " + cacheChanges);
-    }
-    Message message = new Message(null, null, baos.buffer(), 0, baos.size());
-    _channel.send(message);
-  }
+			public void viewAccepted(View view) {
+				// System.out.println(".viewAccepted: " + view);
+			}
+		});
+	}
 
-  private void _registerForCleanup() {
-    String notificationName = ERXProperties.stringForKey("er.extensions.jgroupsSynchronizer.applicationWillTerminateNotificationName");
-    if (notificationName != null && notificationName.length() > 0) {
-      NSSelector applicationLaunchedNotification = new NSSelector("_applicationWillTerminateNotification", new Class[] { NSNotification.class });
-      NSNotificationCenter.defaultCenter().addObserver(this, applicationLaunchedNotification, notificationName, null);
-    }
+	@Override
+	protected void _writeCacheChanges(int transactionID, NSArray cacheChanges) throws Exception, IOException {
+		if (!_channel.isConnected()) {
+			log.info("Channel not connected: Not Sending {} changes.", cacheChanges.count());
+			log.debug("Channel not connected: Changes = {}", cacheChanges);
+			return;
+		}
+		if (cacheChanges.count() == 0) {
+			log.info("No changes to send!");
+			return;
+		}
+		RefByteArrayOutputStream baos = new RefByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
+		dos.writeInt(cacheChanges.count());
+		for (Enumeration cacheChangesEnum = cacheChanges.objectEnumerator(); cacheChangesEnum.hasMoreElements();) {
+			ERXDatabase.CacheChange cacheChange = (ERXDatabase.CacheChange) cacheChangesEnum.nextElement();
+			_writeCacheChange(dos, cacheChange);
+		}
+		dos.flush();
+		dos.close();
+		log.info("Sending {} changes.", cacheChanges.count());
+		log.debug("  Changes = {}", cacheChanges);
+		Message message = new Message(null, null, baos.buffer(), 0, baos.size());
+		_channel.send(message);
+	}
 
-    if (ERXProperties.booleanForKeyWithDefault("er.extensions.jgroupsSynchronizer.useShutdownHook", true)) {
-      new ERJGroupsCleanupTask(_channel);
-    }
-  }
+	private void _registerForCleanup() {
+		String notificationName = ERXProperties.stringForKey("er.extensions.jgroupsSynchronizer.applicationWillTerminateNotificationName");
+		if (notificationName != null && notificationName.length() > 0) {
+			NSSelector applicationLaunchedNotification = new NSSelector("_applicationWillTerminateNotification", new Class[] { NSNotification.class });
+			NSNotificationCenter.defaultCenter().addObserver(this, applicationLaunchedNotification, notificationName, null);
+		}
 
-  private static void cleanUpJChannel(JChannel channel) {
-    try {
-      if (channel == null || !channel.isOpen()) {
-        return;
-      }
+		if (ERXProperties.booleanForKeyWithDefault("er.extensions.jgroupsSynchronizer.useShutdownHook", true)) {
+			new ERJGroupsCleanupTask(_channel);
+		}
+	}
 
-      if (channel.isConnected()) {
-        channel.disconnect();
-      }
+	private static void cleanUpJChannel(JChannel channel) {
+		try {
+			if (channel == null || !channel.isOpen()) {
+				return;
+			}
 
-      channel.close();
-    }
-    catch (Throwable e) {
-      ERXRemoteSynchronizer.log.error("Error closing JChannel: " + channel, e);
-    }
-  }
+			if (channel.isConnected()) {
+				channel.disconnect();
+			}
 
-  public void _applicationWillTerminateNotification(NSNotification notification) {
-      cleanUpJChannel(_channel);
-  }
+			channel.close();
+		}
+		catch (Throwable e) {
+			log.error("Error closing JChannel: {}", channel, e);
+		}
+	}
 
-  private static class ERJGroupsCleanupTask extends ERXShutdownHook {
-    private final JChannel channel;
+	public void _applicationWillTerminateNotification(NSNotification notification) {
+		cleanUpJChannel(_channel);
+	}
 
-    public ERJGroupsCleanupTask(JChannel channel) {
-      super("JGroups Cleanup");
-      this.channel = channel;
-    }
+	private static class ERJGroupsCleanupTask extends ERXShutdownHook {
+		private final JChannel channel;
 
-    @Override
-    public void hook() {
-      cleanUpJChannel(channel);
-    }
-  }
+		public ERJGroupsCleanupTask(JChannel channel) {
+			super("JGroups Cleanup");
+			this.channel = channel;
+		}
+
+		@Override
+		public void hook() {
+			cleanUpJChannel(channel);
+		}
+	}
 }

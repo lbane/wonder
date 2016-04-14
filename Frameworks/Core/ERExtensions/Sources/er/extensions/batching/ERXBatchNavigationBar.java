@@ -6,7 +6,8 @@
  * included with this distribution in the LICENSE.NPL file.  */
 package er.extensions.batching;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.appserver.WOComponent;
 import com.webobjects.appserver.WOContext;
@@ -24,17 +25,17 @@ import er.extensions.eof.ERXConstant;
 import er.extensions.foundation.ERXThreadStorage;
 
 /**
- * Better batch navigation bar to page thtough display groups.<br />
+ * Better batch navigation bar to page through display groups.
  * <ul>
  * <li>User typing null for either number of objects per batch or the page number</li>
  * <li>When resetting the number of items per batch the page first page displayed would be the last page.</li>
  * <li>Broadcasts a notification when the batch size changes</li>
- * <li>Has go first/go last methods/li>
+ * <li>Has go first/go last methods</li>
  * <li>Has option to not clear the selection when paging, which WODisplayGroup does when calling displayNext()/displayPrevious()</li>
  * <li>Broadcasts a notification when the batch size changes</li>
- * <li>Can be used inside or outside of a <code>form</code>
- * <li>Graphics can be easily configured
- * <li>Has localization support, both for static texts and the object count.
+ * <li>Can be used inside or outside of a <code>form</code></li>
+ * <li>Graphics can be easily configured</li>
+ * <li>Has localization support, both for static texts and the object count.</li>
  * </ul>
  * 
  * @binding d2wContext the D2W context that this component is in
@@ -59,8 +60,7 @@ public class ERXBatchNavigationBar extends ERXStatelessComponent {
 	 */
 	private static final long serialVersionUID = 1L;
 
-    /** logging support */
-    public static final Logger log = Logger.getLogger(ERXBatchNavigationBar.class);
+    private static final Logger log = LoggerFactory.getLogger(ERXBatchNavigationBar.class);
 
     /** Contains a string that names the notification posted when the batch size changes */
     public final static String BatchSizeChanged = "BatchSizeChanged";
@@ -95,10 +95,10 @@ public class ERXBatchNavigationBar extends ERXStatelessComponent {
         	if (displayGroup()!=null) {
             	NSArray selection = selection();
                 
-                if(log.isDebugEnabled()) log.debug("Setting db # of objects per batch to "+newNumberOfObjectsPerBatch);
+                log.debug("Setting db # of objects per batch to {}.", newNumberOfObjectsPerBatch);
                 displayGroup().setNumberOfObjectsPerBatch(newNumberOfObjectsPerBatch.intValue());
 
-                if(log.isDebugEnabled()) log.debug("The batch index is being set to : "+ 1);
+                log.debug("The batch index is being set to 1.");
                 displayGroup().setCurrentBatchIndex(1);
                 clearSelection(selection);
             }
@@ -142,7 +142,7 @@ public class ERXBatchNavigationBar extends ERXStatelessComponent {
         if (newValue!=null) {
             if (displayGroup()!=null){
                 displayGroup().setCurrentBatchIndex(newValue.intValue());
-                if (log.isDebugEnabled()) log.debug("The batch index is being set to :"+newValue.intValue());
+                log.debug("The batch index is being set to {}.", newValue.intValue());
             }
         }
     }
