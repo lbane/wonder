@@ -1423,7 +1423,7 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 					}
 					else {
 						NSArray values = (NSArray) eo.valueForKey(inverse);
-						if (values.containsObject(object)) {
+						if (values != null && values.containsObject(object)) {
 							boolean oldUpdateInverseRelationship = eo._setUpdateInverseRelationships(false);
 							try {
 								eo.removeObjectFromPropertyWithKey(object, inverse);
