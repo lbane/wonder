@@ -226,6 +226,10 @@ public class ERMODEditRelationshipPage extends ERD2WPage implements ERMEditRelat
 			EOEnterpriseObject obj = (EOEnterpriseObject)userInfo.valueForKey("object");
 			if (relationshipKey() != null && relationshipKey().equals(key) && ERXEOControlUtilities.eoEquals(masterObject(), obj)) {
 				relationshipDisplayGroup().fetch();
+				// when the last object of the last batch gets removed, select the new last batch
+				if (relationshipDisplayGroup().currentBatchIndex() > relationshipDisplayGroup().batchCount()) {
+				    relationshipDisplayGroup().setCurrentBatchIndex(relationshipDisplayGroup().batchCount());
+				}
 			}
 		}
         if (notif.userInfo().valueForKey("ajaxNotificationCenterId") == null) {
@@ -630,5 +634,18 @@ public class ERMODEditRelationshipPage extends ERD2WPage implements ERMEditRelat
 			d2wContext().takeValueForKey(inlineTask, "inlineTask");
 		}
 	}
+
+    /**
+     * @return a unique ID for the repetition container
+     */
+    public String idForRepetitionContainer() {
+        String repetitionContainerID = (String) d2wContext().valueForKey(
+                "idForRepetitionContainer");
+        // use master object to generate globally unique ID
+        // - allows for nesting of relationship components
+        repetitionContainerID = repetitionContainerID.concat("_"
+                + masterObject().hashCode());
+        return repetitionContainerID;
+    }
 
 }
