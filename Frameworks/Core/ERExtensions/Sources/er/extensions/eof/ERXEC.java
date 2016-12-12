@@ -1116,10 +1116,12 @@ public class ERXEC extends EOEditingContext {
 			}
 		}
 		finally {
-			autoUnlock(wasAutoLocked);
 			savingChanges = false;
-		processQueuedNotifications();
-	}
+			processQueuedNotifications();
+			// Bugfix: under load there may be unprocessed object changed notifications, that must be processed before more changes occur 
+			_processNotificationQueue();
+			autoUnlock(wasAutoLocked);
+		}
 	}
 
 	/**
