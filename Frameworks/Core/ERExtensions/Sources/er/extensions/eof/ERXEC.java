@@ -1118,18 +1118,6 @@ public class ERXEC extends EOEditingContext {
 		finally {
 			savingChanges = false;
 			processQueuedNotifications();
-			
-			/* Bugfix:
-			 * Under load processQueuedNotifications may not succeed in delivering the notifications to this editingContext, so there may be unprocessed 
-			 * object changed notifications, that must be processed before we can continue. The primary reason is probably that a tryLock() on the 
-			 * shared editingContext fails, and the notification get enqueued a second time (only this time in EOEditingContexts own notification queue).
-			 * In the normal request response loop this may not be a problem, because the queue is processed in EOEditingContext.lock(), called at the beginning
-			 * of every loop.
-			 * But background tasks usually only lock the EC a single time and may then process a lot of objects, only calling saveChanges in the meantime. Here those
-			 * outstanding notifications get only processed at the end of the next saveChanges, which may interfere with with internal bookkeeping of new and changed
-			 * objects, effectively marking some of them for deletion.  
-			 */
-			_processNotificationQueue();
 			autoUnlock(wasAutoLocked);
 		}
 	}
@@ -1578,9 +1566,27 @@ public class ERXEC extends EOEditingContext {
 			queuedNotificationsClone = new NSMutableArray<>(queuedNotifications);
 			queuedNotifications.removeAllObjects();
 		}
-		for (NSNotification notification : queuedNotificationsClone) {
-			_objectsChangedInStore(notification);
+		
+		/* Bugfix: Must lock shared ec (together with objectStore).
+		 * Under load _objectChangedInStore may fail to deliver the notification, because tryLock() on the 
+		 * shared editingContext fails, and the notification gets enqueued a second time (only this time in EOEditingContexts own notification queue).
+		 * In the normal request response loop this may not be a problem, because the queue is processed in EOEditingContext.lock(), called at the beginning
+		 * of every loop.
+		 * But background tasks usually only lock the EC a single time and may then process a lot of objects, only calling saveChanges in the meantime. Here those
+		 * outstanding notifications get only processed at the end of the next saveChanges, which may interfere with with internal bookkeeping of new and changed
+		 * objects, effectively marking some of them for deletion.
+		 * With the lock we ensure, that the Shared EC is locked, and the notification delivery does not fail.
+		 */
+		lockObjectStore();
+		try {
+			for (NSNotification notification : queuedNotificationsClone) {
+				_objectsChangedInStore(notification);
+			}
 		}
+		finally {
+			unlockObjectStore();
+		}
+		
 		NSNotificationCenter.defaultCenter().postNotification(ERXECProcessQueuedNotificationsNotification, this);
 	}
 	
