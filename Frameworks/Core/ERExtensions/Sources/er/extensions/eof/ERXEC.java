@@ -1118,7 +1118,17 @@ public class ERXEC extends EOEditingContext {
 		finally {
 			savingChanges = false;
 			processQueuedNotifications();
-			// Bugfix: under load there may be unprocessed object changed notifications, that must be processed before more changes occur 
+			
+			/* Bugfix:
+			 * Under load processQueuedNotifications may not succeed in delivering the notifications to this editingContext, so there may be unprocessed 
+			 * object changed notifications, that must be processed before we can continue. The primary reason is probably that a tryLock() on the 
+			 * shared editingContext fails, and the notification get enqueued a second time (only this time in EOEditingContexts own notification queue).
+			 * In the normal request response loop this may not be a problem, because the queue is processed in EOEditingContext.lock(), called at the beginning
+			 * of every loop.
+			 * But background tasks usually only lock the EC a single time and may then process a lot of objects, only calling saveChanges in the meantime. Here those
+			 * outstanding notifications get only processed at the end of the next saveChanges, which may interfere with with internal bookkeeping of new and changed
+			 * objects, effectively marking some of them for deletion.  
+			 */
 			_processNotificationQueue();
 			autoUnlock(wasAutoLocked);
 		}
@@ -1464,7 +1474,7 @@ public class ERXEC extends EOEditingContext {
 		}
 	}
 
-	private boolean savingChanges;
+	private volatile boolean savingChanges;
 	private NSMutableArray<NSNotification> queuedNotifications = new NSMutableArray<>();
 
 	protected static Map<ERXEC, String> activeEditingContexts = Collections.synchronizedMap(new WeakHashMap());
