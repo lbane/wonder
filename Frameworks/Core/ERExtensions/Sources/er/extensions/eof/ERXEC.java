@@ -12,17 +12,18 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Vector;
 import java.util.WeakHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import sun.misc.Signal;
+import sun.misc.SignalHandler;
 
 import com.webobjects.eoaccess.EOGeneralAdaptorException;
 import com.webobjects.eocontrol.EOEditingContext;
@@ -33,7 +34,6 @@ import com.webobjects.eocontrol.EOObjectStore;
 import com.webobjects.eocontrol.EOSharedEditingContext;
 import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSDictionary;
-import com.webobjects.foundation.NSForwardException;
 import com.webobjects.foundation.NSMutableArray;
 import com.webobjects.foundation.NSMutableDictionary;
 import com.webobjects.foundation.NSNotification;
@@ -47,8 +47,6 @@ import er.extensions.foundation.ERXSelectorUtilities;
 import er.extensions.foundation.ERXSignalHandler;
 import er.extensions.foundation.ERXUtilities;
 import er.extensions.foundation.ERXValueUtilities;
-import sun.misc.Signal;
-import sun.misc.SignalHandler;
 
 /**
  * Subclass of {@link com.webobjects.eocontrol.EOEditingContext} that has every
@@ -1087,7 +1085,6 @@ public class ERXEC extends EOEditingContext {
 	@Override
 	public void saveChanges() {
 		boolean wasAutoLocked = autoLock("saveChanges");
-		String meName = Thread.currentThread().getName();
         _EOAssertSafeMultiThreadedAccess("saveChanges()");
 		savingChanges = true;
 		try {
@@ -1102,9 +1099,6 @@ public class ERXEC extends EOEditingContext {
 			_saveChanges();
 
 			didSaveChanges(insertedObjects, updatedObjects, deletedObjects);
-			
-			final int num = getNumberOfOutstandingNotifications();
-			log.info(meName + "############ ANZAHL AUSSTEHENDER NACHRICHTEN A: "+num);
 		}
 		catch (com.webobjects.eoaccess.EOGeneralAdaptorException e) {
 			NSNotificationCenter.defaultCenter().postNotification(EditingContextFailedToSaveChanges, this);
@@ -1122,44 +1116,11 @@ public class ERXEC extends EOEditingContext {
 			}
 		}
 		finally {
-			log.info(meName + "############ ANZAHL AUSSTEHENDER NACHRICHTEN C: "+getNumberOfOutstandingNotifications());
-			synchronized (queuedNotifications) {
-				int j = queuedNotifications.count();
-				if (j > 0) {
-					log.info(meName + "notifications D: "+queuedNotifications);
-				}
-				log.info(meName + "############ ANZAHL AUSSTEHENDER NACHRICHTEN D: "+j);
-			}
 			savingChanges = false;
 			processQueuedNotifications();
-			// Bugfix: under load there may be unprocessed object changed notifications, that must be processed before more changes occur
-			log.info(meName + "############ ANZAHL AUSSTEHENDER NACHRICHTEN E: "+getNumberOfOutstandingNotifications());
+			// Bugfix: under load there may be unprocessed object changed notifications, that must be processed before more changes occur 
 			_processNotificationQueue();
-			log.info(meName + "############ ANZAHL AUSSTEHENDER NACHRICHTEN F: "+getNumberOfOutstandingNotifications());
 			autoUnlock(wasAutoLocked);
-		}
-	}
-	
-	private final int getNumberOfOutstandingNotifications()
-	{
-		try {
-			Field field = EOEditingContext.class.getDeclaredField("_notificationQueue");
-			field.setAccessible(true);
-			Object queue = field.get(this);
-			synchronized (queue) {
-				Field elements = queue.getClass().getDeclaredField("_elements");
-				elements.setAccessible(true);
-				NSMutableArray array = (NSMutableArray) elements.get(queue);
-				int anzahl = array.count();
-				if (anzahl > 0) {
-					log.info("notifications:"+array);
-				}
-				return anzahl;
-			}
-		}
-		catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-			log.error("KONNTE ANZAHL NICHT ERMITTELN", e);
-			throw new NSForwardException("KONNTE ANZAHL NICHT ERMITTELN", e);
 		}
 	}
 
@@ -1503,7 +1464,7 @@ public class ERXEC extends EOEditingContext {
 		}
 	}
 
-	private volatile boolean savingChanges;
+	private boolean savingChanges;
 	private NSMutableArray<NSNotification> queuedNotifications = new NSMutableArray<>();
 
 	protected static Map<ERXEC, String> activeEditingContexts = Collections.synchronizedMap(new WeakHashMap());
