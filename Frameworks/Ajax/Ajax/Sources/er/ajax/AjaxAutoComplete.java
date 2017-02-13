@@ -149,7 +149,7 @@ public class AjaxAutoComplete extends AjaxComponent {
     }
     
     protected NSDictionary createAjaxOptions() {
-      NSMutableArray ajaxOptionsArray = new NSMutableArray();
+      NSMutableArray<AjaxOption> ajaxOptionsArray = new NSMutableArray<>();
       ajaxOptionsArray.addObject(new AjaxOption("tokens", AjaxOption.STRING_ARRAY));
       ajaxOptionsArray.addObject(new AjaxOption("frequency", AjaxOption.NUMBER));
       ajaxOptionsArray.addObject(new AjaxOption("minChars", AjaxOption.NUMBER));
@@ -166,8 +166,7 @@ public class AjaxAutoComplete extends AjaxComponent {
       ajaxOptionsArray.addObject(new AjaxOption("partialChars", AjaxOption.NUMBER));
       ajaxOptionsArray.addObject(new AjaxOption("ignoreCase", AjaxOption.BOOLEAN));
       ajaxOptionsArray.addObject(new AjaxOption("activateOnFocus", AjaxOption.BOOLEAN));
-      NSMutableDictionary options = AjaxOption.createAjaxOptionsDictionary(ajaxOptionsArray, this);
-      return options;
+      return AjaxOption.createAjaxOptionsDictionary(ajaxOptionsArray, this);
     }
    
     /**
@@ -180,7 +179,7 @@ public class AjaxAutoComplete extends AjaxComponent {
 		if ( !isDisabled ) {
 			boolean isLocal = hasBinding("isLocal") && ((Boolean) valueForBinding("isLocal")).booleanValue();
 			if (isLocal) {
-				StringBuffer str = new StringBuffer();
+				StringBuilder str = new StringBuilder();
 				boolean isLocalSharedList = hasBinding("isLocalSharedList") && ((Boolean) valueForBinding("isLocalSharedList")).booleanValue();
 				String listJS = null;
 				if (isLocalSharedList) {
