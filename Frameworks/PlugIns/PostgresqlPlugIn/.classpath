@@ -7,6 +7,6 @@
 	<classpathentry exported="true" kind="con" path="WOFramework/JavaJDBCAdaptor"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="WOFramework/ERJars"/>
-	<classpathentry kind="lib" path="Libraries/postgresql-9.4.1208.jar"/>
+	<classpathentry kind="lib" path="Libraries/postgresql-42.0.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
