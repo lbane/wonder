@@ -166,8 +166,8 @@
                    use="true"
                    verbose="false"
                    maxmemory="512m"
-                   windowtitle="Project Wonder Reference Documentation"
-                   stylesheetfile="${wonder.root}/Build/build/mystylesheet.css">
+				   encoding="utf-8"
+                   windowtitle="Project Wonder Reference Documentation">
 
             <classpath refid="classpath"/>
             <sourcepath>
