@@ -416,6 +416,31 @@ public class ERXEOControlUtilities {
         EODatabase database = dbc.database();
         ERXEOControlUtilities.clearSnapshotForRelationshipNamedInDatabase(eo, relationshipName, database);
     }
+    
+    /**
+     * Lock (Root) ObjectStore.
+     * The rootObjectStore may not be locked without also locking at least the ec ObjectStore (and its SharedEditingContext).
+     * @param ec
+     * @return the root ObjectStore
+     */
+    protected static EOObjectStore _lockRootObjectStore(EOEditingContext ec)
+    {
+        if (ec.sharedEditingContext() != null) {
+            ec.sharedEditingContext().lockForReading();
+        }
+        
+        EOObjectStore root = ec.rootObjectStore();
+        root.lock();
+        return root;
+    }
+
+    protected static void _unlockRootObjectStore(EOEditingContext ec) {
+        ec.rootObjectStore().unlock();
+        
+        if (ec.sharedEditingContext() != null) {
+            ec.sharedEditingContext().unlockForReading();
+        }
+    }
 
     /**
      * Clears snapshot the relationship of a given enterprise so it will be read again when next accessed.
@@ -425,8 +450,7 @@ public class ERXEOControlUtilities {
      */
     public static void clearSnapshotForRelationshipNamedInDatabase(EOEnterpriseObject eo, String relationshipName, EODatabase database) {
         EOEditingContext ec = eo.editingContext();
-        EOObjectStoreCoordinator osc = (EOObjectStoreCoordinator) ec.rootObjectStore();
-        osc.lock();
+        _lockRootObjectStore(ec);
         try {
 	        EOGlobalID gid = ec.globalIDForObject(eo);
 	        database.recordSnapshotForSourceGlobalID(null, gid, relationshipName);
@@ -449,7 +473,7 @@ public class ERXEOControlUtilities {
 	        }
         }
         finally {
-        	osc.unlock();
+        		_unlockRootObjectStore(ec);
         }
     }
 

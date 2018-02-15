@@ -13,6 +13,7 @@ import com.webobjects.eocontrol.EOFaultHandler;
 import com.webobjects.eocontrol.EOFetchSpecification;
 import com.webobjects.eocontrol.EOGlobalID;
 import com.webobjects.eocontrol.EOKeyGlobalID;
+import com.webobjects.eocontrol.EOObjectStore;
 import com.webobjects.eocontrol.EOObjectStoreCoordinator;
 import com.webobjects.eocontrol.EOQualifier;
 import com.webobjects.eocontrol.EOTemporaryGlobalID;
@@ -220,6 +221,32 @@ public class ERXEOGlobalIDUtilities {
     public static <T extends EOGlobalID> NSMutableArray<EOEnterpriseObject> fetchObjectsWithGlobalIDs(EOEditingContext ec, Collection<T> globalIDs) {
     	return fetchObjectsWithGlobalIDs(ec, globalIDs, false);
     }
+    
+    /**
+     * Lock (Root) ObjectStore.
+     * The rootObjectStore may not be locked without also locking at least the ec ObjectStore (and its SharedEditingContext).
+     * @param ec
+     * @return the root ObjectStore
+     */
+    protected static EOObjectStore _lockRootObjectStore(EOEditingContext ec)
+    {
+        if (ec.sharedEditingContext() != null) {
+            ec.sharedEditingContext().lockForReading();
+        }
+        
+    	EOObjectStore root = ec.rootObjectStore();
+    	root.lock();
+    	return root;
+    }
+
+    protected static void _unlockRootObjectStore(EOEditingContext ec) {
+    	ec.rootObjectStore().unlock();
+    	
+        if (ec.sharedEditingContext() != null) {
+            ec.sharedEditingContext().unlockForReading();
+        }
+    }
+
 
     /**
      * Fetches an array of objects defined by the globalIDs in a single fetch per entity.
@@ -233,7 +260,7 @@ public class ERXEOGlobalIDUtilities {
 	public static <T extends EOGlobalID> NSMutableArray<EOEnterpriseObject> fetchObjectsWithGlobalIDs(EOEditingContext ec, Collection<T> globalIDs, boolean refreshesRefetchedObjects) {
     	NSMutableArray<EOEnterpriseObject> result = new NSMutableArray<>();
 		ec.lock();
-		ec.rootObjectStore().lock();
+		EOObjectStoreCoordinator rootOS = (EOObjectStoreCoordinator)_lockRootObjectStore(ec);
 		try {
 	    	NSDictionary<String, NSArray<T>> gidsByEntity = globalIDsGroupedByEntityName(globalIDs);
 	    	for(String entityName : gidsByEntity.keySet()) {
@@ -251,7 +278,7 @@ public class ERXEOGlobalIDUtilities {
 	    				}
 	    				else {
 	    					NSDictionary row;
-	    			        EODatabaseContext databaseContext = (EODatabaseContext) ((EOObjectStoreCoordinator) ec.rootObjectStore()).objectStoreForGlobalID(g);
+	    			        EODatabaseContext databaseContext = (EODatabaseContext)rootOS.objectStoreForGlobalID(g);
 	    			        databaseContext.lock();
 	    			        try {
 		    					row = databaseContext.snapshotForGlobalID(g, ec.fetchTimestamp());
@@ -283,8 +310,8 @@ public class ERXEOGlobalIDUtilities {
 	    	}
 		}
 		finally {
-			ec.rootObjectStore().unlock();
-			ec.unlock();
+		    _unlockRootObjectStore(ec);
+		    ec.unlock();
 		}
     	return result;
     }
