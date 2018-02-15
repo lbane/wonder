@@ -163,28 +163,32 @@ public class ERXBatchFetchUtilities {
 
     /**
      * Lock (Root) ObjectStore.
-     * The rootObjectStore may not be locked without also locking at least the SharedEditingContext. This prevents a race condition, when EOEditingContext.objectForGlobalID or globalIDForObject will also lock the sharedEditingContext, 
-     * while a EOCustomObject.willRead with an EOEditingContext.lockObjectStore in another thread has already locked the SharedEC and waits for the rootObjectStore. 
-     * @param ec the ec
+     * The rootObjectStore may not be locked without also locking at least the ec ObjectStore (and its SharedEditingContext).
+     * @param ec
      * @return the root ObjectStore
      */
     protected static EOObjectStore _lockRootObjectStore(EOEditingContext ec)
     {
-        if (ec.sharedEditingContext() != null) {
-            ec.sharedEditingContext().lockForReading();
+        ec.lockObjectStore();
+        EOObjectStore parent = ec.parentObjectStore();
+        EOObjectStore root;
+        if ((parent instanceof EOEditingContext)) {
+        	    root = ((EOEditingContext)parent).rootObjectStore();
+            root.lock();
         }
-        
-    	EOObjectStore root = ec.rootObjectStore();
-    	root.lock();
-    	return root;
+        else {
+            root = parent;
+        }
+        return root;
     }
 
     protected static void _unlockRootObjectStore(EOEditingContext ec) {
-    	ec.rootObjectStore().unlock();
-    	
-        if (ec.sharedEditingContext() != null) {
-            ec.sharedEditingContext().unlockForReading();
+        EOObjectStore parent = ec.parentObjectStore();
+        if ((parent instanceof EOEditingContext)) {
+            EOObjectStore root = ((EOEditingContext)parent).rootObjectStore();
+            root.unlock();
         }
+        ec.unlockObjectStore();
     }
     
 	/**

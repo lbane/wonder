@@ -221,7 +221,7 @@ public class ERXEOGlobalIDUtilities {
     public static <T extends EOGlobalID> NSMutableArray<EOEnterpriseObject> fetchObjectsWithGlobalIDs(EOEditingContext ec, Collection<T> globalIDs) {
     	return fetchObjectsWithGlobalIDs(ec, globalIDs, false);
     }
-    
+  
     /**
      * Lock (Root) ObjectStore.
      * The rootObjectStore may not be locked without also locking at least the ec ObjectStore (and its SharedEditingContext).
@@ -230,23 +230,27 @@ public class ERXEOGlobalIDUtilities {
      */
     protected static EOObjectStore _lockRootObjectStore(EOEditingContext ec)
     {
-        if (ec.sharedEditingContext() != null) {
-            ec.sharedEditingContext().lockForReading();
+        ec.lockObjectStore();
+        EOObjectStore parent = ec.parentObjectStore();
+        EOObjectStore root;
+        if ((parent instanceof EOEditingContext)) {
+        	    root = ((EOEditingContext)parent).rootObjectStore();
+            root.lock();
         }
-        
-    	EOObjectStore root = ec.rootObjectStore();
-    	root.lock();
-    	return root;
+        else {
+            root = parent;
+        }
+        return root;
     }
 
     protected static void _unlockRootObjectStore(EOEditingContext ec) {
-    	ec.rootObjectStore().unlock();
-    	
-        if (ec.sharedEditingContext() != null) {
-            ec.sharedEditingContext().unlockForReading();
+        EOObjectStore parent = ec.parentObjectStore();
+        if ((parent instanceof EOEditingContext)) {
+            EOObjectStore root = ((EOEditingContext)parent).rootObjectStore();
+            root.unlock();
         }
+        ec.unlockObjectStore();
     }
-
 
     /**
      * Fetches an array of objects defined by the globalIDs in a single fetch per entity.
