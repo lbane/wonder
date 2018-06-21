@@ -16,14 +16,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ognl.ClassResolver;
-import ognl.Ognl;
-import ognl.OgnlException;
-import ognl.OgnlRuntime;
-import ognl.helperfunction.WOHelperFunctionHTMLParser;
-import ognl.helperfunction.WOHelperFunctionParser;
-import ognl.helperfunction.WOHelperFunctionTagRegistry;
-
 import com.webobjects.appserver.WOApplication;
 import com.webobjects.appserver.WOAssociation;
 import com.webobjects.appserver._private.WOBindingNameAssociation;
@@ -39,6 +31,15 @@ import com.webobjects.foundation.NSNotificationCenter;
 import com.webobjects.foundation.NSSelector;
 import com.webobjects.foundation.NSSet;
 import com.webobjects.foundation._NSUtilities;
+
+import ognl.ClassResolver;
+import ognl.Ognl;
+import ognl.OgnlContext;
+import ognl.OgnlException;
+import ognl.OgnlRuntime;
+import ognl.helperfunction.WOHelperFunctionHTMLParser;
+import ognl.helperfunction.WOHelperFunctionParser;
+import ognl.helperfunction.WOHelperFunctionTagRegistry;
 
 /**
  * <span class="en">
@@ -122,12 +123,10 @@ public class WOOgnl {
 		return DefaultWOOgnlBindingFlag;
 	}
 
-	public Hashtable newDefaultContext() {
-		Hashtable h = new Hashtable();
-		if (classResolver() != null) {
-			h.put("classResolver", classResolver());
-		}
-		return h;
+	public OgnlContext newDefaultContext() {
+		// allow access to everything that is not declared private
+		OgnlContext context = new OgnlContext(classResolver(), null, new DefaultMemberAccess(false, true, true));
+		return context;
 	}
 
 	public void configureWOForOgnl() {
@@ -163,7 +162,8 @@ public class WOOgnl {
 	}
 
 	public void convertOgnlConstantAssociations(NSMutableDictionary associations) {
-		for (Enumeration e = associations.keyEnumerator(); e.hasMoreElements();) {
+		// RS: create a clone of the keys array before iterating over it, because this method may modify the associations dictionary, and the iteration is undefined thereafter
+		for (Enumeration e = associations.allKeys().objectEnumerator(); e.hasMoreElements();) {
 			String name = (String) e.nextElement();
 			WOAssociation association = (WOAssociation) associations.objectForKey(name);
 			boolean isConstant = false;
