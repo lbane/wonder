@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="lib" path="Libraries/postgresql-42.2.2.jar"/>
 	<classpathentry kind="con" path="WOFramework/ERJars"/>
 	<classpathentry kind="src" path="Sources"/>
 	<classpathentry kind="con" path="WOFramework/JavaEOAccess"/>
@@ -8,5 +7,6 @@
 	<classpathentry kind="con" path="WOFramework/JavaFoundation"/>
 	<classpathentry kind="con" path="WOFramework/JavaJDBCAdaptor"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="Libraries/postgresql-42.2.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
