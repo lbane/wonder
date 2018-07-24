@@ -315,6 +315,7 @@ public class ERXBatchingDisplayGroup<T> extends ERXDisplayGroup<T> {
 	 */
 	protected EOFetchSpecification fetchSpecification() {
 		EODatabaseDataSource ds = (EODatabaseDataSource) dataSource();
+		ds.setQualifierBindings(queryBindings());
 		EOFetchSpecification spec = (EOFetchSpecification) ds.fetchSpecificationForFetch().clone();
 		spec.setSortOrderings(ERXArrayUtilities.arrayByAddingObjectsFromArrayWithoutDuplicates(sortOrderings(), spec.sortOrderings()));
 		EOQualifier dgQualifier = qualifier();
