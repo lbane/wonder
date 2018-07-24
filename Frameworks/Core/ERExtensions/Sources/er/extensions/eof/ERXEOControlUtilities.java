@@ -890,26 +890,34 @@ public class ERXEOControlUtilities {
         EODatabaseContext dbc = EODatabaseContext.registeredDatabaseContextForModel(model, ec);
         Object aggregateValue = null;
         
-        dbc.lock();
+        // Must also lock the object store, as this function may trigger fetch of relationships to shared objects,
+        // with a danger of deadlock, when run concurrently to other threads that also fetch such relationships 
+        _lockRootObjectStore(ec);
         try {
-            aggregateValue = __aggregateFunctionWithQualifierAndAggregateAttribute(dbc, ec, entityName, qualifier, aggregateAttribute);
-        }
-        catch (Exception localException) {
-            if (dbc._isDroppedConnectionException(localException)) {
-                try {
-                    dbc.database().handleDroppedConnection();
-                    aggregateValue = __aggregateFunctionWithQualifierAndAggregateAttribute(dbc, ec, entityName, qualifier, aggregateAttribute);
-                }
-                catch(Exception ex) {
-                    throw NSForwardException._runtimeExceptionForThrowable(ex);
-                }
-            }
-            else {
-                throw NSForwardException._runtimeExceptionForThrowable(localException);
-            }
+	        dbc.lock();
+	        try {
+	            aggregateValue = __aggregateFunctionWithQualifierAndAggregateAttribute(dbc, ec, entityName, qualifier, aggregateAttribute);
+	        }
+	        catch (Exception localException) {
+	            if (dbc._isDroppedConnectionException(localException)) {
+	                try {
+	                    dbc.database().handleDroppedConnection();
+	                    aggregateValue = __aggregateFunctionWithQualifierAndAggregateAttribute(dbc, ec, entityName, qualifier, aggregateAttribute);
+	                }
+	                catch(Exception ex) {
+	                    throw NSForwardException._runtimeExceptionForThrowable(ex);
+	                }
+	            }
+	            else {
+	                throw NSForwardException._runtimeExceptionForThrowable(localException);
+	            }
+	        }
+	        finally {
+	            dbc.unlock();
+	        }
         }
         finally {
-            dbc.unlock();
+        	_unlockRootObjectStore(ec);
         }
         return aggregateValue;
     }
