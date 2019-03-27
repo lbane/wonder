@@ -7,6 +7,7 @@
 	</parent>
 	<groupId>wonder.ajax</groupId>
 	<artifactId>Ajax</artifactId>
+	<version>7.1-CX-SNAPSHOT</version>
 	<name>Ajax Framework</name>
 	<packaging>woframework</packaging>
 
@@ -22,6 +23,44 @@
 						</configuration>
 			</plugin>
 		</plugins>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.objectstyle.woproject.maven2
+										</groupId>
+										<artifactId>
+											maven-wolifecycle-plugin
+										</artifactId>
+										<versionRange>
+											[2.2.1,)
+										</versionRange>
+										<goals>
+											<goal>
+												define-woframework-resources
+											</goal>
+											<goal>woframework</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 
 	<dependencies>
@@ -56,6 +95,12 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>wonder.core</groupId>
+			<artifactId>JavaWOExtensions</artifactId>
+			<version>7.1-SNAPSHOT</version>
+			<type>woframework</type>
 		</dependency>
 	</dependencies>
 </project>
