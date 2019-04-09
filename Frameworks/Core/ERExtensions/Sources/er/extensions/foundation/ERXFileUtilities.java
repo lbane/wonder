@@ -639,6 +639,15 @@ public class ERXFileUtilities {
 	    		url = resourceManager.pathURLForResourceNamed(fileName, frameworkName, languages);
 	    	}
     	}
+    	else {
+    		NSBundle bundle = "app".equals(frameworkName) ? NSBundle.mainBundle() : NSBundle.bundleForName(frameworkName);
+    		if (bundle.isJar()) {
+    			url = bundle.pathURLForResourcePath(fileName);
+    		}
+    		else {
+    			url = bundle.pathURLForResourcePath(fileName);
+    		}
+    	}
         return url;
     }
 

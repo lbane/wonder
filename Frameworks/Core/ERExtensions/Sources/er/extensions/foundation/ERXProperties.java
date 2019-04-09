@@ -12,7 +12,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -42,6 +46,7 @@ import com.webobjects.foundation.NSKeyValueCoding;
 import com.webobjects.foundation.NSMutableArray;
 import com.webobjects.foundation.NSMutableDictionary;
 import com.webobjects.foundation.NSNotificationCenter;
+import com.webobjects.foundation.NSPathUtilities;
 import com.webobjects.foundation.NSProperties;
 import com.webobjects.foundation.NSPropertyListSerialization;
 
@@ -300,28 +305,17 @@ public class ERXProperties extends Properties implements NSKeyValueCoding {
             }
             if (wonderVersion == "" && ERXApplication.isDevelopmentModeSafe()) {
                 // running within Eclipse and no Info.plist has been generated so look at maven config
-                FileInputStream is = null;
                 try {
                     URL path = bundle.pathURLForResourcePath("../pom.xml");
-                    File pomFile = new File(path.toURI());
-                    if (pomFile.exists()) {
-                        is = new FileInputStream(pomFile);
-                        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                        DocumentBuilder builder = factory.newDocumentBuilder();
-                        Document xml = builder.parse(is);
-                        XPath xPath = XPathFactory.newInstance().newXPath();
-                        wonderVersion = xPath.compile("/project/parent/version").evaluate(xml);
+                    try (InputStream is = path.openStream()) {
+                    	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                    	DocumentBuilder builder = factory.newDocumentBuilder();
+                    	Document xml = builder.parse(is);
+                    	XPath xPath = XPathFactory.newInstance().newXPath();
+                    	wonderVersion = xPath.compile("/project/parent/version").evaluate(xml);
                     }
                 } catch (Exception e) {
                     // ignore
-                } finally {
-                    if (is != null) {
-                        try {
-                            is.close();
-                        } catch (IOException e) {
-                            // ignore
-                        }
-                    }
                 }
             }
         }
@@ -1299,6 +1293,12 @@ public class ERXProperties extends Properties implements NSKeyValueCoding {
         prop.load(file);
         return prop;
     }
+	
+	public static Properties propertiesFromURL(URL is) throws IOException, URISyntaxException {
+		ERXProperties._Properties prop = new ERXProperties._Properties();
+		prop.load(is.toURI());
+		return prop;
+	}
     
     /**
      * <div class="en">
@@ -1365,7 +1365,41 @@ public class ERXProperties extends Properties implements NSKeyValueCoding {
     		propertiesPaths.addObject(path);
     	}
     }
-    
+
+    private static void addIfPresentToURLs(String info, URL path, NSMutableArray<URL> propertiesPaths, NSMutableArray<String> projectsInfo) {
+    	if(path != null && path.getPath().length() > 0) {
+    		path = getActualPath(path);
+    		if(propertiesPaths.containsObject(path)) {
+    			log.error("Path was already included: {}", path);
+    		}
+    		projectsInfo.addObject("  " + info +" -> " + path);
+    		propertiesPaths.addObject(path);
+    	}
+    }
+
+    private static void addIfPresentToURLs(String info, String path, NSMutableArray<URL> propertiesPaths, NSMutableArray<String> projectsInfo) {
+    	if(path != null && path.length() > 0) {
+    		path = getActualPath(path);
+    		try {
+    			URL url = new File(path).toURI().toURL(); 
+    			if(propertiesPaths.containsObject(path)) {
+    				log.error("Path was already included: {}", path);
+    			}
+    			projectsInfo.addObject("  " + info +" -> " + path);
+    			propertiesPaths.addObject(url);
+    		}
+    		catch (MalformedURLException e) {
+    			log.error("Path is malformed: {}", path);
+    		}
+    	}
+    }
+
+    /**
+     * 
+     * @param reportLoggingEnabled
+     * @return path list of user and bundle property files
+     * @deprecated Use {@link #urlsForUserAndBundleProperties(boolean)} instead
+     */
     public static NSArray<String> pathsForUserAndBundleProperties(boolean reportLoggingEnabled) {
         NSMutableArray<String> propertiesPaths = new NSMutableArray();
         NSMutableArray<String> projectsInfo = new NSMutableArray();
@@ -1463,6 +1497,109 @@ public class ERXProperties extends Properties implements NSKeyValueCoding {
     	return propertiesPaths.immutableClone();
     }
 
+    /**
+     * 
+     * @param reportLoggingEnabled
+     * @return url list of user and bundle property files
+     */
+    public static NSArray<URL> pathurlsForUserAndBundleProperties(boolean reportLoggingEnabled) {
+        NSMutableArray<URL> propertiesPaths = new NSMutableArray<>();
+        NSMutableArray<String> projectsInfo = new NSMutableArray<>();
+
+        /*  Properties for frameworks */
+        NSArray<String> frameworkNames = (NSArray)NSBundle.frameworkBundles().valueForKey("name");
+        Enumeration<String> e = frameworkNames.reverseObjectEnumerator();
+        while (e.hasMoreElements()) {
+        	String frameworkName = e.nextElement();
+
+        	URL propertyPath = ERXFileUtilities.pathURLForResourceNamed("Properties", frameworkName, null);
+        	addIfPresentToURLs(frameworkName + ".framework", propertyPath, propertiesPaths, projectsInfo);
+
+        	/** Properties.dev -- per-Framework-dev properties 
+        	 * This adds support for Properties.dev in your Frameworks new load order will be
+        	 */
+        	URL devPropertiesPath = ERXApplication.isDevelopmentModeSafe() ? ERXProperties.urlForVariantPropertiesInBundle("dev", frameworkName) : null;
+        	addIfPresentToURLs(frameworkName + ".framework.dev", devPropertiesPath, propertiesPaths, projectsInfo);
+        	
+        	/** Properties.<userName> -- per-Framework-per-User properties */
+        	URL userPropertiesPath = ERXProperties.urlForVariantPropertiesInBundle(ERXSystem.getProperty("user.name"), frameworkName);
+        	addIfPresentToURLs(frameworkName + ".framework.user", userPropertiesPath, propertiesPaths, projectsInfo);
+        }
+
+		NSBundle mainBundle = NSBundle.mainBundle();
+		
+		if( mainBundle != null ) {
+	        String mainBundleName = mainBundle.name();
+	
+	        URL appPath = ERXFileUtilities.pathURLForResourceNamed("Properties", "app", null);
+	    	addIfPresentToURLs(mainBundleName + ".app", appPath, propertiesPaths, projectsInfo);
+		}
+
+		/*  WebObjects.properties in the user home directory */
+		String userHome = ERXSystem.getProperty("user.home");
+		if (userHome != null && userHome.length() > 0) {
+			File file = new File(userHome, "WebObjects.properties");
+			if (file.exists() && file.isFile() && file.canRead()) {
+				try {
+					String userHomePath = file.getCanonicalPath();
+			    	addIfPresentToURLs("{$user.home}/WebObjects.properties", userHomePath, propertiesPaths, projectsInfo);
+				}
+				catch (java.io.IOException ex) {
+					log.error("Failed to load the configuration file '{}'.", file, ex);
+				}
+			}
+        }
+
+		/*  Optional properties files */
+		NSArray optionalConfigFiles = optionalConfigurationFiles();
+		if (optionalConfigFiles != null && optionalConfigFiles.count() > 0) {
+			for (Enumeration<String> configEnumerator = optionalConfigFiles.objectEnumerator(); configEnumerator.hasMoreElements();) {
+				String configFile = configEnumerator.nextElement();
+				File file = new File(configFile);
+				if (file.exists() && file.isFile() && file.canRead()) {
+					try {
+						String optionalPath = file.getCanonicalPath();
+				    	addIfPresentToURLs("Optional Configuration", optionalPath, propertiesPaths, projectsInfo);
+					}
+					catch (java.io.IOException ex) {
+						log.error("Failed to load configuration file '{}'.", file, ex);
+					}
+				}
+				else {
+					log.error("The optional configuration file '{}' either does not exist or could not be read.", file);
+				}
+			}
+		}
+
+		optionalPropertiesLoaderURLs(ERXSystem.getProperty("user.name"), propertiesPaths, projectsInfo);
+		
+        /** /etc/WebObjects/AppName/Properties -- per-Application-per-Machine properties */
+        String applicationMachinePropertiesPath = ERXProperties.applicationMachinePropertiesPath("Properties");
+    	addIfPresentToURLs("Application-Machine Properties", applicationMachinePropertiesPath, propertiesPaths, projectsInfo);
+
+        /** Properties.dev -- per-Application-dev properties */
+        String applicationDeveloperPropertiesPath = ERXProperties.applicationDeveloperProperties();
+    	addIfPresentToURLs("Application-Developer Properties", applicationDeveloperPropertiesPath, propertiesPaths, projectsInfo);
+
+        /** Properties.<userName> -- per-Application-per-User properties */
+        String applicationUserPropertiesPath = ERXProperties.applicationUserProperties();
+    	addIfPresentToURLs("Application-User Properties", applicationUserPropertiesPath, propertiesPaths, projectsInfo);
+
+        /*  Report the result */
+		if (reportLoggingEnabled && projectsInfo.count() > 0 && log.isInfoEnabled()) {
+			StringBuilder message = new StringBuilder();
+			message.append("\n\n").append("ERXProperties has found the following Properties files: \n");
+			message.append(projectsInfo.componentsJoinedByString("\n"));
+			message.append('\n');
+			message.append("ERXProperties currently has the following properties:\n");
+			message.append(ERXProperties.logString(ERXSystem.getProperties()));
+			// ERXLogger.configureLoggingWithSystemProperties();
+			log.info(message.toString());
+		}
+
+    	return propertiesPaths.immutableClone();
+    }
+
     /** 
      * <div class="en">
      * 	Making it possible to use Properties File in the Application more
@@ -1495,6 +1632,7 @@ public class ERXProperties extends Properties implements NSKeyValueCoding {
      * @param projectsInfo <div class="en">Project Info {@link ERXProperties#pathsForUserAndBundleProperties}</div>
      *                     <div class="ja">プロジェクト情報 {@link ERXProperties#pathsForUserAndBundleProperties}</div>
      */
+    @Deprecated
     private static void optionalPropertiesLoader(String userName, NSMutableArray<String> propertiesPaths, NSMutableArray<String> projectsInfo) {
     	if(!ERXProperties.booleanForKeyWithDefault("er.extensions.ERXProperties.loadOptionalProperties", true)){
     		return;
@@ -1562,6 +1700,105 @@ public class ERXProperties extends Properties implements NSKeyValueCoding {
         }
     }
 
+    /** 
+     * <div class="en">
+     * 	Making it possible to use Properties File in the Application more
+     * 	powerful, specially for newcomers.
+     * 	For every Framework it will try to call also following 
+     * 		Properties.[Framework] and Properties.[Framework].[Username]
+     * 	Also there is a Propertie for
+     * 		Properties.log4j, Properties.log4j.[Username] for logging
+     * 		Properties.database, Properties.database.[Username] for database infos
+     * 		Properties.multilanguage, Properties.multilanguage.[Username] for Encoding
+     * 		Properties.migration, Properties.migration.[Username] for Migration
+     * </div>
+     * 
+     * <div class="ja">
+     * 	アプリケーション内でプロパティーをもっと活躍させる為に種類別おプロパティーが追加されました。
+     * 	初心者を含めてとても使いやすくなります。
+     * 	各フレームワークへのプロパティー・ファイルを読み込むことを試します 
+     * 		Properties.[Framework] と Properties.[Framework].[Username]
+     * 	他にも次のプロパティーがあります
+     * 		Properties.log4j, Properties.log4j.[Username] ログ専用
+     * 		Properties.database, Properties.database.[Username] データベース情報
+     * 		Properties.multilanguage, Properties.multilanguage.[Username] エンコーディング
+     * 		Properties.migration, Properties.migration.[Username] マイグレーション
+     * </div>
+     * 
+     * @param userName <div class="en">Username</div>
+     *                 <div class="ja">ユーザ名</div>
+     * @param propertiesPaths <div class="en">Properites Path {@link ERXProperties#pathsForUserAndBundleProperties}</div>
+     *                        <div class="ja">プロパティー・パス {@link ERXProperties#pathsForUserAndBundleProperties}</div>
+     * @param projectsInfo <div class="en">Project Info {@link ERXProperties#pathsForUserAndBundleProperties}</div>
+     *                     <div class="ja">プロジェクト情報 {@link ERXProperties#pathsForUserAndBundleProperties}</div>
+     */
+    private static void optionalPropertiesLoaderURLs(String userName, NSMutableArray<URL> propertiesPaths, NSMutableArray<String> projectsInfo) {
+    	if(!ERXProperties.booleanForKeyWithDefault("er.extensions.ERXProperties.loadOptionalProperties", true)){
+    		return;
+    	}
+    	
+    	/** Properties.log4j.<userName> -- per-Application-per-User properties */
+        String logPropertiesPath;
+        logPropertiesPath = ERXProperties.variantPropertiesInBundle("log4j", "app");
+        if(logPropertiesPath != null) {
+        	addIfPresentToURLs("Application-User Log4j Properties", logPropertiesPath, propertiesPaths, projectsInfo);
+        }
+        logPropertiesPath = ERXProperties.variantPropertiesInBundle("log4j." + userName, "app");
+        if(logPropertiesPath != null) {
+        	addIfPresentToURLs("Application-User Log4j Properties", logPropertiesPath, propertiesPaths, projectsInfo);
+        }
+
+        /** Properties.database.<userName> -- per-Application-per-User properties */
+        String databasePropertiesPath;
+        databasePropertiesPath = ERXProperties.variantPropertiesInBundle("database", "app");
+        if(databasePropertiesPath != null) {
+        	addIfPresentToURLs("Application-User Database Properties", databasePropertiesPath, propertiesPaths, projectsInfo);
+        }
+        databasePropertiesPath = ERXProperties.variantPropertiesInBundle("database." + userName, "app");
+        if(databasePropertiesPath != null) {
+        	addIfPresentToURLs("Application-User Database Properties", databasePropertiesPath, propertiesPaths, projectsInfo);
+        }
+   	
+        /** Properties.multilanguage.<userName> -- per-Application-per-User properties */
+        String multilanguagePath;
+        multilanguagePath = ERXProperties.variantPropertiesInBundle("multilanguage", "app");
+        if(multilanguagePath != null) {
+        	addIfPresentToURLs("Application-User Multilanguage Properties", multilanguagePath, propertiesPaths, projectsInfo);
+        }
+        multilanguagePath = ERXProperties.variantPropertiesInBundle("multilanguage." + userName, "app");
+        if(multilanguagePath != null) {
+        	addIfPresentToURLs("Application-User Multilanguage Properties", multilanguagePath, propertiesPaths, projectsInfo);
+        }
+    	
+        /** Properties.migration -- per-Application properties */
+        String migrationPath;
+        migrationPath = ERXProperties.variantPropertiesInBundle("migration", "app");
+        if(migrationPath != null) {
+        	addIfPresentToURLs("Application-User Migration Properties", migrationPath, propertiesPaths, projectsInfo);
+        }
+        migrationPath = ERXProperties.variantPropertiesInBundle("migration." + userName, "app");
+        if(migrationPath != null) {
+        	addIfPresentToURLs("Application-User Migration Properties", migrationPath, propertiesPaths, projectsInfo);
+        }
+    	
+        /** Properties.<frameworkName>.<userName> -- per-Application-per-User properties */
+        @SuppressWarnings("unchecked")
+        NSArray<String> frameworkNames = (NSArray<String>) NSBundle.frameworkBundles().valueForKey("name");
+        Enumeration<String> e = frameworkNames.reverseObjectEnumerator();
+        while (e.hasMoreElements()) {
+          String frameworkName = e.nextElement();
+          String userPropertiesPath;
+          userPropertiesPath = ERXProperties.variantPropertiesInBundle(frameworkName, "app");
+          if(userPropertiesPath != null) {
+        	  addIfPresentToURLs(frameworkName + ".framework.common", userPropertiesPath, propertiesPaths, projectsInfo);
+          }
+          userPropertiesPath = ERXProperties.variantPropertiesInBundle(frameworkName + "." + userName, "app");
+          if(userPropertiesPath != null) {
+        	  addIfPresentToURLs(frameworkName + ".framework.user", userPropertiesPath, propertiesPaths, projectsInfo);
+          }
+        }
+    }
+
     /**
      * Apply the current configuration to the supplied properties.
      * @param source
@@ -1571,28 +1808,47 @@ public class ERXProperties extends Properties implements NSKeyValueCoding {
     public static Properties applyConfiguration(Properties source, Properties commandLine) {
 
     	Properties dest = source != null ? (Properties) source.clone() : new Properties();
-    	NSArray additionalConfigurationFiles = ERXProperties.pathsForUserAndBundleProperties(false);
-
-    	if (additionalConfigurationFiles.count() > 0) {
-    		for (Enumeration configEnumerator = additionalConfigurationFiles.objectEnumerator(); configEnumerator.hasMoreElements();) {
-    			String configFile = (String)configEnumerator.nextElement();
-    			File file = new File(configFile);
-    			if (file.exists() && file.isFile() && file.canRead()) {
+    	if (Boolean.valueOf(System.getProperty("ERXExtensions.useUrlPathsForProperties", "true"))) {
+    		NSArray<URL> additionalConfigurationFiles = ERXProperties.pathurlsForUserAndBundleProperties(false);
+    		if (additionalConfigurationFiles.count() > 0) {
+    			for (Enumeration<URL> configEnumerator = additionalConfigurationFiles.objectEnumerator(); configEnumerator.hasMoreElements();) {
+    				URL configFile = configEnumerator.nextElement();
     				try {
-    					Properties props = ERXProperties.propertiesFromFile(file);
-    					if(log.isDebugEnabled()) {
-    						log.debug("Loaded: {}\n{}", file, ERXProperties.logString(props));
-    					}
-    					ERXProperties.transferPropertiesFromSourceToDest(props, dest);
-    				} catch (java.io.IOException ex) {
+						Properties props = ERXProperties.propertiesFromURL(configFile);
+						if(log.isDebugEnabled()) {
+							log.debug("Loaded: {}\n{}", configFile, ERXProperties.logString(props));
+						}
+						ERXProperties.transferPropertiesFromSourceToDest(props, dest);
+    				} catch (java.io.IOException | URISyntaxException ex) {
     					log.error("Unable to load optional configuration file: {}", configFile, ex);
     				}
     			}
-    			else {
-    				configLog.error("The optional configuration file '{}' either does not exist or cannot be read.", file);
+    		}
+    	}
+    	else {
+    		NSArray additionalConfigurationFiles = ERXProperties.pathsForUserAndBundleProperties(false);
+    		if (additionalConfigurationFiles.count() > 0) {
+    			for (Enumeration configEnumerator = additionalConfigurationFiles.objectEnumerator(); configEnumerator.hasMoreElements();) {
+    				String configFile = (String)configEnumerator.nextElement();
+    				File file = new File(configFile);
+    				if (file.exists() && file.isFile() && file.canRead()) {
+    					try {
+    						Properties props = ERXProperties.propertiesFromFile(file);
+    						if(log.isDebugEnabled()) {
+    							log.debug("Loaded: {}\n{}", file, ERXProperties.logString(props));
+    						}
+    						ERXProperties.transferPropertiesFromSourceToDest(props, dest);
+    					} catch (java.io.IOException ex) {
+    						log.error("Unable to load optional configuration file: {}", configFile, ex);
+    					}
+    				}
+    				else {
+    					configLog.error("The optional configuration file '{}' either does not exist or cannot be read.", file);
+    				}
     			}
     		}
     	}
+
 
     	if(commandLine != null) {
     		ERXProperties.transferPropertiesFromSourceToDest(commandLine, dest);
@@ -1760,6 +2016,23 @@ public class ERXProperties extends Properties implements NSKeyValueCoding {
     }
 
     /**
+     * Returns the application-specific variant properties for the given bundle.
+     * @param userName 
+     * @param bundleName 
+     * @return the application-specific variant properties for the given bundle.
+     */
+    public static URL urlForVariantPropertiesInBundle(String userName, String bundleName) {
+    	URL applicationUserPropertiesPath = null;
+        if (userName != null  &&  userName.length() > 0) { 
+        	URL resourceApplicationUserPropertiesPath = ERXFileUtilities.pathURLForResourceNamed("Properties." + userName, bundleName, null);
+            if (resourceApplicationUserPropertiesPath != null) {
+            	applicationUserPropertiesPath = ERXProperties.getActualPath(resourceApplicationUserPropertiesPath);
+            }
+        }
+        return applicationUserPropertiesPath;
+    }
+
+    /**
      * <div class="en">
      * Returns the application-specific user properties.
      * </div>
@@ -1892,7 +2165,25 @@ public class ERXProperties extends Properties implements NSKeyValueCoding {
         }
         return actualPath;
     }
-    
+
+	public static URL getActualPath(URL path) {
+        URL actualPath = null;
+        try {
+	        if ("file".equals(path.getProtocol())) {
+	        	String aPath = path.toURI().normalize().getPath();
+	        	File file = new File(aPath);
+	        	aPath = file.getCanonicalPath();
+	        	actualPath = new File(aPath).toURI().toURL();
+	        }
+	        else {
+	        	actualPath = path.toURI().normalize().toURL();
+	        }
+        } catch (Exception ex) {
+        	log.warn("The file at {} does not seem to exist.", path , ex);
+        }
+        return actualPath;
+    }
+
     /**
      * <div class="ja">システム・プロパティーが変更されたので、キャシュをクリアする</div>
      */
@@ -2535,60 +2826,80 @@ public class ERXProperties extends Properties implements NSKeyValueCoding {
 
 		public static final String IncludePropsKey = ".includeProps";
 		
-		private Stack<File> _files = new Stack<>();
+		private Stack<URI> _files = new Stack<>();
 		
 		@Override
 		public synchronized Object put(Object key, Object value) {
 			if (_Properties.IncludePropsKey.equals(key)) {
 				String propsFileName = (String)value;
-                File propsFile = new File(propsFileName);
-                if (!propsFile.isAbsolute()) {
-                    // if we don't have any context for a relative (non-absolute) props file,
-                    // we presume that it's relative to the user's home directory
-    				File cwd = null;
-    				if (_files.size() > 0) {
-    					cwd = _files.peek();
-    				}
-    				else {
-    					cwd = new File(System.getProperty("user.home"));
-                	}
-                    propsFile = new File(cwd, propsFileName);
-                }
-
-                // Detect mutually recursing props files by tracking what we've already loaded:
-                String existingIncludeProps = getProperty(_Properties.IncludePropsKey);
-                if (existingIncludeProps == null) {
-                	existingIncludeProps = "";
-                }
-                if (existingIncludeProps.indexOf(propsFile.getPath()) > -1) {
-                    log.error("_Properties.load(): recursive includeProps detected! {} in {}", propsFile, existingIncludeProps);
-                    log.error("_Properties.load() cannot proceed - QUITTING!");
-                    System.exit(1);
-                }
-                if (existingIncludeProps.length() > 0) {
-                	existingIncludeProps += ", ";
-                }
-                existingIncludeProps += propsFile;
-                super.put(_Properties.IncludePropsKey, existingIncludeProps);
-
                 try {
+                	URI propsFile = new URI(propsFileName);
+                	if (!propsFile.isAbsolute()) {
+                		// if we don't have any context for a relative (non-absolute) props file,
+                		// we presume that it's relative to the user's home directory
+                		URI cwd = null;
+                		if (_files.size() > 0) {
+                			cwd = _files.peek();
+                		}
+                		else {
+                			cwd = new URI("file", null, System.getProperty("user.home"), null);
+                		}
+                		propsFile = cwd.resolve(propsFileName);
+                	}
+                	
+                	// Detect mutually recursing props files by tracking what we've already loaded:
+                	String existingIncludeProps = getProperty(_Properties.IncludePropsKey);
+                	if (existingIncludeProps == null) {
+                		existingIncludeProps = "";
+                	}
+                	if (existingIncludeProps.indexOf(propsFile.toString()) > -1) {
+                		log.error("_Properties.load(): recursive includeProps detected! {} in {}", propsFile, existingIncludeProps);
+                		log.error("_Properties.load() cannot proceed - QUITTING!");
+                		System.exit(1);
+                	}
+                	if (existingIncludeProps.length() > 0) {
+                		existingIncludeProps += ", ";
+                	}
+                	existingIncludeProps += propsFile;
+                	super.put(_Properties.IncludePropsKey, existingIncludeProps);
+                	
                     log.info("_Properties.load(): Including props file: {}", propsFile);
 					load(propsFile);
 				} catch (IOException e) {
 					throw new RuntimeException("Failed to load the property file '" + value + "'.", e);
 				}
+                catch (URISyntaxException e) {
+                	throw new RuntimeException("Could not create properties URI file '" + value + "'.", e);
+                }
 				return null;
 			}
 			return super.put(key, value);
 		}
 
 		public synchronized void load(File propsFile) throws IOException {
-			_files.push(propsFile.getParentFile());
+			_files.push(propsFile.getParentFile().toURI());
 			try (BufferedInputStream is = new BufferedInputStream(new FileInputStream(propsFile))) {
 	            load(is);
 			}
 			finally {
 				_files.pop();
+			}
+		}
+
+		public synchronized void load(URI propsFile) throws IOException {
+			try {
+				URI parentURI = new URI(NSPathUtilities.stringByDeletingLastPathComponent(propsFile.toString())); 
+				_files.push(parentURI);
+				try (InputStream is = propsFile.toURL().openStream();
+					 BufferedInputStream bis = new BufferedInputStream(is)) {
+					load(bis);
+				}
+				finally {
+					_files.pop();
+				}
+			}
+			catch (URISyntaxException e) {
+				throw new RuntimeException("Could not get parent URI for "+propsFile);
 			}
 		}
 	}
