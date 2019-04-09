@@ -200,6 +200,9 @@ public class ERXConfigurationManager {
 
     private NSArray monitoredProperties() {
         if( _monitoredProperties == null) {
+        	// RS: we can still use ERXProperties.pathsForUserAndBundleProperties instead of 
+        	// ERXProperties.pathurlsForUserAndBundleProperties, because we need to monitor only plain files,
+        	// not files inside jars.
             _monitoredProperties = ERXProperties.pathsForUserAndBundleProperties();
         }
         return _monitoredProperties;

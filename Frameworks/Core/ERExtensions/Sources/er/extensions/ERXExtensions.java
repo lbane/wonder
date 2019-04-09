@@ -268,7 +268,12 @@ public class ERXExtensions extends ERXFrameworkPrincipal {
         // ERXLogger.configureLoggingWithSystemProperties();
         
         _log = Logger.getLogger(ERXExtensions.class);
-		ERXProperties.pathsForUserAndBundleProperties(true);
+        if (Boolean.valueOf(System.getProperty("ERXExtensions.useUrlPathsForProperties", "true"))) {
+        	ERXProperties.pathurlsForUserAndBundleProperties(true);
+        }
+        else {
+        	ERXProperties.pathsForUserAndBundleProperties(true);
+        }
 
 		try {
 			// MS: initialize these with Class.forName(Whatever.class.getName()) because the .class class literal does not trigger static initializers to run in 1.5,
