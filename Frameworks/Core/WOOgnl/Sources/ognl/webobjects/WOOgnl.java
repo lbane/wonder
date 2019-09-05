@@ -162,8 +162,9 @@ public class WOOgnl {
 	}
 
 	public void convertOgnlConstantAssociations(NSMutableDictionary associations) {
-		// RS: create a clone of the keys array before iterating over it, because this method may modify the associations dictionary, and the iteration is undefined thereafter
-		for (Enumeration e = associations.allKeys().objectEnumerator(); e.hasMoreElements();) {
+		// RS: create a clone of the keys array before iterating over it, because this method may modify the associations dictionary, 
+		// and the iteration over the modified dictionary is undefined thereafter
+		for (Enumeration e = associations.allKeys().immutableClone().objectEnumerator(); e.hasMoreElements();) {
 			String name = (String) e.nextElement();
 			WOAssociation association = (WOAssociation) associations.objectForKey(name);
 			boolean isConstant = false;
