@@ -10,6 +10,7 @@
     <groupId>wonder.core</groupId>
     <artifactId>WOOgnl</artifactId>
     <name>WOOgnl Framework</name>
+    <version>7.1-CX-SNAPSHOT</version>
     <packaging>woframework</packaging>
 
     <dependencies>

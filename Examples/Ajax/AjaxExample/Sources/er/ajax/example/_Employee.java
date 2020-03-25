@@ -6,28 +6,33 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _Employee extends  ERXGenericRecord {
   public static final String ENTITY_NAME = "Employee";
 
   // Attribute Keys
-  public static final ERXKey<String> FIRST_NAME = new ERXKey<String>("firstName");
-  public static final ERXKey<String> LAST_NAME = new ERXKey<String>("lastName");
+  public static final ERXKey<String> FIRST_NAME = new ERXKey<String>("firstName", Type.Attribute);
+  public static final ERXKey<String> LAST_NAME = new ERXKey<String>("lastName", Type.Attribute);
+
   // Relationship Keys
-  public static final ERXKey<er.ajax.example.Company> COMPANY = new ERXKey<er.ajax.example.Company>("company");
+  public static final ERXKey<er.ajax.example.Company> COMPANY = new ERXKey<er.ajax.example.Company>("company", Type.ToOneRelationship);
 
   // Attributes
   public static final String FIRST_NAME_KEY = FIRST_NAME.key();
   public static final String LAST_NAME_KEY = LAST_NAME.key();
+
   // Relationships
   public static final String COMPANY_KEY = COMPANY.key();
 
-  private static Logger LOG = Logger.getLogger(_Employee.class);
+  private static final Logger log = LoggerFactory.getLogger(_Employee.class);
 
   public Employee localInstanceIn(EOEditingContext editingContext) {
     Employee localInstance = (Employee)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -42,9 +47,7 @@ public abstract class _Employee extends  ERXGenericRecord {
   }
 
   public void setFirstName(String value) {
-    if (_Employee.LOG.isDebugEnabled()) {
-    	_Employee.LOG.debug( "updating firstName from " + firstName() + " to " + value);
-    }
+    log.debug( "updating firstName from {} to {}", firstName(), value);
     takeStoredValueForKey(value, _Employee.FIRST_NAME_KEY);
   }
 
@@ -53,44 +56,40 @@ public abstract class _Employee extends  ERXGenericRecord {
   }
 
   public void setLastName(String value) {
-    if (_Employee.LOG.isDebugEnabled()) {
-    	_Employee.LOG.debug( "updating lastName from " + lastName() + " to " + value);
-    }
+    log.debug( "updating lastName from {} to {}", lastName(), value);
     takeStoredValueForKey(value, _Employee.LAST_NAME_KEY);
   }
 
   public er.ajax.example.Company company() {
     return (er.ajax.example.Company)storedValueForKey(_Employee.COMPANY_KEY);
   }
-  
+
   public void setCompany(er.ajax.example.Company value) {
     takeStoredValueForKey(value, _Employee.COMPANY_KEY);
   }
 
   public void setCompanyRelationship(er.ajax.example.Company value) {
-    if (_Employee.LOG.isDebugEnabled()) {
-      _Employee.LOG.debug("updating company from " + company() + " to " + value);
-    }
+    log.debug("updating company from {} to {}", company(), value);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	setCompany(value);
+      setCompany(value);
     }
     else if (value == null) {
-    	er.ajax.example.Company oldValue = company();
-    	if (oldValue != null) {
-    		removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Employee.COMPANY_KEY);
+      er.ajax.example.Company oldValue = company();
+      if (oldValue != null) {
+        removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Employee.COMPANY_KEY);
       }
     } else {
-    	addObjectToBothSidesOfRelationshipWithKey(value, _Employee.COMPANY_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(value, _Employee.COMPANY_KEY);
     }
   }
-  
+
 
   public static Employee createEmployee(EOEditingContext editingContext, String firstName
 , String lastName
 , er.ajax.example.Company company) {
-    Employee eo = (Employee) EOUtilities.createAndInsertInstance(editingContext, _Employee.ENTITY_NAME);    
-		eo.setFirstName(firstName);
-		eo.setLastName(lastName);
+    Employee eo = (Employee) EOUtilities.createAndInsertInstance(editingContext, _Employee.ENTITY_NAME);
+    eo.setFirstName(firstName);
+    eo.setLastName(lastName);
     eo.setCompanyRelationship(company);
     return eo;
   }
@@ -109,13 +108,12 @@ public abstract class _Employee extends  ERXGenericRecord {
 
   public static NSArray<Employee> fetchEmployees(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<Employee> fetchSpec = new ERXFetchSpecification<Employee>(_Employee.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<Employee> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static Employee fetchEmployee(EOEditingContext editingContext, String keyName, Object value) {
-    return _Employee.fetchEmployee(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Employee.fetchEmployee(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Employee fetchEmployee(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -135,7 +133,7 @@ public abstract class _Employee extends  ERXGenericRecord {
   }
 
   public static Employee fetchRequiredEmployee(EOEditingContext editingContext, String keyName, Object value) {
-    return _Employee.fetchRequiredEmployee(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Employee.fetchRequiredEmployee(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Employee fetchRequiredEmployee(EOEditingContext editingContext, EOQualifier qualifier) {
