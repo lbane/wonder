@@ -82,7 +82,7 @@
         <dependency>
             <groupId>wonder.core</groupId>
             <artifactId>JavaWOExtensions</artifactId>
-            <version>7.1-SNAPSHOT</version>
+            <version>7.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.webobjects</groupId>
@@ -150,5 +150,5 @@
             <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
-    <version>7.1-CX-SNAPSHOT</version>
+    <version>7.2-CX-SNAPSHOT</version>
 </project>

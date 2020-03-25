@@ -7,7 +7,7 @@
 	</parent>
 	<groupId>wonder.ajax</groupId>
 	<artifactId>Ajax</artifactId>
-	<version>7.1-CX-SNAPSHOT</version>
+	<version>7.2-CX-SNAPSHOT</version>
 	<name>Ajax Framework</name>
 	<packaging>woframework</packaging>
 
