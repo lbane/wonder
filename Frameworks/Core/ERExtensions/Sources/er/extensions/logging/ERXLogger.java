@@ -1,5 +1,6 @@
 package er.extensions.logging;
 
+import java.lang.reflect.Method;
 import java.util.Properties;
 
 import org.apache.log4j.Appender;
@@ -9,11 +10,14 @@ import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.extras.DOMConfigurator;
 
+import com.webobjects.foundation.NSForwardException;
 import com.webobjects.foundation.NSLog;
 import com.webobjects.foundation.NSNotificationCenter;
 
 import er.extensions.foundation.ERXConfigurationManager;
+import er.extensions.foundation.ERXProperties;
 import er.extensions.foundation.ERXSystem;
 
 /**
@@ -21,6 +25,23 @@ import er.extensions.foundation.ERXSystem;
  * log4j dependency to only this class. This gives us the freedom in the future
  * to switch logging systems and this should be the only effected class .. in
  * theory.
+ * 
+ * <h2>Properties</h2>
+ * <p><code>er.extensions.erxloggerclass</code>
+ *    with name of the class responsible for configuring logging, must have a static 
+ *    method {@link #CONFIGURE_LOGGING_WITH_SYSTEM_PROPERTIES} with no parameters; 
+ *    defaults to ERXLogger
+ * </p>
+ * <p>
+ *   <code>log4j.loggerFactory</code>
+ *   with name of class responsible for creating Logger objects, defaults to {@link Factory}
+ * </p>
+ * <p>
+ *   <code>log4j.configuration</code>
+ *   with the path to an extra configuration file. XML files (suffix ".xml") will be processed with
+ *   a {@link DOMConfigurator}, all other files are processed by a {@link PropertyConfigurator}.
+ *   The configuration file is always processed first when existing, followd by system properties.
+ * </p>
  */
 public class ERXLogger extends org.apache.log4j.Logger {
 
@@ -162,7 +183,24 @@ public class ERXLogger extends org.apache.log4j.Logger {
 	}
 
 	public static synchronized void configureLoggingWithSystemProperties() {
-		ERXLogger.configureLogging(ERXSystem.getProperties());
+		
+    	// GN: configure logging with optional custom subclass of ERXLogger
+    	String className = ERXProperties.stringForKey("er.extensions.erxloggerclass");
+    	// RS: we will try not to call ourself here ...
+    	if (className != null && !className.equals(ERXLogger.class.getName())) {
+    		try {
+    			Class loggerClass = Class.forName(className);
+    			Method method = loggerClass.getDeclaredMethod(ERXLogger.CONFIGURE_LOGGING_WITH_SYSTEM_PROPERTIES, (Class[]) null);
+    			method.invoke(loggerClass, (Object[]) null);
+    		}
+    		catch (Exception e) {
+    			throw NSForwardException._runtimeExceptionForThrowable(e);
+    		}
+    	}
+    	else {
+    		// default behaviour:
+    		ERXLogger.configureLogging(ERXSystem.getProperties());
+    	}
 	}
 
 	/**
@@ -188,7 +226,19 @@ public class ERXLogger extends org.apache.log4j.Logger {
 			NSLog.setDebug(new ERXNSLogLog4jBridge(ERXNSLogLog4jBridge.DEBUG));
 		}
 		NSLog.debug.setAllowedDebugLevel(allowedLevel);
+		
+		String configFile = properties.getProperty("log4j.configuration");
+		if (configFile != null) {
+			if (configFile.endsWith(".xml")) {
+				DOMConfigurator.configureAndWatch(configFile);
+			}
+			else {
+				PropertyConfigurator.configureAndWatch(configFile);
+			}
+		}
+		
 		PropertyConfigurator.configure(properties);
+		
 		// AK: if the root logger has no appenders, something is really broken
 		// most likely the properties didn't read correctly.
 		if (!Logger.getRootLogger().getAllAppenders().hasMoreElements()) {
@@ -200,7 +250,14 @@ public class ERXLogger extends org.apache.log4j.Logger {
 		if (ERXLogger.log == null) {
 			ERXLogger.log = Logger.getLogger(Logger.class);
 		}
-		ERXLogger.log.info("Updated the logging configuration with the current system properties.");
+		
+		if (configFile != null) {
+			ERXLogger.log.info("Updated the logging configuration from file '"+configFile+"' and system properties.");
+		}
+		else {
+			ERXLogger.log.info("Updated the logging configuration with the current system properties.");
+		}
+		
 		if (ERXLogger.log.isDebugEnabled()) {
 			ERXLogger.log.debug("log4j.loggerFactory: " + System.getProperty("log4j.loggerFactory"));
 			ERXLogger.log.debug("Factory: " + ERXLogger.factory);

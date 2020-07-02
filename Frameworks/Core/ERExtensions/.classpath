@@ -22,7 +22,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 		<accessrules>
-			<accessrule kind="discouraged" pattern="sun/misc/Signal*"/>
+			<accessrule kind="accessible" pattern="sun/misc/Signal*"/>
 		</accessrules>
 	</classpathentry>
 	<classpathentry kind="src" output="target/test-classes" path="Tests/Sources">
