@@ -1,0 +1,34 @@
+#!/bin/sh
+
+CXREPOURL="http://localhost:8081/repository/maven-snapshots"
+
+function command_help() {
+	echo "Maven Commands"
+	echo "  deploy-to-cxrepo: Deployment into the CX repository ${CXREPOURL}"
+	echo "  set-version <version>: set project to <version>"
+}
+
+function deploy_to_cxrepo() {
+	mvn clean compile install deploy -DaltDeploymentRepository="nexus::default::${CXREPOURL}"
+}
+
+function set_version() {
+	if [ "$1" == "" ]; then
+	  echo "set-version: new version missing"
+	else
+	  mvn versions:set -DnewVersion="$1"
+	  echo "If the update succeeded commit the version with 'versions-commit'"
+	fi
+}
+
+function version_commit() {
+	mvn versions:commit
+}
+
+case "$1" in
+	set-version) set_version "$2";;
+	versions-commit) version_commit;;
+	deploy-to-cxrepo) deploy_to_cxrepo;;
+	help) command_help;;
+	*) command_help;;
+esac
