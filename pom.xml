@@ -811,9 +811,9 @@
 
     <repositories>
         <repository>
-            <id>wocommunity</id>
-            <name>WOCommunity Maven 2 Releases Repository</name>
-            <url>http://maven.wocommunity.org/content/groups/public</url>
+            <id>nexus</id>
+            <name>CX Internal Releases Repository</name>
+            <url>http://localhost:8081/repository/maven-public/</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -821,10 +821,7 @@
                 <enabled>true</enabled>
             </releases>
         </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
+        <!-- repository>
             <id>wocommunity</id>
             <name>WOCommunity Maven 2 Releases Repository</name>
             <url>http://maven.wocommunity.org/content/groups/public</url>
@@ -834,10 +831,48 @@
             <releases>
                 <enabled>true</enabled>
             </releases>
+        </repository -->
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>wocommunity</id>
+            <name>CX Internal Releases Repository</name>
+            <url>http://localhost:8081/repository/maven-public/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
         </pluginRepository>
+        <!-- pluginRepository>
+            <id>wocommunity</id>
+            <name>WOCommunity Maven 2 Releases Repository</name>
+            <url>http://maven.wocommunity.org/content/groups/public</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </pluginRepository -->
     </pluginRepositories>
 
-    <distributionManagement>
+	  <distributionManagement>
+		<repository>
+		  <id>nexus</id>
+		  <name>Releases</name>
+		  <url>http://localhost:8081/repository/maven-releases</url>
+		</repository>
+		<snapshotRepository>
+		  <id>nexus</id>
+		  <name>Snapshot</name>
+		  <url>http://localhost:8081/repository/maven-snapshots</url>
+		</snapshotRepository>
+	  </distributionManagement>
+
+    <!-- distributionManagement>
         <repository>
             <id>wocommunity.deployment</id>
             <name>WOCommunity Maven2 Releases Repository</name>
@@ -849,12 +884,19 @@
             <name>WOCommunity Maven2 Snapshots Repository</name>
             <url>http://maven.wocommunity.org/content/repositories/snapshots/</url>
         </snapshotRepository>
-    </distributionManagement>
+    </distributionManagement -->
 
     <scm>
+        <connection>scm:https://github.com/lbane/wonder.git</connection>
+        <url>scm:https://github.com/lbane/wonder.git</url>
+        <developerConnection>scm:https://github.com/lbane/wonder.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <!-- scm>
         <connection>scm:git:git@github.com:wocommunity/wonder.git</connection>
         <url>scm:git:git@github.com:wocommunity/wonder.git</url>
         <developerConnection>scm:git:git@github.com:wocommunity/wonder.git</developerConnection>
       <tag>HEAD</tag>
-  </scm>
+  </scm -->
 </project>
