@@ -887,9 +887,9 @@
     </distributionManagement -->
 
     <scm>
-        <connection>scm:https://github.com/lbane/wonder.git</connection>
-        <url>scm:https://github.com/lbane/wonder.git</url>
-        <developerConnection>scm:https://github.com/lbane/wonder.git</developerConnection>
+        <connection>scm:git:git@github.com:lbane/wonder.git</connection>
+        <url>scm:git:git@github.com:lbane/wonder.git</url>
+        <developerConnection>scm:git:git@github.com:lbane/wonder.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 

@@ -6,6 +6,7 @@ function command_help() {
 	echo "Maven Commands"
 	echo "  deploy-to-cxrepo: Deployment into the CX repository ${CXREPOURL}"
 	echo "  set-version <version>: set project to <version>"
+	echo "  release-prepare <release-version> <new-snapshot-version>"
 }
 
 function deploy_to_cxrepo() {
@@ -21,6 +22,18 @@ function set_version() {
 	fi
 }
 
+function release_prepare() {
+	if [ "$1" == "" -o "$2" == "" ]; then
+	  echo "release-prepare: release-version or new-snapshot-version missing"
+	else
+		mvn release:prepare -DautoVersionSubmodules=true \
+			-DpushChanges=true \
+			-DreleaseVersion="$1" \
+			-DdevelopmentVersion="$2" \
+			-DupdateWorkingCopyVersions=true
+	fi
+}
+
 function version_commit() {
 	mvn versions:commit
 }
@@ -29,6 +42,7 @@ case "$1" in
 	set-version) set_version "$2";;
 	versions-commit) version_commit;;
 	deploy-to-cxrepo) deploy_to_cxrepo;;
+	release-prepare) release_prepare "$2" "$3";;
 	help) command_help;;
 	*) command_help;;
 esac
