@@ -3,11 +3,11 @@
 	<parent>
 		<groupId>wonder.frameworks</groupId>
 		<artifactId>plugins</artifactId>
-		<version>7.2-CX-SNAPSHOT</version>
+		<version>7.2-CX-20200720-a463134f1</version>
 	</parent>
 	<groupId>wonder.plugins</groupId>
 	<artifactId>PostgresqlPlugIn</artifactId>
-	<version>7.2-CX-SNAPSHOT</version>
+	<version>7.2-CX-20200720-a463134f1</version>
 	<name>Postgresql PlugIn</name>
 	<packaging>woframework</packaging>
 	<dependencies>
@@ -68,7 +68,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
