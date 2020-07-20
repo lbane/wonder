@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>wonder</groupId>
 		<artifactId>wonder</artifactId>
-		<version>7.2-CX-20200720-a463134f1</version>
+		<version>7.2-CX-SNAPSHOT</version>
 	</parent>
 	<groupId>wonder.utilities</groupId>
 	<artifactId>utilities</artifactId>
