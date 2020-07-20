@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>wonder.examples</groupId>
 		<artifactId>miscexamples</artifactId>
-		<version>7.2-CX-SNAPSHOT</version>
+		<version>7.2-CX-20200720-a463134f1</version>
 	</parent>
 	<groupId>wonder.misc</groupId>
 	<artifactId>ERSeleniumExample</artifactId>
