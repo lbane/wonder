@@ -4,8 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +60,7 @@ public class ERWSWOHTTPConnection
     /** the associated session **/
     WOSession session = null;
     
-	private static final PropertySet.PropertyMap model = parse(ERWSWOHTTPConnection.class);
+    private static final PropertyMap model = parse(ERWSWOHTTPConnection.class);
 
     /**
      * The constructor 
@@ -114,28 +117,13 @@ public class ERWSWOHTTPConnection
         return woRequest.headerForKey(s);
     }
 
-// JAX 2.2 methods
-//    @Override
-//    public Set<String> getRequestHeaderNames()
-//    {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public List<String> getRequestHeaderValues(String s)
-//    {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-
     /* (non-Javadoc)
      * @see com.sun.xml.ws.transport.http.WSHTTPConnection#getRequestHeaders()
      */
     @SuppressWarnings({
         "rawtypes", "unchecked"
     })
-	@PropertySet.Property({ "javax.xml.ws.http.request.headers",
+	@Property({ "javax.xml.ws.http.request.headers",
 	"com.sun.xml.ws.api.message.packet.inbound.transport.headers" })
     @NotNull
     @Override
@@ -153,45 +141,16 @@ public class ERWSWOHTTPConnection
         return woRequest.method();
     }
 
-// JAX 2.2 methods
-//    @Override
-//    public String getRequestScheme()
-//    {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public String getRequestURI()
-//    {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-
     /* (non-Javadoc)
      * @see com.sun.xml.ws.transport.http.WSHTTPConnection#getResponseHeaders()
      */
-	@PropertySet.Property({ "javax.xml.ws.http.response.headers",
+	@Property({ "javax.xml.ws.http.response.headers",
 	"com.sun.xml.ws.api.message.packet.outbound.transport.headers" })
     @Override
     public Map<String, List<String>> getResponseHeaders()
     {
         return null;
     }
-
-//    @Override
-//    public String getServerName()
-//    {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public int getServerPort()
-//    {
-//        // TODO Auto-generated method stub
-//        return 0;
-//    }
 
     /* (non-Javadoc)
      * @see com.sun.xml.ws.transport.http.WSHTTPConnection#getStatus()
@@ -258,10 +217,10 @@ public class ERWSWOHTTPConnection
      * @see com.sun.xml.ws.api.PropertySet#getPropertyMap()
      */
     @Override
-	protected PropertySet.PropertyMap getPropertyMap() 
+    protected PropertyMap getPropertyMap() 
     {
-		return model;
-	}
+        return model;
+    }
 
     /**
      * Generate the response after the ERXRequest has been treaten by JaxWS
@@ -296,7 +255,7 @@ public class ERWSWOHTTPConnection
 
 	private WOContext context = null;
 
-	@PropertySet.Property({ "com.webobjects.appserver.WOContext" })
+	@Property({ "com.webobjects.appserver.WOContext" })
 	public synchronized WOContext WOContext()
 	{
 		if(context == null)
@@ -317,7 +276,7 @@ public class ERWSWOHTTPConnection
 		return context;
 	}
 
-    @PropertySet.Property({ "er.extensions.appserver.ERXWOContext" })
+    @Property({ "er.extensions.appserver.ERXWOContext" })
     public synchronized ERXWOContext ERXWOContext()
     {
         WOContext c = WOContext();
@@ -330,9 +289,52 @@ public class ERWSWOHTTPConnection
         throw new IllegalArgumentException("WOContext is no sublass of ERXWOContext");
     }
     
-	private String getSessionIDFromCookie()
-	{
-		return woRequest.cookieValueForKey(WOApplication.application().sessionIdKey());
-	}
+    private String getSessionIDFromCookie()
+    {
+        return woRequest.cookieValueForKey(WOApplication.application().sessionIdKey());
+    }
+
+    @Deprecated
+    @Override
+    public Set<String> getRequestHeaderNames()
+    {
+        return new HashSet<String>(woRequest.headerKeys());
+    }
+
+    @Override
+    public List<String> getRequestHeaderValues(String arg0)
+    {
+        return woRequest.headersForKey(arg0);
+    }
+
+    @Override
+    public String getRequestScheme()
+    {
+        return isSecure() ? "https" : "http";
+    }
+
+    @Override
+    public String getRequestURI()
+    {
+        return woRequest.uri();
+    }
+
+    @Override
+    public String getServerName()
+    {
+        return woRequest._serverName();
+    }
+
+    @Override
+    public int getServerPort()
+    {
+        return Integer.valueOf(woRequest._serverPort()).intValue();
+    }
+
+    @Override
+    public void setResponseHeader(String arg0, List<String> arg1)
+    {
+        woResponse.setHeaders(arg1, arg0);
+    }
 	
 }

@@ -22,7 +22,7 @@
 	<classpathentry kind="lib" path="Libraries/jaxb-jxc.jar"/>
 	<classpathentry kind="lib" path="Libraries/jaxb-xjc.jar"/>
 	<classpathentry kind="lib" path="Libraries/jaxws-api.jar"/>
-	<classpathentry kind="lib" path="Libraries/jaxws-rt.jar"/>
+	<classpathentry kind="lib" path="Libraries/jaxws-rt.jar" sourcepath="/var/folders/ly/4c2drr111z5f3p_t05ldkj6h00010q/T/.org.sf.feeling.decompiler1602674888486/source/jaxws-rt-2.3.3-sources.jar"/>
 	<classpathentry kind="lib" path="Libraries/jaxws-tools.jar"/>
 	<classpathentry kind="lib" path="Libraries/jsr173_api.jar"/>
 	<classpathentry kind="lib" path="Libraries/jsr181-api.jar"/>
