@@ -24,7 +24,6 @@ import java.nio.channels.*;
 import java.io.*;
 import java.net.URLEncoder;
 
-import org.apache.commons.lang.CharEncoding;
 import org.apache.log4j.Logger;
 
 /**
@@ -286,7 +285,7 @@ public class MemcachedClient {
 		this.primitiveAsString  = false;
 		this.compressEnable     = true;
 		this.compressThreshold  = COMPRESS_THRESH;
-		this.defaultEncoding    = CharEncoding.UTF_8;
+		this.defaultEncoding    = java.nio.charset.StandardCharsets.UTF_8.name();
 		this.poolName           = ( this.poolName == null ) ? "default" : this.poolName;
 
 		// get a pool instance to work with for the life of this instance
@@ -1747,7 +1746,7 @@ public class MemcachedClient {
 	}
 
 	private String sanitizeKey( String key ) throws UnsupportedEncodingException {
-		return (sanitizeKeys) ? URLEncoder.encode(key, CharEncoding.UTF_8) : key;
+		return (sanitizeKeys) ? URLEncoder.encode(key, java.nio.charset.StandardCharsets.UTF_8.name()) : key;
 	}
 
 	/** 
