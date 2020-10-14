@@ -6,25 +6,29 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _Movie extends  ERXGenericRecord {
   public static final String ENTITY_NAME = "Movie";
 
   // Attribute Keys
-  public static final ERXKey<String> CATEGORY = new ERXKey<String>("category");
-  public static final ERXKey<NSTimestamp> DATE_RELEASED = new ERXKey<NSTimestamp>("dateReleased");
-  public static final ERXKey<String> POSTER_NAME = new ERXKey<String>("posterName");
-  public static final ERXKey<String> RATED = new ERXKey<String>("rated");
-  public static final ERXKey<java.math.BigDecimal> REVENUE = new ERXKey<java.math.BigDecimal>("revenue");
-  public static final ERXKey<String> TITLE = new ERXKey<String>("title");
-  public static final ERXKey<String> TRAILER_NAME = new ERXKey<String>("trailerName");
+  public static final ERXKey<String> CATEGORY = new ERXKey<String>("category", Type.Attribute);
+  public static final ERXKey<NSTimestamp> DATE_RELEASED = new ERXKey<NSTimestamp>("dateReleased", Type.Attribute);
+  public static final ERXKey<String> POSTER_NAME = new ERXKey<String>("posterName", Type.Attribute);
+  public static final ERXKey<String> RATED = new ERXKey<String>("rated", Type.Attribute);
+  public static final ERXKey<java.math.BigDecimal> REVENUE = new ERXKey<java.math.BigDecimal>("revenue", Type.Attribute);
+  public static final ERXKey<String> TITLE = new ERXKey<String>("title", Type.Attribute);
+  public static final ERXKey<String> TRAILER_NAME = new ERXKey<String>("trailerName", Type.Attribute);
+
   // Relationship Keys
-  public static final ERXKey<er.distribution.example.server.eo.Studio> STUDIO = new ERXKey<er.distribution.example.server.eo.Studio>("studio");
+  public static final ERXKey<er.distribution.example.server.eo.Studio> STUDIO = new ERXKey<er.distribution.example.server.eo.Studio>("studio", Type.ToOneRelationship);
 
   // Attributes
   public static final String CATEGORY_KEY = CATEGORY.key();
@@ -34,10 +38,11 @@ public abstract class _Movie extends  ERXGenericRecord {
   public static final String REVENUE_KEY = REVENUE.key();
   public static final String TITLE_KEY = TITLE.key();
   public static final String TRAILER_NAME_KEY = TRAILER_NAME.key();
+
   // Relationships
   public static final String STUDIO_KEY = STUDIO.key();
 
-  private static Logger LOG = Logger.getLogger(_Movie.class);
+  private static final Logger log = LoggerFactory.getLogger(_Movie.class);
 
   public Movie localInstanceIn(EOEditingContext editingContext) {
     Movie localInstance = (Movie)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -52,9 +57,7 @@ public abstract class _Movie extends  ERXGenericRecord {
   }
 
   public void setCategory(String value) {
-    if (_Movie.LOG.isDebugEnabled()) {
-    	_Movie.LOG.debug( "updating category from " + category() + " to " + value);
-    }
+    log.debug( "updating category from {} to {}", category(), value);
     takeStoredValueForKey(value, _Movie.CATEGORY_KEY);
   }
 
@@ -63,9 +66,7 @@ public abstract class _Movie extends  ERXGenericRecord {
   }
 
   public void setDateReleased(NSTimestamp value) {
-    if (_Movie.LOG.isDebugEnabled()) {
-    	_Movie.LOG.debug( "updating dateReleased from " + dateReleased() + " to " + value);
-    }
+    log.debug( "updating dateReleased from {} to {}", dateReleased(), value);
     takeStoredValueForKey(value, _Movie.DATE_RELEASED_KEY);
   }
 
@@ -74,9 +75,7 @@ public abstract class _Movie extends  ERXGenericRecord {
   }
 
   public void setPosterName(String value) {
-    if (_Movie.LOG.isDebugEnabled()) {
-    	_Movie.LOG.debug( "updating posterName from " + posterName() + " to " + value);
-    }
+    log.debug( "updating posterName from {} to {}", posterName(), value);
     takeStoredValueForKey(value, _Movie.POSTER_NAME_KEY);
   }
 
@@ -85,9 +84,7 @@ public abstract class _Movie extends  ERXGenericRecord {
   }
 
   public void setRated(String value) {
-    if (_Movie.LOG.isDebugEnabled()) {
-    	_Movie.LOG.debug( "updating rated from " + rated() + " to " + value);
-    }
+    log.debug( "updating rated from {} to {}", rated(), value);
     takeStoredValueForKey(value, _Movie.RATED_KEY);
   }
 
@@ -96,9 +93,7 @@ public abstract class _Movie extends  ERXGenericRecord {
   }
 
   public void setRevenue(java.math.BigDecimal value) {
-    if (_Movie.LOG.isDebugEnabled()) {
-    	_Movie.LOG.debug( "updating revenue from " + revenue() + " to " + value);
-    }
+    log.debug( "updating revenue from {} to {}", revenue(), value);
     takeStoredValueForKey(value, _Movie.REVENUE_KEY);
   }
 
@@ -107,9 +102,7 @@ public abstract class _Movie extends  ERXGenericRecord {
   }
 
   public void setTitle(String value) {
-    if (_Movie.LOG.isDebugEnabled()) {
-    	_Movie.LOG.debug( "updating title from " + title() + " to " + value);
-    }
+    log.debug( "updating title from {} to {}", title(), value);
     takeStoredValueForKey(value, _Movie.TITLE_KEY);
   }
 
@@ -118,42 +111,38 @@ public abstract class _Movie extends  ERXGenericRecord {
   }
 
   public void setTrailerName(String value) {
-    if (_Movie.LOG.isDebugEnabled()) {
-    	_Movie.LOG.debug( "updating trailerName from " + trailerName() + " to " + value);
-    }
+    log.debug( "updating trailerName from {} to {}", trailerName(), value);
     takeStoredValueForKey(value, _Movie.TRAILER_NAME_KEY);
   }
 
   public er.distribution.example.server.eo.Studio studio() {
     return (er.distribution.example.server.eo.Studio)storedValueForKey(_Movie.STUDIO_KEY);
   }
-  
+
   public void setStudio(er.distribution.example.server.eo.Studio value) {
     takeStoredValueForKey(value, _Movie.STUDIO_KEY);
   }
 
   public void setStudioRelationship(er.distribution.example.server.eo.Studio value) {
-    if (_Movie.LOG.isDebugEnabled()) {
-      _Movie.LOG.debug("updating studio from " + studio() + " to " + value);
-    }
+    log.debug("updating studio from {} to {}", studio(), value);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	setStudio(value);
+      setStudio(value);
     }
     else if (value == null) {
-    	er.distribution.example.server.eo.Studio oldValue = studio();
-    	if (oldValue != null) {
-    		removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Movie.STUDIO_KEY);
+      er.distribution.example.server.eo.Studio oldValue = studio();
+      if (oldValue != null) {
+        removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Movie.STUDIO_KEY);
       }
     } else {
-    	addObjectToBothSidesOfRelationshipWithKey(value, _Movie.STUDIO_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(value, _Movie.STUDIO_KEY);
     }
   }
-  
+
 
   public static Movie createMovie(EOEditingContext editingContext, String title
 ) {
-    Movie eo = (Movie) EOUtilities.createAndInsertInstance(editingContext, _Movie.ENTITY_NAME);    
-		eo.setTitle(title);
+    Movie eo = (Movie) EOUtilities.createAndInsertInstance(editingContext, _Movie.ENTITY_NAME);
+    eo.setTitle(title);
     return eo;
   }
 
@@ -171,13 +160,12 @@ public abstract class _Movie extends  ERXGenericRecord {
 
   public static NSArray<Movie> fetchMovies(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<Movie> fetchSpec = new ERXFetchSpecification<Movie>(_Movie.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<Movie> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static Movie fetchMovie(EOEditingContext editingContext, String keyName, Object value) {
-    return _Movie.fetchMovie(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Movie.fetchMovie(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Movie fetchMovie(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -197,7 +185,7 @@ public abstract class _Movie extends  ERXGenericRecord {
   }
 
   public static Movie fetchRequiredMovie(EOEditingContext editingContext, String keyName, Object value) {
-    return _Movie.fetchRequiredMovie(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Movie.fetchRequiredMovie(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Movie fetchRequiredMovie(EOEditingContext editingContext, EOQualifier qualifier) {

@@ -6,30 +6,34 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _User extends  ERXGenericRecord {
   public static final String ENTITY_NAME = "User";
 
   // Attribute Keys
-  public static final ERXKey<String> BIO = new ERXKey<String>("bio");
-  public static final ERXKey<String> BIO_HTML = new ERXKey<String>("bioHtml");
-  public static final ERXKey<NSTimestamp> CREATED_AT = new ERXKey<NSTimestamp>("createdAt");
-  public static final ERXKey<String> DISPLAY_NAME = new ERXKey<String>("displayName");
-  public static final ERXKey<NSTimestamp> LAST_LOGIN_AT = new ERXKey<NSTimestamp>("lastLoginAt");
-  public static final ERXKey<NSTimestamp> LAST_SEEN_AT = new ERXKey<NSTimestamp>("lastSeenAt");
-  public static final ERXKey<String> LOGIN = new ERXKey<String>("login");
-  public static final ERXKey<Integer> POSTS_COUNT = new ERXKey<Integer>("postsCount");
-  public static final ERXKey<NSTimestamp> UPDATED_AT = new ERXKey<NSTimestamp>("updatedAt");
-  public static final ERXKey<String> WEBSITE = new ERXKey<String>("website");
+  public static final ERXKey<String> BIO = new ERXKey<String>("bio", Type.Attribute);
+  public static final ERXKey<String> BIO_HTML = new ERXKey<String>("bioHtml", Type.Attribute);
+  public static final ERXKey<NSTimestamp> CREATED_AT = new ERXKey<NSTimestamp>("createdAt", Type.Attribute);
+  public static final ERXKey<String> DISPLAY_NAME = new ERXKey<String>("displayName", Type.Attribute);
+  public static final ERXKey<NSTimestamp> LAST_LOGIN_AT = new ERXKey<NSTimestamp>("lastLoginAt", Type.Attribute);
+  public static final ERXKey<NSTimestamp> LAST_SEEN_AT = new ERXKey<NSTimestamp>("lastSeenAt", Type.Attribute);
+  public static final ERXKey<String> LOGIN = new ERXKey<String>("login", Type.Attribute);
+  public static final ERXKey<Integer> POSTS_COUNT = new ERXKey<Integer>("postsCount", Type.Attribute);
+  public static final ERXKey<NSTimestamp> UPDATED_AT = new ERXKey<NSTimestamp>("updatedAt", Type.Attribute);
+  public static final ERXKey<String> WEBSITE = new ERXKey<String>("website", Type.Attribute);
+
   // Relationship Keys
-  public static final ERXKey<se.caboo.beast.model.Post> POSTS = new ERXKey<se.caboo.beast.model.Post>("posts");
-  public static final ERXKey<se.caboo.beast.model.Topic> REPLIED_TO_TOPICS = new ERXKey<se.caboo.beast.model.Topic>("repliedToTopics");
-  public static final ERXKey<se.caboo.beast.model.Topic> TOPICS = new ERXKey<se.caboo.beast.model.Topic>("topics");
+  public static final ERXKey<se.caboo.beast.model.Post> POSTS = new ERXKey<se.caboo.beast.model.Post>("posts", Type.ToManyRelationship);
+  public static final ERXKey<se.caboo.beast.model.Topic> REPLIED_TO_TOPICS = new ERXKey<se.caboo.beast.model.Topic>("repliedToTopics", Type.ToManyRelationship);
+  public static final ERXKey<se.caboo.beast.model.Topic> TOPICS = new ERXKey<se.caboo.beast.model.Topic>("topics", Type.ToManyRelationship);
 
   // Attributes
   public static final String BIO_KEY = BIO.key();
@@ -42,12 +46,13 @@ public abstract class _User extends  ERXGenericRecord {
   public static final String POSTS_COUNT_KEY = POSTS_COUNT.key();
   public static final String UPDATED_AT_KEY = UPDATED_AT.key();
   public static final String WEBSITE_KEY = WEBSITE.key();
+
   // Relationships
   public static final String POSTS_KEY = POSTS.key();
   public static final String REPLIED_TO_TOPICS_KEY = REPLIED_TO_TOPICS.key();
   public static final String TOPICS_KEY = TOPICS.key();
 
-  private static Logger LOG = Logger.getLogger(_User.class);
+  private static final Logger log = LoggerFactory.getLogger(_User.class);
 
   public User localInstanceIn(EOEditingContext editingContext) {
     User localInstance = (User)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -62,9 +67,7 @@ public abstract class _User extends  ERXGenericRecord {
   }
 
   public void setBio(String value) {
-    if (_User.LOG.isDebugEnabled()) {
-    	_User.LOG.debug( "updating bio from " + bio() + " to " + value);
-    }
+    log.debug( "updating bio from {} to {}", bio(), value);
     takeStoredValueForKey(value, _User.BIO_KEY);
   }
 
@@ -73,9 +76,7 @@ public abstract class _User extends  ERXGenericRecord {
   }
 
   public void setBioHtml(String value) {
-    if (_User.LOG.isDebugEnabled()) {
-    	_User.LOG.debug( "updating bioHtml from " + bioHtml() + " to " + value);
-    }
+    log.debug( "updating bioHtml from {} to {}", bioHtml(), value);
     takeStoredValueForKey(value, _User.BIO_HTML_KEY);
   }
 
@@ -84,9 +85,7 @@ public abstract class _User extends  ERXGenericRecord {
   }
 
   public void setCreatedAt(NSTimestamp value) {
-    if (_User.LOG.isDebugEnabled()) {
-    	_User.LOG.debug( "updating createdAt from " + createdAt() + " to " + value);
-    }
+    log.debug( "updating createdAt from {} to {}", createdAt(), value);
     takeStoredValueForKey(value, _User.CREATED_AT_KEY);
   }
 
@@ -95,9 +94,7 @@ public abstract class _User extends  ERXGenericRecord {
   }
 
   public void setDisplayName(String value) {
-    if (_User.LOG.isDebugEnabled()) {
-    	_User.LOG.debug( "updating displayName from " + displayName() + " to " + value);
-    }
+    log.debug( "updating displayName from {} to {}", displayName(), value);
     takeStoredValueForKey(value, _User.DISPLAY_NAME_KEY);
   }
 
@@ -106,9 +103,7 @@ public abstract class _User extends  ERXGenericRecord {
   }
 
   public void setLastLoginAt(NSTimestamp value) {
-    if (_User.LOG.isDebugEnabled()) {
-    	_User.LOG.debug( "updating lastLoginAt from " + lastLoginAt() + " to " + value);
-    }
+    log.debug( "updating lastLoginAt from {} to {}", lastLoginAt(), value);
     takeStoredValueForKey(value, _User.LAST_LOGIN_AT_KEY);
   }
 
@@ -117,9 +112,7 @@ public abstract class _User extends  ERXGenericRecord {
   }
 
   public void setLastSeenAt(NSTimestamp value) {
-    if (_User.LOG.isDebugEnabled()) {
-    	_User.LOG.debug( "updating lastSeenAt from " + lastSeenAt() + " to " + value);
-    }
+    log.debug( "updating lastSeenAt from {} to {}", lastSeenAt(), value);
     takeStoredValueForKey(value, _User.LAST_SEEN_AT_KEY);
   }
 
@@ -128,9 +121,7 @@ public abstract class _User extends  ERXGenericRecord {
   }
 
   public void setLogin(String value) {
-    if (_User.LOG.isDebugEnabled()) {
-    	_User.LOG.debug( "updating login from " + login() + " to " + value);
-    }
+    log.debug( "updating login from {} to {}", login(), value);
     takeStoredValueForKey(value, _User.LOGIN_KEY);
   }
 
@@ -139,9 +130,7 @@ public abstract class _User extends  ERXGenericRecord {
   }
 
   public void setPostsCount(Integer value) {
-    if (_User.LOG.isDebugEnabled()) {
-    	_User.LOG.debug( "updating postsCount from " + postsCount() + " to " + value);
-    }
+    log.debug( "updating postsCount from {} to {}", postsCount(), value);
     takeStoredValueForKey(value, _User.POSTS_COUNT_KEY);
   }
 
@@ -150,9 +139,7 @@ public abstract class _User extends  ERXGenericRecord {
   }
 
   public void setUpdatedAt(NSTimestamp value) {
-    if (_User.LOG.isDebugEnabled()) {
-    	_User.LOG.debug( "updating updatedAt from " + updatedAt() + " to " + value);
-    }
+    log.debug( "updating updatedAt from {} to {}", updatedAt(), value);
     takeStoredValueForKey(value, _User.UPDATED_AT_KEY);
   }
 
@@ -161,9 +148,7 @@ public abstract class _User extends  ERXGenericRecord {
   }
 
   public void setWebsite(String value) {
-    if (_User.LOG.isDebugEnabled()) {
-    	_User.LOG.debug( "updating website from " + website() + " to " + value);
-    }
+    log.debug( "updating website from {} to {}", website(), value);
     takeStoredValueForKey(value, _User.WEBSITE_KEY);
   }
 
@@ -183,16 +168,13 @@ public abstract class _User extends  ERXGenericRecord {
     NSArray<se.caboo.beast.model.Post> results;
     if (fetch) {
       EOQualifier fullQualifier;
-      EOQualifier inverseQualifier = new EOKeyValueQualifier(se.caboo.beast.model.Post.USER_KEY, EOQualifier.QualifierOperatorEqual, this);
-    	
+      EOQualifier inverseQualifier = ERXQ.equals(se.caboo.beast.model.Post.USER_KEY, this);
+
       if (qualifier == null) {
         fullQualifier = inverseQualifier;
       }
       else {
-        NSMutableArray<EOQualifier> qualifiers = new NSMutableArray<EOQualifier>();
-        qualifiers.addObject(qualifier);
-        qualifiers.addObject(inverseQualifier);
-        fullQualifier = new EOAndQualifier(qualifiers);
+        fullQualifier = ERXQ.and(qualifier, inverseQualifier);
       }
 
       results = se.caboo.beast.model.Post.fetchPosts(editingContext(), fullQualifier, sortOrderings);
@@ -208,7 +190,7 @@ public abstract class _User extends  ERXGenericRecord {
     }
     return results;
   }
-  
+
   public void addToPosts(se.caboo.beast.model.Post object) {
     includeObjectIntoPropertyWithKey(object, _User.POSTS_KEY);
   }
@@ -218,33 +200,27 @@ public abstract class _User extends  ERXGenericRecord {
   }
 
   public void addToPostsRelationship(se.caboo.beast.model.Post object) {
-    if (_User.LOG.isDebugEnabled()) {
-      _User.LOG.debug("adding " + object + " to posts relationship");
-    }
+    log.debug("adding {} to posts relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	addToPosts(object);
+      addToPosts(object);
     }
     else {
-    	addObjectToBothSidesOfRelationshipWithKey(object, _User.POSTS_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(object, _User.POSTS_KEY);
     }
   }
 
   public void removeFromPostsRelationship(se.caboo.beast.model.Post object) {
-    if (_User.LOG.isDebugEnabled()) {
-      _User.LOG.debug("removing " + object + " from posts relationship");
-    }
+    log.debug("removing {} from posts relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	removeFromPosts(object);
+      removeFromPosts(object);
     }
     else {
-    	removeObjectFromBothSidesOfRelationshipWithKey(object, _User.POSTS_KEY);
+      removeObjectFromBothSidesOfRelationshipWithKey(object, _User.POSTS_KEY);
     }
   }
 
   public se.caboo.beast.model.Post createPostsRelationship() {
-    EOClassDescription eoClassDesc = EOClassDescription.classDescriptionForEntityName( se.caboo.beast.model.Post.ENTITY_NAME );
-    EOEnterpriseObject eo = eoClassDesc.createInstanceWithEditingContext(editingContext(), null);
-    editingContext().insertObject(eo);
+    EOEnterpriseObject eo = EOUtilities.createAndInsertInstance(editingContext(),  se.caboo.beast.model.Post.ENTITY_NAME );
     addObjectToBothSidesOfRelationshipWithKey(eo, _User.POSTS_KEY);
     return (se.caboo.beast.model.Post) eo;
   }
@@ -277,16 +253,13 @@ public abstract class _User extends  ERXGenericRecord {
     NSArray<se.caboo.beast.model.Topic> results;
     if (fetch) {
       EOQualifier fullQualifier;
-      EOQualifier inverseQualifier = new EOKeyValueQualifier(se.caboo.beast.model.Topic.REPLIED_BY_KEY, EOQualifier.QualifierOperatorEqual, this);
-    	
+      EOQualifier inverseQualifier = ERXQ.equals(se.caboo.beast.model.Topic.REPLIED_BY_KEY, this);
+
       if (qualifier == null) {
         fullQualifier = inverseQualifier;
       }
       else {
-        NSMutableArray<EOQualifier> qualifiers = new NSMutableArray<EOQualifier>();
-        qualifiers.addObject(qualifier);
-        qualifiers.addObject(inverseQualifier);
-        fullQualifier = new EOAndQualifier(qualifiers);
+        fullQualifier = ERXQ.and(qualifier, inverseQualifier);
       }
 
       results = se.caboo.beast.model.Topic.fetchTopics(editingContext(), fullQualifier, sortOrderings);
@@ -302,7 +275,7 @@ public abstract class _User extends  ERXGenericRecord {
     }
     return results;
   }
-  
+
   public void addToRepliedToTopics(se.caboo.beast.model.Topic object) {
     includeObjectIntoPropertyWithKey(object, _User.REPLIED_TO_TOPICS_KEY);
   }
@@ -312,33 +285,27 @@ public abstract class _User extends  ERXGenericRecord {
   }
 
   public void addToRepliedToTopicsRelationship(se.caboo.beast.model.Topic object) {
-    if (_User.LOG.isDebugEnabled()) {
-      _User.LOG.debug("adding " + object + " to repliedToTopics relationship");
-    }
+    log.debug("adding {} to repliedToTopics relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	addToRepliedToTopics(object);
+      addToRepliedToTopics(object);
     }
     else {
-    	addObjectToBothSidesOfRelationshipWithKey(object, _User.REPLIED_TO_TOPICS_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(object, _User.REPLIED_TO_TOPICS_KEY);
     }
   }
 
   public void removeFromRepliedToTopicsRelationship(se.caboo.beast.model.Topic object) {
-    if (_User.LOG.isDebugEnabled()) {
-      _User.LOG.debug("removing " + object + " from repliedToTopics relationship");
-    }
+    log.debug("removing {} from repliedToTopics relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	removeFromRepliedToTopics(object);
+      removeFromRepliedToTopics(object);
     }
     else {
-    	removeObjectFromBothSidesOfRelationshipWithKey(object, _User.REPLIED_TO_TOPICS_KEY);
+      removeObjectFromBothSidesOfRelationshipWithKey(object, _User.REPLIED_TO_TOPICS_KEY);
     }
   }
 
   public se.caboo.beast.model.Topic createRepliedToTopicsRelationship() {
-    EOClassDescription eoClassDesc = EOClassDescription.classDescriptionForEntityName( se.caboo.beast.model.Topic.ENTITY_NAME );
-    EOEnterpriseObject eo = eoClassDesc.createInstanceWithEditingContext(editingContext(), null);
-    editingContext().insertObject(eo);
+    EOEnterpriseObject eo = EOUtilities.createAndInsertInstance(editingContext(),  se.caboo.beast.model.Topic.ENTITY_NAME );
     addObjectToBothSidesOfRelationshipWithKey(eo, _User.REPLIED_TO_TOPICS_KEY);
     return (se.caboo.beast.model.Topic) eo;
   }
@@ -371,16 +338,13 @@ public abstract class _User extends  ERXGenericRecord {
     NSArray<se.caboo.beast.model.Topic> results;
     if (fetch) {
       EOQualifier fullQualifier;
-      EOQualifier inverseQualifier = new EOKeyValueQualifier(se.caboo.beast.model.Topic.USER_KEY, EOQualifier.QualifierOperatorEqual, this);
-    	
+      EOQualifier inverseQualifier = ERXQ.equals(se.caboo.beast.model.Topic.USER_KEY, this);
+
       if (qualifier == null) {
         fullQualifier = inverseQualifier;
       }
       else {
-        NSMutableArray<EOQualifier> qualifiers = new NSMutableArray<EOQualifier>();
-        qualifiers.addObject(qualifier);
-        qualifiers.addObject(inverseQualifier);
-        fullQualifier = new EOAndQualifier(qualifiers);
+        fullQualifier = ERXQ.and(qualifier, inverseQualifier);
       }
 
       results = se.caboo.beast.model.Topic.fetchTopics(editingContext(), fullQualifier, sortOrderings);
@@ -396,7 +360,7 @@ public abstract class _User extends  ERXGenericRecord {
     }
     return results;
   }
-  
+
   public void addToTopics(se.caboo.beast.model.Topic object) {
     includeObjectIntoPropertyWithKey(object, _User.TOPICS_KEY);
   }
@@ -406,33 +370,27 @@ public abstract class _User extends  ERXGenericRecord {
   }
 
   public void addToTopicsRelationship(se.caboo.beast.model.Topic object) {
-    if (_User.LOG.isDebugEnabled()) {
-      _User.LOG.debug("adding " + object + " to topics relationship");
-    }
+    log.debug("adding {} to topics relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	addToTopics(object);
+      addToTopics(object);
     }
     else {
-    	addObjectToBothSidesOfRelationshipWithKey(object, _User.TOPICS_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(object, _User.TOPICS_KEY);
     }
   }
 
   public void removeFromTopicsRelationship(se.caboo.beast.model.Topic object) {
-    if (_User.LOG.isDebugEnabled()) {
-      _User.LOG.debug("removing " + object + " from topics relationship");
-    }
+    log.debug("removing {} from topics relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	removeFromTopics(object);
+      removeFromTopics(object);
     }
     else {
-    	removeObjectFromBothSidesOfRelationshipWithKey(object, _User.TOPICS_KEY);
+      removeObjectFromBothSidesOfRelationshipWithKey(object, _User.TOPICS_KEY);
     }
   }
 
   public se.caboo.beast.model.Topic createTopicsRelationship() {
-    EOClassDescription eoClassDesc = EOClassDescription.classDescriptionForEntityName( se.caboo.beast.model.Topic.ENTITY_NAME );
-    EOEnterpriseObject eo = eoClassDesc.createInstanceWithEditingContext(editingContext(), null);
-    editingContext().insertObject(eo);
+    EOEnterpriseObject eo = EOUtilities.createAndInsertInstance(editingContext(),  se.caboo.beast.model.Topic.ENTITY_NAME );
     addObjectToBothSidesOfRelationshipWithKey(eo, _User.TOPICS_KEY);
     return (se.caboo.beast.model.Topic) eo;
   }
@@ -461,17 +419,17 @@ public abstract class _User extends  ERXGenericRecord {
 , NSTimestamp updatedAt
 , String website
 ) {
-    User eo = (User) EOUtilities.createAndInsertInstance(editingContext, _User.ENTITY_NAME);    
-		eo.setBio(bio);
-		eo.setBioHtml(bioHtml);
-		eo.setCreatedAt(createdAt);
-		eo.setDisplayName(displayName);
-		eo.setLastLoginAt(lastLoginAt);
-		eo.setLastSeenAt(lastSeenAt);
-		eo.setLogin(login);
-		eo.setPostsCount(postsCount);
-		eo.setUpdatedAt(updatedAt);
-		eo.setWebsite(website);
+    User eo = (User) EOUtilities.createAndInsertInstance(editingContext, _User.ENTITY_NAME);
+    eo.setBio(bio);
+    eo.setBioHtml(bioHtml);
+    eo.setCreatedAt(createdAt);
+    eo.setDisplayName(displayName);
+    eo.setLastLoginAt(lastLoginAt);
+    eo.setLastSeenAt(lastSeenAt);
+    eo.setLogin(login);
+    eo.setPostsCount(postsCount);
+    eo.setUpdatedAt(updatedAt);
+    eo.setWebsite(website);
     return eo;
   }
 
@@ -489,13 +447,12 @@ public abstract class _User extends  ERXGenericRecord {
 
   public static NSArray<User> fetchUsers(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<User> fetchSpec = new ERXFetchSpecification<User>(_User.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<User> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static User fetchUser(EOEditingContext editingContext, String keyName, Object value) {
-    return _User.fetchUser(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _User.fetchUser(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static User fetchUser(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -515,7 +472,7 @@ public abstract class _User extends  ERXGenericRecord {
   }
 
   public static User fetchRequiredUser(EOEditingContext editingContext, String keyName, Object value) {
-    return _User.fetchRequiredUser(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _User.fetchRequiredUser(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static User fetchRequiredUser(EOEditingContext editingContext, EOQualifier qualifier) {

@@ -6,26 +6,31 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _PlotSummary extends  ERXGenericRecord {
   public static final String ENTITY_NAME = "PlotSummary";
 
   // Attribute Keys
-  public static final ERXKey<String> SUMMARY = new ERXKey<String>("summary");
+  public static final ERXKey<String> SUMMARY = new ERXKey<String>("summary", Type.Attribute);
+
   // Relationship Keys
-  public static final ERXKey<er.distribution.example.server.eo.Movie> MOVIE = new ERXKey<er.distribution.example.server.eo.Movie>("movie");
+  public static final ERXKey<er.distribution.example.server.eo.Movie> MOVIE = new ERXKey<er.distribution.example.server.eo.Movie>("movie", Type.ToOneRelationship);
 
   // Attributes
   public static final String SUMMARY_KEY = SUMMARY.key();
+
   // Relationships
   public static final String MOVIE_KEY = MOVIE.key();
 
-  private static Logger LOG = Logger.getLogger(_PlotSummary.class);
+  private static final Logger log = LoggerFactory.getLogger(_PlotSummary.class);
 
   public PlotSummary localInstanceIn(EOEditingContext editingContext) {
     PlotSummary localInstance = (PlotSummary)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -40,40 +45,36 @@ public abstract class _PlotSummary extends  ERXGenericRecord {
   }
 
   public void setSummary(String value) {
-    if (_PlotSummary.LOG.isDebugEnabled()) {
-    	_PlotSummary.LOG.debug( "updating summary from " + summary() + " to " + value);
-    }
+    log.debug( "updating summary from {} to {}", summary(), value);
     takeStoredValueForKey(value, _PlotSummary.SUMMARY_KEY);
   }
 
   public er.distribution.example.server.eo.Movie movie() {
     return (er.distribution.example.server.eo.Movie)storedValueForKey(_PlotSummary.MOVIE_KEY);
   }
-  
+
   public void setMovie(er.distribution.example.server.eo.Movie value) {
     takeStoredValueForKey(value, _PlotSummary.MOVIE_KEY);
   }
 
   public void setMovieRelationship(er.distribution.example.server.eo.Movie value) {
-    if (_PlotSummary.LOG.isDebugEnabled()) {
-      _PlotSummary.LOG.debug("updating movie from " + movie() + " to " + value);
-    }
+    log.debug("updating movie from {} to {}", movie(), value);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	setMovie(value);
+      setMovie(value);
     }
     else if (value == null) {
-    	er.distribution.example.server.eo.Movie oldValue = movie();
-    	if (oldValue != null) {
-    		removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _PlotSummary.MOVIE_KEY);
+      er.distribution.example.server.eo.Movie oldValue = movie();
+      if (oldValue != null) {
+        removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _PlotSummary.MOVIE_KEY);
       }
     } else {
-    	addObjectToBothSidesOfRelationshipWithKey(value, _PlotSummary.MOVIE_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(value, _PlotSummary.MOVIE_KEY);
     }
   }
-  
+
 
   public static PlotSummary createPlotSummary(EOEditingContext editingContext, er.distribution.example.server.eo.Movie movie) {
-    PlotSummary eo = (PlotSummary) EOUtilities.createAndInsertInstance(editingContext, _PlotSummary.ENTITY_NAME);    
+    PlotSummary eo = (PlotSummary) EOUtilities.createAndInsertInstance(editingContext, _PlotSummary.ENTITY_NAME);
     eo.setMovieRelationship(movie);
     return eo;
   }
@@ -92,13 +93,12 @@ public abstract class _PlotSummary extends  ERXGenericRecord {
 
   public static NSArray<PlotSummary> fetchPlotSummaries(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<PlotSummary> fetchSpec = new ERXFetchSpecification<PlotSummary>(_PlotSummary.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<PlotSummary> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static PlotSummary fetchPlotSummary(EOEditingContext editingContext, String keyName, Object value) {
-    return _PlotSummary.fetchPlotSummary(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _PlotSummary.fetchPlotSummary(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static PlotSummary fetchPlotSummary(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -118,7 +118,7 @@ public abstract class _PlotSummary extends  ERXGenericRecord {
   }
 
   public static PlotSummary fetchRequiredPlotSummary(EOEditingContext editingContext, String keyName, Object value) {
-    return _PlotSummary.fetchRequiredPlotSummary(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _PlotSummary.fetchRequiredPlotSummary(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static PlotSummary fetchRequiredPlotSummary(EOEditingContext editingContext, EOQualifier qualifier) {

@@ -6,36 +6,41 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _Post extends  ERXGenericRecord {
   public static final String ENTITY_NAME = "Post";
 
   // Attribute Keys
-  public static final ERXKey<String> BODY = new ERXKey<String>("body");
-  public static final ERXKey<String> BODY_HTML = new ERXKey<String>("bodyHtml");
-  public static final ERXKey<NSTimestamp> CREATED_AT = new ERXKey<NSTimestamp>("createdAt");
-  public static final ERXKey<NSTimestamp> UPDATED_AT = new ERXKey<NSTimestamp>("updatedAt");
+  public static final ERXKey<String> BODY = new ERXKey<String>("body", Type.Attribute);
+  public static final ERXKey<String> BODY_HTML = new ERXKey<String>("bodyHtml", Type.Attribute);
+  public static final ERXKey<NSTimestamp> CREATED_AT = new ERXKey<NSTimestamp>("createdAt", Type.Attribute);
+  public static final ERXKey<NSTimestamp> UPDATED_AT = new ERXKey<NSTimestamp>("updatedAt", Type.Attribute);
+
   // Relationship Keys
-  public static final ERXKey<se.caboo.beast.model.Forum> FORUM = new ERXKey<se.caboo.beast.model.Forum>("forum");
-  public static final ERXKey<se.caboo.beast.model.Topic> TOPIC = new ERXKey<se.caboo.beast.model.Topic>("topic");
-  public static final ERXKey<se.caboo.beast.model.User> USER = new ERXKey<se.caboo.beast.model.User>("user");
+  public static final ERXKey<se.caboo.beast.model.Forum> FORUM = new ERXKey<se.caboo.beast.model.Forum>("forum", Type.ToOneRelationship);
+  public static final ERXKey<se.caboo.beast.model.Topic> TOPIC = new ERXKey<se.caboo.beast.model.Topic>("topic", Type.ToOneRelationship);
+  public static final ERXKey<se.caboo.beast.model.User> USER = new ERXKey<se.caboo.beast.model.User>("user", Type.ToOneRelationship);
 
   // Attributes
   public static final String BODY_KEY = BODY.key();
   public static final String BODY_HTML_KEY = BODY_HTML.key();
   public static final String CREATED_AT_KEY = CREATED_AT.key();
   public static final String UPDATED_AT_KEY = UPDATED_AT.key();
+
   // Relationships
   public static final String FORUM_KEY = FORUM.key();
   public static final String TOPIC_KEY = TOPIC.key();
   public static final String USER_KEY = USER.key();
 
-  private static Logger LOG = Logger.getLogger(_Post.class);
+  private static final Logger log = LoggerFactory.getLogger(_Post.class);
 
   public Post localInstanceIn(EOEditingContext editingContext) {
     Post localInstance = (Post)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -50,9 +55,7 @@ public abstract class _Post extends  ERXGenericRecord {
   }
 
   public void setBody(String value) {
-    if (_Post.LOG.isDebugEnabled()) {
-    	_Post.LOG.debug( "updating body from " + body() + " to " + value);
-    }
+    log.debug( "updating body from {} to {}", body(), value);
     takeStoredValueForKey(value, _Post.BODY_KEY);
   }
 
@@ -61,9 +64,7 @@ public abstract class _Post extends  ERXGenericRecord {
   }
 
   public void setBodyHtml(String value) {
-    if (_Post.LOG.isDebugEnabled()) {
-    	_Post.LOG.debug( "updating bodyHtml from " + bodyHtml() + " to " + value);
-    }
+    log.debug( "updating bodyHtml from {} to {}", bodyHtml(), value);
     takeStoredValueForKey(value, _Post.BODY_HTML_KEY);
   }
 
@@ -72,9 +73,7 @@ public abstract class _Post extends  ERXGenericRecord {
   }
 
   public void setCreatedAt(NSTimestamp value) {
-    if (_Post.LOG.isDebugEnabled()) {
-    	_Post.LOG.debug( "updating createdAt from " + createdAt() + " to " + value);
-    }
+    log.debug( "updating createdAt from {} to {}", createdAt(), value);
     takeStoredValueForKey(value, _Post.CREATED_AT_KEY);
   }
 
@@ -83,98 +82,90 @@ public abstract class _Post extends  ERXGenericRecord {
   }
 
   public void setUpdatedAt(NSTimestamp value) {
-    if (_Post.LOG.isDebugEnabled()) {
-    	_Post.LOG.debug( "updating updatedAt from " + updatedAt() + " to " + value);
-    }
+    log.debug( "updating updatedAt from {} to {}", updatedAt(), value);
     takeStoredValueForKey(value, _Post.UPDATED_AT_KEY);
   }
 
   public se.caboo.beast.model.Forum forum() {
     return (se.caboo.beast.model.Forum)storedValueForKey(_Post.FORUM_KEY);
   }
-  
+
   public void setForum(se.caboo.beast.model.Forum value) {
     takeStoredValueForKey(value, _Post.FORUM_KEY);
   }
 
   public void setForumRelationship(se.caboo.beast.model.Forum value) {
-    if (_Post.LOG.isDebugEnabled()) {
-      _Post.LOG.debug("updating forum from " + forum() + " to " + value);
-    }
+    log.debug("updating forum from {} to {}", forum(), value);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	setForum(value);
+      setForum(value);
     }
     else if (value == null) {
-    	se.caboo.beast.model.Forum oldValue = forum();
-    	if (oldValue != null) {
-    		removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Post.FORUM_KEY);
+      se.caboo.beast.model.Forum oldValue = forum();
+      if (oldValue != null) {
+        removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Post.FORUM_KEY);
       }
     } else {
-    	addObjectToBothSidesOfRelationshipWithKey(value, _Post.FORUM_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(value, _Post.FORUM_KEY);
     }
   }
-  
+
   public se.caboo.beast.model.Topic topic() {
     return (se.caboo.beast.model.Topic)storedValueForKey(_Post.TOPIC_KEY);
   }
-  
+
   public void setTopic(se.caboo.beast.model.Topic value) {
     takeStoredValueForKey(value, _Post.TOPIC_KEY);
   }
 
   public void setTopicRelationship(se.caboo.beast.model.Topic value) {
-    if (_Post.LOG.isDebugEnabled()) {
-      _Post.LOG.debug("updating topic from " + topic() + " to " + value);
-    }
+    log.debug("updating topic from {} to {}", topic(), value);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	setTopic(value);
+      setTopic(value);
     }
     else if (value == null) {
-    	se.caboo.beast.model.Topic oldValue = topic();
-    	if (oldValue != null) {
-    		removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Post.TOPIC_KEY);
+      se.caboo.beast.model.Topic oldValue = topic();
+      if (oldValue != null) {
+        removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Post.TOPIC_KEY);
       }
     } else {
-    	addObjectToBothSidesOfRelationshipWithKey(value, _Post.TOPIC_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(value, _Post.TOPIC_KEY);
     }
   }
-  
+
   public se.caboo.beast.model.User user() {
     return (se.caboo.beast.model.User)storedValueForKey(_Post.USER_KEY);
   }
-  
+
   public void setUser(se.caboo.beast.model.User value) {
     takeStoredValueForKey(value, _Post.USER_KEY);
   }
 
   public void setUserRelationship(se.caboo.beast.model.User value) {
-    if (_Post.LOG.isDebugEnabled()) {
-      _Post.LOG.debug("updating user from " + user() + " to " + value);
-    }
+    log.debug("updating user from {} to {}", user(), value);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	setUser(value);
+      setUser(value);
     }
     else if (value == null) {
-    	se.caboo.beast.model.User oldValue = user();
-    	if (oldValue != null) {
-    		removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Post.USER_KEY);
+      se.caboo.beast.model.User oldValue = user();
+      if (oldValue != null) {
+        removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Post.USER_KEY);
       }
     } else {
-    	addObjectToBothSidesOfRelationshipWithKey(value, _Post.USER_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(value, _Post.USER_KEY);
     }
   }
-  
+
 
   public static Post createPost(EOEditingContext editingContext, String body
 , String bodyHtml
 , NSTimestamp createdAt
 , NSTimestamp updatedAt
 , se.caboo.beast.model.Forum forum, se.caboo.beast.model.Topic topic, se.caboo.beast.model.User user) {
-    Post eo = (Post) EOUtilities.createAndInsertInstance(editingContext, _Post.ENTITY_NAME);    
-		eo.setBody(body);
-		eo.setBodyHtml(bodyHtml);
-		eo.setCreatedAt(createdAt);
-		eo.setUpdatedAt(updatedAt);
+    Post eo = (Post) EOUtilities.createAndInsertInstance(editingContext, _Post.ENTITY_NAME);
+    eo.setBody(body);
+    eo.setBodyHtml(bodyHtml);
+    eo.setCreatedAt(createdAt);
+    eo.setUpdatedAt(updatedAt);
     eo.setForumRelationship(forum);
     eo.setTopicRelationship(topic);
     eo.setUserRelationship(user);
@@ -195,13 +186,12 @@ public abstract class _Post extends  ERXGenericRecord {
 
   public static NSArray<Post> fetchPosts(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<Post> fetchSpec = new ERXFetchSpecification<Post>(_Post.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<Post> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static Post fetchPost(EOEditingContext editingContext, String keyName, Object value) {
-    return _Post.fetchPost(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Post.fetchPost(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Post fetchPost(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -221,7 +211,7 @@ public abstract class _Post extends  ERXGenericRecord {
   }
 
   public static Post fetchRequiredPost(EOEditingContext editingContext, String keyName, Object value) {
-    return _Post.fetchRequiredPost(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Post.fetchRequiredPost(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Post fetchRequiredPost(EOEditingContext editingContext, EOQualifier qualifier) {

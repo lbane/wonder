@@ -6,27 +6,31 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _Employee extends  ERXGenericRecord {
   public static final String ENTITY_NAME = "Employee";
 
   // Attribute Keys
-  public static final ERXKey<Boolean> ADMIN = new ERXKey<Boolean>("admin");
-  public static final ERXKey<Integer> EXEMPTIONS = new ERXKey<Integer>("exemptions");
-  public static final ERXKey<String> FIRST_NAME = new ERXKey<String>("firstName");
-  public static final ERXKey<NSTimestamp> HIRE_DATE = new ERXKey<NSTimestamp>("hireDate");
-  public static final ERXKey<Boolean> INSURED = new ERXKey<Boolean>("insured");
-  public static final ERXKey<String> LAST_NAME = new ERXKey<String>("lastName");
-  public static final ERXKey<java.math.BigDecimal> SALARY = new ERXKey<java.math.BigDecimal>("salary");
-  public static final ERXKey<er.uber.model.EmployeeStatus> STATUS = new ERXKey<er.uber.model.EmployeeStatus>("status");
+  public static final ERXKey<Boolean> ADMIN = new ERXKey<Boolean>("admin", Type.Attribute);
+  public static final ERXKey<Integer> EXEMPTIONS = new ERXKey<Integer>("exemptions", Type.Attribute);
+  public static final ERXKey<String> FIRST_NAME = new ERXKey<String>("firstName", Type.Attribute);
+  public static final ERXKey<NSTimestamp> HIRE_DATE = new ERXKey<NSTimestamp>("hireDate", Type.Attribute);
+  public static final ERXKey<Boolean> INSURED = new ERXKey<Boolean>("insured", Type.Attribute);
+  public static final ERXKey<String> LAST_NAME = new ERXKey<String>("lastName", Type.Attribute);
+  public static final ERXKey<java.math.BigDecimal> SALARY = new ERXKey<java.math.BigDecimal>("salary", Type.Attribute);
+  public static final ERXKey<er.uber.model.EmployeeStatus> STATUS = new ERXKey<er.uber.model.EmployeeStatus>("status", Type.Attribute);
+
   // Relationship Keys
-  public static final ERXKey<er.uber.model.Company> COMPANY = new ERXKey<er.uber.model.Company>("company");
-  public static final ERXKey<er.attachment.model.ERAttachment> PHOTO = new ERXKey<er.attachment.model.ERAttachment>("photo");
+  public static final ERXKey<er.uber.model.Company> COMPANY = new ERXKey<er.uber.model.Company>("company", Type.ToOneRelationship);
+  public static final ERXKey<er.attachment.model.ERAttachment> PHOTO = new ERXKey<er.attachment.model.ERAttachment>("photo", Type.ToOneRelationship);
 
   // Attributes
   public static final String ADMIN_KEY = ADMIN.key();
@@ -37,11 +41,12 @@ public abstract class _Employee extends  ERXGenericRecord {
   public static final String LAST_NAME_KEY = LAST_NAME.key();
   public static final String SALARY_KEY = SALARY.key();
   public static final String STATUS_KEY = STATUS.key();
+
   // Relationships
   public static final String COMPANY_KEY = COMPANY.key();
   public static final String PHOTO_KEY = PHOTO.key();
 
-  private static Logger LOG = Logger.getLogger(_Employee.class);
+  private static final Logger log = LoggerFactory.getLogger(_Employee.class);
 
   public Employee localInstanceIn(EOEditingContext editingContext) {
     Employee localInstance = (Employee)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -56,9 +61,7 @@ public abstract class _Employee extends  ERXGenericRecord {
   }
 
   public void setAdmin(Boolean value) {
-    if (_Employee.LOG.isDebugEnabled()) {
-    	_Employee.LOG.debug( "updating admin from " + admin() + " to " + value);
-    }
+    log.debug( "updating admin from {} to {}", admin(), value);
     takeStoredValueForKey(value, _Employee.ADMIN_KEY);
   }
 
@@ -67,9 +70,7 @@ public abstract class _Employee extends  ERXGenericRecord {
   }
 
   public void setExemptions(Integer value) {
-    if (_Employee.LOG.isDebugEnabled()) {
-    	_Employee.LOG.debug( "updating exemptions from " + exemptions() + " to " + value);
-    }
+    log.debug( "updating exemptions from {} to {}", exemptions(), value);
     takeStoredValueForKey(value, _Employee.EXEMPTIONS_KEY);
   }
 
@@ -78,9 +79,7 @@ public abstract class _Employee extends  ERXGenericRecord {
   }
 
   public void setFirstName(String value) {
-    if (_Employee.LOG.isDebugEnabled()) {
-    	_Employee.LOG.debug( "updating firstName from " + firstName() + " to " + value);
-    }
+    log.debug( "updating firstName from {} to {}", firstName(), value);
     takeStoredValueForKey(value, _Employee.FIRST_NAME_KEY);
   }
 
@@ -89,9 +88,7 @@ public abstract class _Employee extends  ERXGenericRecord {
   }
 
   public void setHireDate(NSTimestamp value) {
-    if (_Employee.LOG.isDebugEnabled()) {
-    	_Employee.LOG.debug( "updating hireDate from " + hireDate() + " to " + value);
-    }
+    log.debug( "updating hireDate from {} to {}", hireDate(), value);
     takeStoredValueForKey(value, _Employee.HIRE_DATE_KEY);
   }
 
@@ -100,9 +97,7 @@ public abstract class _Employee extends  ERXGenericRecord {
   }
 
   public void setInsured(Boolean value) {
-    if (_Employee.LOG.isDebugEnabled()) {
-    	_Employee.LOG.debug( "updating insured from " + insured() + " to " + value);
-    }
+    log.debug( "updating insured from {} to {}", insured(), value);
     takeStoredValueForKey(value, _Employee.INSURED_KEY);
   }
 
@@ -111,9 +106,7 @@ public abstract class _Employee extends  ERXGenericRecord {
   }
 
   public void setLastName(String value) {
-    if (_Employee.LOG.isDebugEnabled()) {
-    	_Employee.LOG.debug( "updating lastName from " + lastName() + " to " + value);
-    }
+    log.debug( "updating lastName from {} to {}", lastName(), value);
     takeStoredValueForKey(value, _Employee.LAST_NAME_KEY);
   }
 
@@ -122,9 +115,7 @@ public abstract class _Employee extends  ERXGenericRecord {
   }
 
   public void setSalary(java.math.BigDecimal value) {
-    if (_Employee.LOG.isDebugEnabled()) {
-    	_Employee.LOG.debug( "updating salary from " + salary() + " to " + value);
-    }
+    log.debug( "updating salary from {} to {}", salary(), value);
     takeStoredValueForKey(value, _Employee.SALARY_KEY);
   }
 
@@ -133,62 +124,56 @@ public abstract class _Employee extends  ERXGenericRecord {
   }
 
   public void setStatus(er.uber.model.EmployeeStatus value) {
-    if (_Employee.LOG.isDebugEnabled()) {
-    	_Employee.LOG.debug( "updating status from " + status() + " to " + value);
-    }
+    log.debug( "updating status from {} to {}", status(), value);
     takeStoredValueForKey(value, _Employee.STATUS_KEY);
   }
 
   public er.uber.model.Company company() {
     return (er.uber.model.Company)storedValueForKey(_Employee.COMPANY_KEY);
   }
-  
+
   public void setCompany(er.uber.model.Company value) {
     takeStoredValueForKey(value, _Employee.COMPANY_KEY);
   }
 
   public void setCompanyRelationship(er.uber.model.Company value) {
-    if (_Employee.LOG.isDebugEnabled()) {
-      _Employee.LOG.debug("updating company from " + company() + " to " + value);
-    }
+    log.debug("updating company from {} to {}", company(), value);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	setCompany(value);
+      setCompany(value);
     }
     else if (value == null) {
-    	er.uber.model.Company oldValue = company();
-    	if (oldValue != null) {
-    		removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Employee.COMPANY_KEY);
+      er.uber.model.Company oldValue = company();
+      if (oldValue != null) {
+        removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Employee.COMPANY_KEY);
       }
     } else {
-    	addObjectToBothSidesOfRelationshipWithKey(value, _Employee.COMPANY_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(value, _Employee.COMPANY_KEY);
     }
   }
-  
+
   public er.attachment.model.ERAttachment photo() {
     return (er.attachment.model.ERAttachment)storedValueForKey(_Employee.PHOTO_KEY);
   }
-  
+
   public void setPhoto(er.attachment.model.ERAttachment value) {
     takeStoredValueForKey(value, _Employee.PHOTO_KEY);
   }
 
   public void setPhotoRelationship(er.attachment.model.ERAttachment value) {
-    if (_Employee.LOG.isDebugEnabled()) {
-      _Employee.LOG.debug("updating photo from " + photo() + " to " + value);
-    }
+    log.debug("updating photo from {} to {}", photo(), value);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	setPhoto(value);
+      setPhoto(value);
     }
     else if (value == null) {
-    	er.attachment.model.ERAttachment oldValue = photo();
-    	if (oldValue != null) {
-    		removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Employee.PHOTO_KEY);
+      er.attachment.model.ERAttachment oldValue = photo();
+      if (oldValue != null) {
+        removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Employee.PHOTO_KEY);
       }
     } else {
-    	addObjectToBothSidesOfRelationshipWithKey(value, _Employee.PHOTO_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(value, _Employee.PHOTO_KEY);
     }
   }
-  
+
 
   public static Employee createEmployee(EOEditingContext editingContext, Boolean admin
 , String firstName
@@ -197,13 +182,13 @@ public abstract class _Employee extends  ERXGenericRecord {
 , String lastName
 , er.uber.model.EmployeeStatus status
 , er.uber.model.Company company) {
-    Employee eo = (Employee) EOUtilities.createAndInsertInstance(editingContext, _Employee.ENTITY_NAME);    
-		eo.setAdmin(admin);
-		eo.setFirstName(firstName);
-		eo.setHireDate(hireDate);
-		eo.setInsured(insured);
-		eo.setLastName(lastName);
-		eo.setStatus(status);
+    Employee eo = (Employee) EOUtilities.createAndInsertInstance(editingContext, _Employee.ENTITY_NAME);
+    eo.setAdmin(admin);
+    eo.setFirstName(firstName);
+    eo.setHireDate(hireDate);
+    eo.setInsured(insured);
+    eo.setLastName(lastName);
+    eo.setStatus(status);
     eo.setCompanyRelationship(company);
     return eo;
   }
@@ -222,13 +207,12 @@ public abstract class _Employee extends  ERXGenericRecord {
 
   public static NSArray<Employee> fetchEmployees(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<Employee> fetchSpec = new ERXFetchSpecification<Employee>(_Employee.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<Employee> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static Employee fetchEmployee(EOEditingContext editingContext, String keyName, Object value) {
-    return _Employee.fetchEmployee(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Employee.fetchEmployee(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Employee fetchEmployee(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -248,7 +232,7 @@ public abstract class _Employee extends  ERXGenericRecord {
   }
 
   public static Employee fetchRequiredEmployee(EOEditingContext editingContext, String keyName, Object value) {
-    return _Employee.fetchRequiredEmployee(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Employee.fetchRequiredEmployee(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Employee fetchRequiredEmployee(EOEditingContext editingContext, EOQualifier qualifier) {

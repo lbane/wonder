@@ -6,28 +6,33 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _ServerUser extends  ERXGenericRecord {
   public static final String ENTITY_NAME = "ServerUser";
 
   // Attribute Keys
-  public static final ERXKey<String> NAME = new ERXKey<String>("name");
+  public static final ERXKey<String> NAME = new ERXKey<String>("name", Type.Attribute);
+
   // Relationship Keys
-  public static final ERXKey<er.restexample.server.ServerPost> POSTS = new ERXKey<er.restexample.server.ServerPost>("posts");
-  public static final ERXKey<er.restexample.server.ServerTopic> TOPICS = new ERXKey<er.restexample.server.ServerTopic>("topics");
+  public static final ERXKey<er.restexample.server.ServerPost> POSTS = new ERXKey<er.restexample.server.ServerPost>("posts", Type.ToManyRelationship);
+  public static final ERXKey<er.restexample.server.ServerTopic> TOPICS = new ERXKey<er.restexample.server.ServerTopic>("topics", Type.ToManyRelationship);
 
   // Attributes
   public static final String NAME_KEY = NAME.key();
+
   // Relationships
   public static final String POSTS_KEY = POSTS.key();
   public static final String TOPICS_KEY = TOPICS.key();
 
-  private static Logger LOG = Logger.getLogger(_ServerUser.class);
+  private static final Logger log = LoggerFactory.getLogger(_ServerUser.class);
 
   public ServerUser localInstanceIn(EOEditingContext editingContext) {
     ServerUser localInstance = (ServerUser)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -42,9 +47,7 @@ public abstract class _ServerUser extends  ERXGenericRecord {
   }
 
   public void setName(String value) {
-    if (_ServerUser.LOG.isDebugEnabled()) {
-    	_ServerUser.LOG.debug( "updating name from " + name() + " to " + value);
-    }
+    log.debug( "updating name from {} to {}", name(), value);
     takeStoredValueForKey(value, _ServerUser.NAME_KEY);
   }
 
@@ -64,16 +67,13 @@ public abstract class _ServerUser extends  ERXGenericRecord {
     NSArray<er.restexample.server.ServerPost> results;
     if (fetch) {
       EOQualifier fullQualifier;
-      EOQualifier inverseQualifier = new EOKeyValueQualifier(er.restexample.server.ServerPost.USER_KEY, EOQualifier.QualifierOperatorEqual, this);
-    	
+      EOQualifier inverseQualifier = ERXQ.equals(er.restexample.server.ServerPost.USER_KEY, this);
+
       if (qualifier == null) {
         fullQualifier = inverseQualifier;
       }
       else {
-        NSMutableArray<EOQualifier> qualifiers = new NSMutableArray<EOQualifier>();
-        qualifiers.addObject(qualifier);
-        qualifiers.addObject(inverseQualifier);
-        fullQualifier = new EOAndQualifier(qualifiers);
+        fullQualifier = ERXQ.and(qualifier, inverseQualifier);
       }
 
       results = er.restexample.server.ServerPost.fetchServerPosts(editingContext(), fullQualifier, sortOrderings);
@@ -89,7 +89,7 @@ public abstract class _ServerUser extends  ERXGenericRecord {
     }
     return results;
   }
-  
+
   public void addToPosts(er.restexample.server.ServerPost object) {
     includeObjectIntoPropertyWithKey(object, _ServerUser.POSTS_KEY);
   }
@@ -99,33 +99,27 @@ public abstract class _ServerUser extends  ERXGenericRecord {
   }
 
   public void addToPostsRelationship(er.restexample.server.ServerPost object) {
-    if (_ServerUser.LOG.isDebugEnabled()) {
-      _ServerUser.LOG.debug("adding " + object + " to posts relationship");
-    }
+    log.debug("adding {} to posts relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	addToPosts(object);
+      addToPosts(object);
     }
     else {
-    	addObjectToBothSidesOfRelationshipWithKey(object, _ServerUser.POSTS_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(object, _ServerUser.POSTS_KEY);
     }
   }
 
   public void removeFromPostsRelationship(er.restexample.server.ServerPost object) {
-    if (_ServerUser.LOG.isDebugEnabled()) {
-      _ServerUser.LOG.debug("removing " + object + " from posts relationship");
-    }
+    log.debug("removing {} from posts relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	removeFromPosts(object);
+      removeFromPosts(object);
     }
     else {
-    	removeObjectFromBothSidesOfRelationshipWithKey(object, _ServerUser.POSTS_KEY);
+      removeObjectFromBothSidesOfRelationshipWithKey(object, _ServerUser.POSTS_KEY);
     }
   }
 
   public er.restexample.server.ServerPost createPostsRelationship() {
-    EOClassDescription eoClassDesc = EOClassDescription.classDescriptionForEntityName( er.restexample.server.ServerPost.ENTITY_NAME );
-    EOEnterpriseObject eo = eoClassDesc.createInstanceWithEditingContext(editingContext(), null);
-    editingContext().insertObject(eo);
+    EOEnterpriseObject eo = EOUtilities.createAndInsertInstance(editingContext(),  er.restexample.server.ServerPost.ENTITY_NAME );
     addObjectToBothSidesOfRelationshipWithKey(eo, _ServerUser.POSTS_KEY);
     return (er.restexample.server.ServerPost) eo;
   }
@@ -158,16 +152,13 @@ public abstract class _ServerUser extends  ERXGenericRecord {
     NSArray<er.restexample.server.ServerTopic> results;
     if (fetch) {
       EOQualifier fullQualifier;
-      EOQualifier inverseQualifier = new EOKeyValueQualifier(er.restexample.server.ServerTopic.USER_KEY, EOQualifier.QualifierOperatorEqual, this);
-    	
+      EOQualifier inverseQualifier = ERXQ.equals(er.restexample.server.ServerTopic.USER_KEY, this);
+
       if (qualifier == null) {
         fullQualifier = inverseQualifier;
       }
       else {
-        NSMutableArray<EOQualifier> qualifiers = new NSMutableArray<EOQualifier>();
-        qualifiers.addObject(qualifier);
-        qualifiers.addObject(inverseQualifier);
-        fullQualifier = new EOAndQualifier(qualifiers);
+        fullQualifier = ERXQ.and(qualifier, inverseQualifier);
       }
 
       results = er.restexample.server.ServerTopic.fetchServerTopics(editingContext(), fullQualifier, sortOrderings);
@@ -183,7 +174,7 @@ public abstract class _ServerUser extends  ERXGenericRecord {
     }
     return results;
   }
-  
+
   public void addToTopics(er.restexample.server.ServerTopic object) {
     includeObjectIntoPropertyWithKey(object, _ServerUser.TOPICS_KEY);
   }
@@ -193,33 +184,27 @@ public abstract class _ServerUser extends  ERXGenericRecord {
   }
 
   public void addToTopicsRelationship(er.restexample.server.ServerTopic object) {
-    if (_ServerUser.LOG.isDebugEnabled()) {
-      _ServerUser.LOG.debug("adding " + object + " to topics relationship");
-    }
+    log.debug("adding {} to topics relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	addToTopics(object);
+      addToTopics(object);
     }
     else {
-    	addObjectToBothSidesOfRelationshipWithKey(object, _ServerUser.TOPICS_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(object, _ServerUser.TOPICS_KEY);
     }
   }
 
   public void removeFromTopicsRelationship(er.restexample.server.ServerTopic object) {
-    if (_ServerUser.LOG.isDebugEnabled()) {
-      _ServerUser.LOG.debug("removing " + object + " from topics relationship");
-    }
+    log.debug("removing {} from topics relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	removeFromTopics(object);
+      removeFromTopics(object);
     }
     else {
-    	removeObjectFromBothSidesOfRelationshipWithKey(object, _ServerUser.TOPICS_KEY);
+      removeObjectFromBothSidesOfRelationshipWithKey(object, _ServerUser.TOPICS_KEY);
     }
   }
 
   public er.restexample.server.ServerTopic createTopicsRelationship() {
-    EOClassDescription eoClassDesc = EOClassDescription.classDescriptionForEntityName( er.restexample.server.ServerTopic.ENTITY_NAME );
-    EOEnterpriseObject eo = eoClassDesc.createInstanceWithEditingContext(editingContext(), null);
-    editingContext().insertObject(eo);
+    EOEnterpriseObject eo = EOUtilities.createAndInsertInstance(editingContext(),  er.restexample.server.ServerTopic.ENTITY_NAME );
     addObjectToBothSidesOfRelationshipWithKey(eo, _ServerUser.TOPICS_KEY);
     return (er.restexample.server.ServerTopic) eo;
   }
@@ -239,8 +224,8 @@ public abstract class _ServerUser extends  ERXGenericRecord {
 
   public static ServerUser createServerUser(EOEditingContext editingContext, String name
 ) {
-    ServerUser eo = (ServerUser) EOUtilities.createAndInsertInstance(editingContext, _ServerUser.ENTITY_NAME);    
-		eo.setName(name);
+    ServerUser eo = (ServerUser) EOUtilities.createAndInsertInstance(editingContext, _ServerUser.ENTITY_NAME);
+    eo.setName(name);
     return eo;
   }
 
@@ -258,13 +243,12 @@ public abstract class _ServerUser extends  ERXGenericRecord {
 
   public static NSArray<ServerUser> fetchServerUsers(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<ServerUser> fetchSpec = new ERXFetchSpecification<ServerUser>(_ServerUser.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<ServerUser> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static ServerUser fetchServerUser(EOEditingContext editingContext, String keyName, Object value) {
-    return _ServerUser.fetchServerUser(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _ServerUser.fetchServerUser(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static ServerUser fetchServerUser(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -284,7 +268,7 @@ public abstract class _ServerUser extends  ERXGenericRecord {
   }
 
   public static ServerUser fetchRequiredServerUser(EOEditingContext editingContext, String keyName, Object value) {
-    return _ServerUser.fetchRequiredServerUser(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _ServerUser.fetchRequiredServerUser(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static ServerUser fetchRequiredServerUser(EOEditingContext editingContext, EOQualifier qualifier) {

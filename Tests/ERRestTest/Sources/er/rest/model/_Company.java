@@ -1,24 +1,12 @@
-// $LastChangedRevision: 5773 $ DO NOT EDIT.  Make changes to Company.java instead.
+// $LastChangedRevision$ DO NOT EDIT.  Make changes to Company.java instead.
 package er.rest.model;
 
-import java.math.BigDecimal;
-import java.util.Enumeration;
-import java.util.NoSuchElementException;
-
+import com.webobjects.eoaccess.*;
+import com.webobjects.eocontrol.*;
+import com.webobjects.foundation.*;
+import java.math.*;
+import java.util.*;
 import org.apache.log4j.Logger;
-
-import com.webobjects.eoaccess.EOUtilities;
-import com.webobjects.eocontrol.EOAndQualifier;
-import com.webobjects.eocontrol.EOClassDescription;
-import com.webobjects.eocontrol.EOEditingContext;
-import com.webobjects.eocontrol.EOEnterpriseObject;
-import com.webobjects.eocontrol.EOFetchSpecification;
-import com.webobjects.eocontrol.EOGenericRecord;
-import com.webobjects.eocontrol.EOKeyValueQualifier;
-import com.webobjects.eocontrol.EOQualifier;
-import com.webobjects.eocontrol.EOSortOrdering;
-import com.webobjects.foundation.NSArray;
-import com.webobjects.foundation.NSMutableArray;
 
 @SuppressWarnings("all")
 public abstract class _Company extends  EOGenericRecord {
@@ -52,11 +40,11 @@ public abstract class _Company extends  EOGenericRecord {
     takeStoredValueForKey(value, "name");
   }
 
-  public BigDecimal revenue() {
-    return (BigDecimal) storedValueForKey("revenue");
+  public java.math.BigDecimal revenue() {
+    return (java.math.BigDecimal) storedValueForKey("revenue");
   }
 
-  public void setRevenue(Double value) {
+  public void setRevenue(java.math.BigDecimal value) {
     if (_Company.LOG.isDebugEnabled()) {
     	_Company.LOG.debug( "updating revenue from " + revenue() + " to " + value);
     }
