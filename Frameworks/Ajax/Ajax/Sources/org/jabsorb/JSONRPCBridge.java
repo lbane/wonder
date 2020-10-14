@@ -222,7 +222,8 @@ public class JSONRPCBridge implements Serializable
      */
     private final static long serialVersionUID = 2;
 
-    public Object transform(Throwable t)
+    @Override
+	public Object transform(Throwable t)
     {
       return t;
     }
@@ -385,7 +386,7 @@ public class JSONRPCBridge implements Serializable
    */
   private static String argSignature(Method method)
   {
-    Class param[] = method.getParameterTypes();
+    Class<?> param[] = method.getParameterTypes();
     StringBuilder buf = new StringBuilder();
     for (int i = 0; i < param.length; i++)
     {
@@ -406,9 +407,9 @@ public class JSONRPCBridge implements Serializable
    * @param prefix prefix to append to each method name found in the methodMap.
    * @param methodMap a HashMap containing MethodKey keys specifying methods.
    */
-  private static void uniqueMethods(HashSet m, String prefix, HashMap methodMap)
+  private static void uniqueMethods(HashSet<String> m, String prefix, HashMap<MethodKey, ?> methodMap)
   {
-    Iterator i = methodMap.entrySet().iterator();
+    Iterator<?> i = methodMap.entrySet().iterator();
     while (i.hasNext())
     {
       Map.Entry mentry = (Map.Entry) i.next();
@@ -1350,13 +1351,13 @@ public class JSONRPCBridge implements Serializable
   {
     final Method method = methodCandidate.method;
     final Method method1 = methodCandidate1.method;
-    final Class[] parameters = method.getParameterTypes();
-    final Class[] parameters1 = method1.getParameterTypes();
+    final Class<?>[] parameters = method.getParameterTypes();
+    final Class<?>[] parameters1 = method1.getParameterTypes();
     int c = 0, c1 = 0;
     for (int i = 0; i < parameters.length; i++)
     {
-      final Class parameterClass = parameters[i];
-      final Class parameterClass1 = parameters1[i];
+      final Class<?> parameterClass = parameters[i];
+      final Class<?> parameterClass1 = parameters1[i];
       if (parameterClass != parameterClass1)
       {
         if (parameterClass.isAssignableFrom(parameterClass1))
@@ -1386,13 +1387,13 @@ public class JSONRPCBridge implements Serializable
    */
   private ClassData resolveClass(String className)
   {
-    Class clazz;
+    Class<?> clazz;
     ClassData cd = null;
 
     synchronized (state)
     {
-      HashMap classMap = state.getClassMap();
-      clazz = (Class) classMap.get(className);
+      HashMap<String, Class<?>> classMap = state.getClassMap();
+      clazz = classMap.get(className);
     }
 
     if (clazz != null)
@@ -1435,7 +1436,7 @@ public class JSONRPCBridge implements Serializable
    * @return the Method that most closely matches the call signature, or null if
    *         there is not a match.
    */
-  private Method resolveMethod(HashMap methodMap, String methodName,
+  private Method resolveMethod(HashMap<MethodKey, Object> methodMap, String methodName,
       JSONArray arguments)
   {
     Method method[];
@@ -1475,7 +1476,7 @@ public class JSONRPCBridge implements Serializable
 
     // try and unmarshall the arguments against each candidate method
     // to determine which one matches the best
-    List candidate = new ArrayList();
+    List<MethodCandidate> candidate = new ArrayList<>();
     if (log.isDebugEnabled())
     {
       log.debug("looking for method " + methodName + "("
@@ -1507,7 +1508,7 @@ public class JSONRPCBridge implements Serializable
     MethodCandidate best = null;
     for (int i = 0; i < candidate.size(); i++)
     {
-      MethodCandidate c = (MethodCandidate) candidate.get(i);
+      MethodCandidate c = candidate.get(i);
       if (best == null)
       {
         best = c;
@@ -1552,8 +1553,8 @@ public class JSONRPCBridge implements Serializable
     ObjectInstance oi;
     synchronized (state)
     {
-      HashMap objectMap = state.getObjectMap();
-      oi = (ObjectInstance) objectMap.get(key);
+      HashMap<Object, ObjectInstance> objectMap = state.getObjectMap();
+      oi = objectMap.get(key);
     }
     if (log.isDebugEnabled() && oi != null)
     {
@@ -1579,7 +1580,7 @@ public class JSONRPCBridge implements Serializable
       throws UnmarshallException
   {
     MethodCandidate candidate = new MethodCandidate(method);
-    Class param[] = method.getParameterTypes();
+    Class<?> param[] = method.getParameterTypes();
     int i = 0, j = 0;
     try
     {
@@ -1626,7 +1627,7 @@ public class JSONRPCBridge implements Serializable
   private Object[] unmarshallArgs(Object context[], Method method,
       JSONArray arguments) throws UnmarshallException
   {
-    Class param[] = method.getParameterTypes();
+    Class<?> param[] = method.getParameterTypes();
     Object javaArgs[] = new Object[param.length];
     int i = 0, j = 0;
     try
