@@ -18,6 +18,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -31,16 +32,17 @@ import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
 
-import org.apache.commons.lang3.CharEncoding;
-import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
-import org.apache.sshd.server.Command;
-import org.apache.sshd.server.PasswordAuthenticator;
-import org.apache.sshd.server.command.ScpCommandFactory;
+import org.apache.sshd.common.keyprovider.KeyPairProvider;
+import org.apache.sshd.server.SshServer;
+import org.apache.sshd.server.auth.password.PasswordAuthenticator;
+import org.apache.sshd.server.command.Command;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
+import org.apache.sshd.server.scp.ScpCommandFactory;
 import org.apache.sshd.server.session.ServerSession;
-import org.apache.sshd.server.sftp.SftpSubsystem;
 import org.apache.sshd.server.shell.ProcessShellFactory;
+import org.apache.sshd.server.subsystem.sftp.SftpSubsystem;
+import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory;
 
 import com.webobjects.appserver.WOApplication;
 import com.webobjects.appserver.WORequest;
@@ -53,6 +55,7 @@ import com.webobjects.foundation._NSCollectionReaderWriterLock;
 import com.webobjects.monitor._private.MObject;
 import com.webobjects.monitor._private.MSiteConfig;
 import com.webobjects.monitor._private.String_Extensions;
+import com.webobjects.monitor.wotaskd.Application.SshPasswordAuthenticator;
 import com.webobjects.monitor.wotaskd.rest.controllers.MApplicationController;
 import com.webobjects.monitor.wotaskd.rest.controllers.MHostController;
 import com.webobjects.monitor.wotaskd.rest.controllers.MSiteConfigController;
@@ -247,10 +250,10 @@ public class Application extends ERXApplication  {
           SshServer sshd = SshServer.setUpDefaultServer();
           sshd.setPort(ERXProperties.intForKeyWithDefault("er.wotaskd.sshd.port", 6022));
           sshd.setPasswordAuthenticator(new SshPasswordAuthenticator());
-          sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider("hostkey.ser"));
+          sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider(Paths.get("hostkey.ser")));
           sshd.setCommandFactory(new ScpCommandFactory());
-          sshd.setSubsystemFactories(Arrays.<NamedFactory<Command>>asList(new SftpSubsystem.Factory()));
-          sshd.setShellFactory(new ProcessShellFactory(new String[] { "/bin/bash", "-i", "-l" }));
+          sshd.setSubsystemFactories(Arrays.asList(new SftpSubsystemFactory()));
+          sshd.setShellFactory(new ProcessShellFactory("/bin/bash", "-i", "-l"));
           try {
             sshd.start();
           }
@@ -542,11 +545,11 @@ public class Application extends ERXApplication  {
                 byte[] versionRequest;
                 byte[] versionReply;
                 try {
-                    multicastRequest = ("GET CONFIG-URL").getBytes(CharEncoding.UTF_8);
-                    multicastReply = ("http://" +  myName + '\0').getBytes(CharEncoding.UTF_8);
-                    versionRequest = ("womp://queryVersion").getBytes(CharEncoding.UTF_8);
-                    versionReply = ("womp://replyVersion/" + myName + ":webObjects5.0" + '\0').getBytes(CharEncoding.UTF_8);
-                } catch (UnsupportedEncodingException uee) {
+                    multicastRequest = ("GET CONFIG-URL").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                    multicastReply = ("http://" +  myName + '\0').getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                    versionRequest = ("womp://queryVersion").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                    versionReply = ("womp://replyVersion/" + myName + ":webObjects5.0" + '\0').getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                } catch (RuntimeException uee) {
                     multicastRequest = ("GET CONFIG-URL").getBytes();
                     multicastReply = ("http://" +  myName + '\0').getBytes();
                     versionRequest = ("womp://queryVersion").getBytes();

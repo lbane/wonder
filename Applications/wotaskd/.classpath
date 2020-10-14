@@ -10,12 +10,14 @@
 	<classpathentry exported="true" kind="con" path="WOFramework/JavaJDBCAdaptor"/>
 	<classpathentry exported="true" kind="con" path="WOFramework/JavaWebObjects"/>
 	<classpathentry exported="true" kind="con" path="WOFramework/JavaXML"/>
+	<classpathentry kind="lib" path="Libraries/bcprov-jdk15-140.jar"/>
+	<classpathentry kind="lib" path="Libraries/sshd-core-2.5.1.jar" sourcepath="/var/folders/ly/4c2drr111z5f3p_t05ldkj6h00010q/T/.org.sf.feeling.decompiler1602674888486/source/sshd-core-2.5.1-sources.jar"/>
+	<classpathentry kind="lib" path="Libraries/sshd-pam-0.11.0.jar"/>
+	<classpathentry kind="lib" path="Libraries/sshd-common-2.5.1.jar"/>
+	<classpathentry kind="lib" path="Libraries/sshd-scp-2.5.1.jar"/>
+	<classpathentry kind="lib" path="Libraries/sshd-sftp-2.5.1.jar" sourcepath="/var/folders/ly/4c2drr111z5f3p_t05ldkj6h00010q/T/.org.sf.feeling.decompiler1602674888486/source/sshd-sftp-2.5.1-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="WOFramework/ERRest"/>
 	<classpathentry kind="con" path="WOFramework/JavaWOExtensions"/>
-	<classpathentry kind="lib" path="Libraries/bcprov-jdk15-140.jar"/>
-	<classpathentry kind="lib" path="Libraries/mina-core-2.0.4.jar"/>
-	<classpathentry kind="lib" path="Libraries/sshd-core-0.7.0.jar"/>
-	<classpathentry kind="lib" path="Libraries/sshd-pam-0.7.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
