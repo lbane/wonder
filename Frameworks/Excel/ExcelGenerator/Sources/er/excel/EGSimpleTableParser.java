@@ -15,12 +15,12 @@ import java.text.ParseException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
@@ -91,22 +91,21 @@ public class EGSimpleTableParser {
 	
 	private InputStream _contentStream;
 	private Workbook _workbook;
-	private NSMutableDictionary _styles = new NSMutableDictionary();
-	private NSMutableDictionary _fonts = new NSMutableDictionary();
-	private NSMutableDictionary _styleDicts;
-	private NSMutableDictionary _fontDicts;
+	private NSMutableDictionary<NSDictionary<String, String>, CellStyle> _styles = new NSMutableDictionary<>();
+	private NSMutableDictionary<String, Font> _fonts = new NSMutableDictionary<>();
+	private NSMutableDictionary<String, NSDictionary<String, String>> _styleDicts = new NSMutableDictionary<>();
+	private NSMutableDictionary<String, NSDictionary<String, String>> _fontDicts = new NSMutableDictionary<>();
 
 	public EGSimpleTableParser(InputStream contentStream) {
 		this(contentStream, null, null);
  	}
 	
-	public EGSimpleTableParser(InputStream contentStream, NSDictionary fontDicts, NSDictionary styleDicts) {
+	public EGSimpleTableParser(InputStream contentStream, NSDictionary<String, NSDictionary<String, String>> fontDicts, NSDictionary<String, NSDictionary<String, String>> styleDicts) {
 		_contentStream = contentStream;
-		_fontDicts = new NSMutableDictionary();
-		if(_fontDicts != null) {
+		if(fontDicts != null) {
 			_fontDicts.addEntriesFromDictionary(fontDicts);
 		}
-		_styleDicts = new NSMutableDictionary();
+		
 		if(styleDicts != null) {
 			_styleDicts.addEntriesFromDictionary(styleDicts);
 		}
@@ -137,7 +136,7 @@ public class EGSimpleTableParser {
     	return _workbook;
     }
     
-    private String nodeValueForKey(Node node, String key, String defaultValue) {
+    private static String nodeValueForKey(Node node, String key, String defaultValue) {
     	NamedNodeMap attributes = node.getAttributes();
     	String result = defaultValue;
         
@@ -150,7 +149,7 @@ public class EGSimpleTableParser {
 		return result;
 	}
     
-    private String keyPathToAttributeString(String aString) {
+    private static String keyPathToAttributeString(String aString) {
         int i, cnt = aString.length();
         StringBuilder result = new StringBuilder(cnt*2);
         for(i = 0; i < cnt; i++) {
@@ -165,7 +164,7 @@ public class EGSimpleTableParser {
         return result.toString();
     }
     
-    private String attributeStringToKeyPath(String aString) {
+    private static String attributeStringToKeyPath(String aString) {
         int i, cnt = aString.length();
         boolean upperNext = false;
         StringBuilder result = new StringBuilder(cnt*2);
@@ -190,7 +189,7 @@ public class EGSimpleTableParser {
      * @param fontDictionary
      * @param tableNode
      */
-    private void addEntriesFromNode(NSMutableDictionary dictionary, Node node) {
+    private static void addEntriesFromNode(NSMutableDictionary<String, String> dictionary, Node node) {
         NamedNodeMap attributes = node.getAttributes();
         for(int i = 0; i < attributes.getLength(); i ++) {
             Node n = attributes.item(i);
@@ -204,32 +203,32 @@ public class EGSimpleTableParser {
         }
     }
 
-    private String dictValueForKey(NSDictionary dict, String key, String defaultValue) {
-    	String result = (String)dict.objectForKey(key);
-    	if(result == null) {
-            result = (String)dict.objectForKey(keyPathToAttributeString(key));
+    private static String dictValueForKey(NSDictionary<String, String> dict, String key, String defaultValue) {
+        String result = dict.objectForKey(key);
+        if(result == null) {
+            result = dict.objectForKey(keyPathToAttributeString(key));
         }
-		if(result == null) {
-			result = defaultValue;
-		}
-		return result;
-	}
+        if(result == null) {
+            result = defaultValue;
+        }
+        return result;
+    }
     
-    private void takeBooleanValueForKey(NSDictionary dict, String key, Object target, String defaultValue) {
+    private static void takeBooleanValueForKey(NSDictionary<String, String> dict, String key, Object target, String defaultValue) {
     	String value = dictValueForKey(dict, key, defaultValue);
     	if(value != null) {
-    		NSKeyValueCoding.Utility.takeValueForKey(target, Boolean.valueOf(value), key);
+    	    NSKeyValueCoding.Utility.takeValueForKey(target, Boolean.valueOf(value), key);
     	}
     }
     
-    private void takeNumberValueForKey(NSDictionary dict, String key, Object target, String defaultValue) {
+    private static void takeNumberValueForKey(NSDictionary<String, String> dict, String key, Object target, String defaultValue) {
     	String value = dictValueForKey(dict, key, defaultValue);
     	if(value != null) {
     		NSKeyValueCoding.Utility.takeValueForKey(target, Integer.valueOf(value), key);
     	}
     }
     
-    private void takeClassValueForKey(NSDictionary dict, String key, Object target, Class source, String defaultValue) {
+    private static void takeClassValueForKey(NSDictionary<String, String> dict, String key, Object target, Class<?> source, String defaultValue) {
     	String value = dictValueForKey(dict, key, defaultValue);
     	if(value != null) {
    			Object number = ERXKeyValueCodingUtilities.classValueForKey(source, value);
@@ -291,11 +290,11 @@ public class EGSimpleTableParser {
 		String id =  nodeValueForKey(node, "id", null);
 		if(id != null) {
 			// we're only handling styles with IDs
-			NSMutableDictionary dict = new NSMutableDictionary();
+			NSMutableDictionary<String, String> dict = new NSMutableDictionary<>();
 			
 			String extendsID = nodeValueForKey(node, "extends", null);
 			if(extendsID != null) {
-				NSDictionary otherDict = (NSDictionary)_styleDicts.objectForKey(extendsID);
+				NSDictionary<String, String> otherDict = _styleDicts.objectForKey(extendsID);
 				if(otherDict == null) {
 					throw new NullPointerException("Extends Style Id not found");
 				}
@@ -311,11 +310,11 @@ public class EGSimpleTableParser {
      	String id =  nodeValueForKey(node, "id", null);
     	if(id != null) {
     		// we're only handling fonts with IDs
-    		NSMutableDictionary dict = new NSMutableDictionary();
+    		NSMutableDictionary<String, String> dict = new NSMutableDictionary<>();
     		
     		String extendsID = nodeValueForKey(node, "extends", null);
     		if(extendsID != null) {
-    			NSDictionary otherDict = (NSDictionary)_fonts.objectForKey(extendsID);
+    			NSDictionary<String, String> otherDict = _fontDicts.objectForKey(extendsID);
     			if(otherDict == null) {
     				throw new NullPointerException("Extends Font Id not found");
     			}
@@ -329,7 +328,7 @@ public class EGSimpleTableParser {
     
     private void parseTable(Node tableNode) {
     	String sheetName = nodeValueForKey(tableNode, "name", "Unnamed Sheet " + (_workbook.getNumberOfSheets() + 1));
-    	NSMutableDictionary sheetDict = new NSMutableDictionary();
+    	NSMutableDictionary<String, String> sheetDict = new NSMutableDictionary<>();
     	addEntriesFromNode(sheetDict, tableNode);
         if(sheetName.matches("[\\/\\\\\\*\\?\\[\\]]")) {
             sheetName = sheetName.replaceAll("[\\/\\\\\\*\\?\\[\\]]", "-");
@@ -355,7 +354,7 @@ public class EGSimpleTableParser {
     		Node rowNode = rowNodes.item(j);
     		if(rowNode.getNodeType() == Node.ELEMENT_NODE
     				&& "tr".equals(rowNode.getLocalName().toLowerCase())) {
-    			NSMutableDictionary rowDict = new NSMutableDictionary(sheetDict);
+    			NSMutableDictionary<String, String> rowDict = new NSMutableDictionary<>(sheetDict);
     			addEntriesFromNode(rowDict, rowNode);
 
                 log.debug("Row: {}", rowNum);
@@ -375,53 +374,51 @@ public class EGSimpleTableParser {
     	   					value = cellNode.getFirstChild().getNodeValue();
      					}
     					
-    					NSMutableDictionary cellDict = new NSMutableDictionary(rowDict);
+    					NSMutableDictionary<String, String> cellDict = new NSMutableDictionary<>(rowDict);
     					addEntriesFromNode(cellDict, cellNode);
     					
-    					String cellTypeName = dictValueForKey(cellDict, "cellType", "CELL_TYPE_NUMERIC");
+    					String cellTypeName = dictValueForKey(cellDict, "cellType", "NUMERIC");
     					String cellFormatName = dictValueForKey(cellDict, "cellFormat", "0.00;-;-0.00");
     					
     					log.debug("{}: {}-{}", value, cellFormatName, cellTypeName);
-    					Integer cellType = (Integer)ERXKeyValueCodingUtilities.classValueForKey(Cell.class, cellTypeName);
+    					CellType cellType = CellType.valueOf(cellTypeName);
     					
-    					switch(cellType.intValue()) {
-    						case HSSFCell.CELL_TYPE_FORMULA:
-    							cell.setCellType(HSSFCell.CELL_TYPE_FORMULA);
-    						cell.setCellFormula(value != null ? value.toString() : null);
-    						break;
-    						case HSSFCell.CELL_TYPE_NUMERIC:
-    							try {
-    								if(value != null) {
-    									NSNumberFormatter f = ERXNumberFormatter.numberFormatterForPattern(cellFormatName);
-    									Number numberValue = (Number)f.parseObject(value.toString());
-    									log.debug("{}: {}", f.pattern(), numberValue);
-    									if(numberValue != null) {
-    										cell.setCellValue(numberValue.doubleValue());
-    									}
-    								}
-     								break;
-    							} catch (ParseException e1) {
-    								log.info("Could not parse '{}'.", value, e1);
-    							}
+    					switch(cellType) {
+    						case FORMULA:
+    						    cell.setCellFormula(value != null ? value.toString() : null);
+    						    break;
+    						    
+    						case NUMERIC:
+    						    try {
+    						        if(value != null) {
+    						            NSNumberFormatter f = ERXNumberFormatter.numberFormatterForPattern(cellFormatName);
+    						            Number numberValue = (Number)f.parseObject(value.toString());
+    						            log.debug("{}: {}", f.pattern(), numberValue);
+    						            if(numberValue != null) {
+    						                cell.setCellValue(numberValue.doubleValue());
+    						            }
+    						        }
+    						    } catch (ParseException e1) {
+    						        log.info("Could not parse '{}'.", value, e1);
+    						    }
+    						    break;
     							
-    						case HSSFCell.CELL_TYPE_BOOLEAN:
-    							cell.setCellType(cellType.intValue());
+    						case BOOLEAN:
     							if (value != null) {
     								try {
     									Integer integer = Integer.parseInt(value.toString());
     									cell.setCellValue(integer > 0);
     								} catch (NumberFormatException ex) {
     									log.debug("Could not parse '{}'.", value, ex);
-    	    							cell.setCellValue(new Boolean(value.toString()));
+    	    							cell.setCellValue(Boolean.valueOf(value.toString()));
     								}
     							}
     							break;
     							
-    						case HSSFCell.CELL_TYPE_STRING:
-							default:
-								cell.setCellType(cellType.intValue());
-								cell.setCellValue(createRichTextString(value));
-								break;
+    						case STRING:
+    						default:
+    						    cell.setCellValue(createRichTextString(value));
+    						    break;
     					}
     					
     					String cellWidthString = nodeValueForKey(cellNode, "width", null);
@@ -480,14 +477,12 @@ public class EGSimpleTableParser {
     }
     
     private Font fontWithID(String id) {
-    	Font font = (Font)_fonts.objectForKey(id);
+    	Font font = _fonts.objectForKey(id);
     	if(font == null) {
     		font = _workbook.createFont();
     		
-    		NSDictionary dict = (NSDictionary)_fontDicts.objectForKey(id);
-    		String value;
-    		
-    		value = dictValueForKey(dict, "name", null);
+    		NSDictionary<String, String> dict = _fontDicts.objectForKey(id);
+    		String value = dictValueForKey(dict, "name", null);
     		if(value != null) {
     			font.setFontName(value);
     		}
@@ -509,7 +504,7 @@ public class EGSimpleTableParser {
     	return font;
     }
     
-    private static final NSArray STYLE_KEYS = new NSArray(new Object[] {
+    private static final NSArray<String> STYLE_KEYS = new NSArray<>(new String[] {
     		"font","hidden","locked","wrapText",
 			"leftBorderColor","rightBorderColor","topBorderColor","bottomBorderColor",
 			"borderLeft","borderRight","borderTop","borderBottom",
@@ -518,31 +513,31 @@ public class EGSimpleTableParser {
 			"alignment","verticalAlignment","format"
 	});
     
-    private CellStyle styleWithDictionary(NSDictionary dict) {
-    	String cellClass = dictValueForKey(dict, "class", null);
+    private CellStyle styleWithDictionary(NSDictionary<String, String> aDict) {
+    	String cellClass = dictValueForKey(aDict, "class", null);
     	
-    	log.debug("before - {}: {}", cellClass, dict);
-    	dict = ERXDictionaryUtilities.dictionaryFromObjectWithKeys(dict, STYLE_KEYS);
+    	log.debug("before - {}: {}", cellClass, aDict);
+    	
+    	NSDictionary<String, String> dict = (NSDictionary)ERXDictionaryUtilities.dictionaryFromObjectWithKeys(aDict, STYLE_KEYS);
     	if(cellClass != null) {
     		// first, we pull in the default named styles, remembering
     		// we can have multiple styles like 'class="header bold"
     		String styles[] = cellClass.split(" +");
-    		NSMutableDictionary stylesFromClass = new NSMutableDictionary();
+    		NSMutableDictionary<String, String> stylesFromClass = new NSMutableDictionary<>();
     		for (String string : styles) {
-    			NSDictionary current = ((NSDictionary)_styleDicts.objectForKey(string));
+    			NSDictionary<String, String> current = _styleDicts.objectForKey(string);
     			if(current == null) {
     				throw new IllegalArgumentException("Cell Style not found: " + cellClass);
-    			} else {
-    				stylesFromClass.addEntriesFromDictionary(current);
     			}
+    			stylesFromClass.addEntriesFromDictionary(current);
     		}
-    		stylesFromClass = ERXDictionaryUtilities.dictionaryFromObjectWithKeys(stylesFromClass, STYLE_KEYS).mutableClone();
+    		stylesFromClass = ((NSDictionary)ERXDictionaryUtilities.dictionaryFromObjectWithKeys(stylesFromClass, STYLE_KEYS)).mutableClone();
     		stylesFromClass.addEntriesFromDictionary(dict);
     		dict = stylesFromClass.immutableClone();
     	}
     	log.debug("after - {}: {}", cellClass, dict);
     	
-    	CellStyle cellStyle = (CellStyle)_styles.objectForKey(dict);
+    	CellStyle cellStyle = _styles.objectForKey(dict);
     	if(cellStyle == null) {
     		cellStyle = _workbook.createCellStyle();
     		

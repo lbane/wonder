@@ -2,9 +2,7 @@ package er.excel;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 
-import org.apache.commons.lang3.CharEncoding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXParseException;
@@ -94,59 +92,51 @@ public class EGWrapper extends ERXNonSynchronizingComponent {
             String contentString = newResponse.contentString();
             contentString = contentString.replaceAll("&nbsp;", "");
             log.debug("Converting content string:\n{}", contentString);
-            byte[] bytes;
-            try {
-                bytes = contentString.getBytes(CharEncoding.UTF_8);
-            } catch (UnsupportedEncodingException e) {
-                throw new NSForwardException(e, "Can't convert string to UTF-8...you should get a better VM");
-            }
+            byte[] bytes = contentString.getBytes(java.nio.charset.StandardCharsets.UTF_8);
             InputStream stream = new ByteArrayInputStream(bytes);
-
             EGSimpleTableParser parser = parser(stream);
             try {
-	            NSData data = parser.data();
-	            if((hasBinding("data") && canSetValueForBinding("data")) ||
-	               (hasBinding("stream") && canSetValueForBinding("stream"))
-	               ) {
-	                if(hasBinding("data")) {
-	                    setValueForBinding(data, "data");
-	                }
-	                if(hasBinding("stream")) {
-	                    setValueForBinding(data.stream(), "stream");
-	                }
-	                response.appendContentString(contentString);
-	            } else {
-	                String fileName = fileName();
-	                if(fileName == null) {
-	                    fileName = defaultFilename();
-	                }
-	                
-	                response.disableClientCaching();
-	                response.appendHeader(String.valueOf( data.length()), "Content-Length" );
-	                response.setContent(data); // Changed by ishimoto because it was sooooo buggy and didn't work in Japanese
-	
-	                response.setHeader("inline; filename=\"" + fileName + "\"", "content-disposition");
-	                response.setHeader(contentType(), "content-type");
-	            }
-    		} catch (Exception ex) {
-    			if (ex.getCause() instanceof SAXParseException) {
-    				SAXParseException parseException = (SAXParseException)ex.getCause();
-    				String logMessage = "'"+context().page().getClass().getName()+"' caused a SAXParseException";
-    				logMessage += "\nMessage: '"+parseException.getMessage()+"'";
-    				// weird but true, getLineNumber is off by 1 (for display purposes I think - mhast)
-    				logMessage += "\nLine   : "+(parseException.getLineNumber() - 1);
-    				logMessage += "\nColumn : "+parseException.getColumnNumber();
-    				logMessage += "\n--- content begin ---";
-    				logMessage += addLineNumbers(contentString);
-    				logMessage += "--- content end ---";
-    				log.error(logMessage);
-    				throw new NSForwardException(ex);
-    			}
-    			// else don't handle exception just pass it forward
-    			else {
-    				throw new NSForwardException(ex);
-    			}
-    		}
+                NSData data = parser.data();
+                if((hasBinding("data") && canSetValueForBinding("data")) ||
+                        (hasBinding("stream") && canSetValueForBinding("stream"))
+                        ) {
+                    if(hasBinding("data")) {
+                        setValueForBinding(data, "data");
+                    }
+                    if(hasBinding("stream")) {
+                        setValueForBinding(data.stream(), "stream");
+                    }
+                    response.appendContentString(contentString);
+                } else {
+                    String fileName = fileName();
+                    if(fileName == null) {
+                        fileName = defaultFilename();
+                    }
+
+                    response.disableClientCaching();
+                    response.appendHeader(String.valueOf( data.length()), "Content-Length" );
+                    response.setContent(data); // Changed by ishimoto because it was sooooo buggy and didn't work in Japanese
+
+                    response.setHeader("inline; filename=\"" + fileName + "\"", "content-disposition");
+                    response.setHeader(contentType(), "content-type");
+                }
+            } catch (Exception ex) {
+                if (ex.getCause() instanceof SAXParseException) {
+                    SAXParseException parseException = (SAXParseException)ex.getCause();
+                    String logMessage = "'"+context().page().getClass().getName()+"' caused a SAXParseException";
+                    logMessage += "\nMessage: '"+parseException.getMessage()+"'";
+                    // weird but true, getLineNumber is off by 1 (for display purposes I think - mhast)
+                    logMessage += "\nLine   : "+(parseException.getLineNumber() - 1);
+                    logMessage += "\nColumn : "+parseException.getColumnNumber();
+                    logMessage += "\n--- content begin ---";
+                    logMessage += addLineNumbers(contentString);
+                    logMessage += "--- content end ---";
+                    log.error(logMessage);
+                    throw new NSForwardException(ex);
+                }
+
+                throw new NSForwardException(ex);
+            }
         } else {
             super.appendToResponse(response, context);
         }

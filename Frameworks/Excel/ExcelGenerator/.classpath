@@ -7,10 +7,10 @@
 	<classpathentry exported="true" kind="con" path="WOFramework/JavaWebObjects"/>
 	<classpathentry exported="true" kind="con" path="WOFramework/JavaXML"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="Libraries/poi-3.17.jar"/>
-	<classpathentry exported="true" kind="lib" path="Libraries/poi-excelant-3.17.jar"/>
-	<classpathentry exported="true" kind="lib" path="Libraries/poi-ooxml-3.17.jar"/>
-	<classpathentry exported="true" kind="lib" path="Libraries/poi-ooxml-schemas-3.17.jar"/>
-	<classpathentry exported="true" kind="lib" path="Libraries/poi-scratchpad-3.17.jar"/>
+	<classpathentry exported="true" kind="lib" path="Libraries/poi-4.1.2.jar" sourcepath="/var/folders/ly/4c2drr111z5f3p_t05ldkj6h00010q/T/.org.sf.feeling.decompiler1602674888486/source/poi-4.1.2-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="Libraries/poi-excelant-4.1.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="Libraries/poi-ooxml-4.1.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="Libraries/poi-ooxml-schemas-4.1.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="Libraries/poi-scratchpad-4.1.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

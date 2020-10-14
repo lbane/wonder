@@ -18,6 +18,7 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.CellType;
 
 import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSDictionary;
@@ -40,24 +41,24 @@ public class EGSimpleTableCreator {
 	
 	private static NSDictionary _cellDef;
 	
-	private static NSDictionary dictionaryFromClassConstants(Class clazz, NSArray constants) {
-		NSMutableDictionary result = new NSMutableDictionary();
-		for (Enumeration keys = constants.objectEnumerator(); keys.hasMoreElements();) {
-			String key = (String) keys.nextElement();
+	private static NSDictionary<String, Object> dictionaryFromClassConstants(Class<?> clazz, NSArray<String> constants) {
+		NSMutableDictionary<String, Object> result = new NSMutableDictionary<>();
+		for (Enumeration<String> keys = constants.objectEnumerator(); keys.hasMoreElements();) {
+			String key = keys.nextElement();
 			Object o = ERXKeyValueCodingUtilities.classValueForKey(clazz, key);
 			if(o != null) {
-				result.setObjectForKey(key, o);
+				result.setObjectForKey(o, key);
 			}
 		}
 		return result;
 	}
 	
-	private static NSDictionary dictionaryFromClassConstantDefinition(Class clazz, NSDictionary definition) {
-		NSMutableDictionary result = new NSMutableDictionary();
-		for (Enumeration keys = definition.keyEnumerator(); keys.hasMoreElements();) {
-			String key = (String) keys.nextElement();
-			NSArray constants = (NSArray)definition.objectForKey(key);
-			NSDictionary parsedKeys = dictionaryFromClassConstants(clazz, constants);
+	private static NSDictionary<String, NSDictionary<String, Object>> dictionaryFromClassConstantDefinition(Class<?> clazz, NSDictionary<String, NSArray<String>> definition) {
+		NSMutableDictionary<String, NSDictionary<String, Object>> result = new NSMutableDictionary<>();
+		for (Enumeration<String> keys = definition.keyEnumerator(); keys.hasMoreElements();) {
+			String key = keys.nextElement();
+			NSArray<String> constants = definition.objectForKey(key);
+			NSDictionary<String, Object> parsedKeys = dictionaryFromClassConstants(clazz, constants);
 			
 			result.setObjectForKey(parsedKeys, key);
 		}
@@ -153,7 +154,7 @@ public class EGSimpleTableCreator {
 	
 	private void appendWorkbook() {
 		_html.append("<div>\n");
-		for(short i = 0; i < _workbook.getNumberOfFonts(); i++) {
+		for(int i = 0; i < _workbook.getNumberOfFontsAsInt(); i++) {
 			HSSFFont font = _workbook.getFontAt(i);
 			appendFont(font, i);
 		}
@@ -215,18 +216,18 @@ public class EGSimpleTableCreator {
 		
 		_html.append('>');
 		
-		int cellType = cell.getCellType();
+		CellType cellType = cell.getCellType();
 		Object value = null;
 		switch(cellType) {
-			case HSSFCell.CELL_TYPE_NUMERIC:
+			case NUMERIC:
 			value = Double.valueOf(cell.getNumericCellValue());
 			break;
 			
-			case HSSFCell.CELL_TYPE_FORMULA:
+			case FORMULA:
 			value = cell.getCellFormula();
 			break;
 			
-			case HSSFCell.CELL_TYPE_BOOLEAN:
+			case BOOLEAN:
 			value = cell.getBooleanCellValue();
 			break;
 			
@@ -241,7 +242,7 @@ public class EGSimpleTableCreator {
 	/**
 	 * @param font
 	 */
-	private void appendFont(HSSFFont font, short i) {
+	private void appendFont(HSSFFont font, int i) {
 		_html.append("<egfont");
 		appendAttribute("id", "egfont" + i);
 		appendValueForKey(font, "fontName");
