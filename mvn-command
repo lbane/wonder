@@ -7,6 +7,7 @@ function command_help() {
 	echo "  deploy-to-cxrepo: Deployment into the CX repository ${CXREPOURL}"
 	echo "  set-version <version>: set project to <version>"
 	echo "  release-prepare <release-version> <new-snapshot-version>"
+	echo "  release-perform <working directory>"
 }
 
 function deploy_to_cxrepo() {
@@ -34,6 +35,14 @@ function release_prepare() {
 	fi
 }
 
+function release_perform() {
+	if [ "$1" == "" ]; then
+	  echo "release-perform: working directory missing"
+	else
+	  mvn release:perform -DworkingDirectory="$1"
+	fi
+}
+
 function version_commit() {
 	mvn versions:commit
 }
@@ -43,6 +52,7 @@ case "$1" in
 	versions-commit) version_commit;;
 	deploy-to-cxrepo) deploy_to_cxrepo;;
 	release-prepare) release_prepare "$2" "$3";;
+	release-perform) release_perform "$2";;
 	help) command_help;;
 	*) command_help;;
 esac
