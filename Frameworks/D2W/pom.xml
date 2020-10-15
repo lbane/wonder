@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>wonder.frameworks</groupId>
 		<artifactId>frameworks</artifactId>
-		<version>7.2.1-CX-20201015-8a6c4feb8</version>
+		<version>7.2.2-CX-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>d2w</artifactId>
