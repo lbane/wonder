@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>wonder.frameworks</groupId>
 		<artifactId>ajax</artifactId>
-		<version>7.2-CX-SNAPSHOT</version>
+		<version>7.2.1-CX-20201015-8a6c4feb8</version>
 	</parent>
 	<groupId>wonder.ajax</groupId>
 	<artifactId>GoogleChart</artifactId>
