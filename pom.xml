@@ -814,7 +814,7 @@
         <repository>
             <id>nexus</id>
             <name>CX Internal Releases Repository</name>
-            <url>http://localhost:8081/repository/maven-public/</url>
+            <url>http://jupiter.docxcellence.lan:8081/repository/maven-public/</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -839,7 +839,7 @@
         <pluginRepository>
             <id>wocommunity</id>
             <name>CX Internal Releases Repository</name>
-            <url>http://localhost:8081/repository/maven-public/</url>
+            <url>http://jupiter.docxcellence.lan:8081/repository/maven-public/</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -864,12 +864,12 @@
 		<repository>
 		  <id>nexus</id>
 		  <name>Releases</name>
-		  <url>http://localhost:8081/repository/maven-releases</url>
+		  <url>http://jupiter.docxcellence.lan:8081/repository/maven-releases</url>
 		</repository>
 		<snapshotRepository>
 		  <id>nexus</id>
 		  <name>Snapshot</name>
-		  <url>http://localhost:8081/repository/maven-snapshots</url>
+		  <url>http://jupiter.docxcellence.lan:8081/repository/maven-snapshots</url>
 		</snapshotRepository>
 	  </distributionManagement>
 
