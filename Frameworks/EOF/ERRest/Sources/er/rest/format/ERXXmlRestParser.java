@@ -1,9 +1,13 @@
 package er.rest.format;
 
+import java.io.IOException;
 import java.io.StringReader;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -12,6 +16,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import er.rest.ERXRestContext;
 import er.rest.ERXRestNameRegistry;
@@ -25,6 +30,9 @@ import er.rest.ERXRestUtils;
  * @author mschrag
  */
 public class ERXXmlRestParser implements IERXRestParser {
+
+	private static final Logger logger = LoggerFactory.getLogger(ERXXmlRestParser.class);
+	
 	protected ERXRestRequestNode createRequestNodeForElement(Element element, boolean rootNode, ERXRestFormat.Delegate delegate, ERXRestContext context) {
 		String name = element.getTagName();
 		ERXRestRequestNode requestNode = new ERXRestRequestNode(name, rootNode);
@@ -130,12 +138,66 @@ public class ERXXmlRestParser implements IERXRestParser {
 				contentString = "<FakeWrapper>" + contentString.trim() + "</FakeWrapper>";
 			}
 
-			Document document;
+			// Important security settings: Disable external Entities for any untrusted XML input
+			
+			// https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html
+			
+			// we set all recommended features for now
+			
+			final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			String FEATURE = null;
 			try {
-				document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(new StringReader(contentString)));
+				// This is the PRIMARY defense. If DTDs (doctypes) are disallowed, almost all
+				// XML entity attacks are prevented
+				// Xerces 2 only - http://xerces.apache.org/xerces2-j/features.html#disallow-doctype-decl
+				FEATURE = "http://apache.org/xml/features/disallow-doctype-decl";
+				dbf.setFeature(FEATURE, true);
+
+				// If you can't completely disable DTDs, then at least do the following:
+				// Xerces 1 - http://xerces.apache.org/xerces-j/features.html#external-general-entities
+				// Xerces 2 - http://xerces.apache.org/xerces2-j/features.html#external-general-entities
+				// JDK7+ - http://xml.org/sax/features/external-general-entities
+				//This feature has to be used together with the following one, otherwise it will not protect you from XXE for sure
+				FEATURE = "http://xml.org/sax/features/external-general-entities";
+				dbf.setFeature(FEATURE, false);
+
+				// Xerces 1 - http://xerces.apache.org/xerces-j/features.html#external-parameter-entities
+				// Xerces 2 - http://xerces.apache.org/xerces2-j/features.html#external-parameter-entities
+				// JDK7+ - http://xml.org/sax/features/external-parameter-entities
+				//This feature has to be used together with the previous one, otherwise it will not protect you from XXE for sure
+				FEATURE = "http://xml.org/sax/features/external-parameter-entities";
+				dbf.setFeature(FEATURE, false);
+
+				// Disable external DTDs as well
+				FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+				dbf.setFeature(FEATURE, false);
+
+				// and these as well, per Timothy Morgan's 2014 paper: "XML Schema, DTD, and Entity Attacks"
+				dbf.setXIncludeAware(false);
+				dbf.setExpandEntityReferences(false);
+
+				// And, per Timothy Morgan: "If for some reason support for inline DOCTYPEs are a requirement, then
+				// ensure the entity settings are disabled (as shown above) and beware that SSRF attacks
+				// (http://cwe.mitre.org/data/definitions/918.html) and denial
+				// of service attacks (such as billion laughs or decompression bombs via "jar:") are a risk."
+
+				// remaining parser logic
+				Document document = dbf.newDocumentBuilder().parse(new InputSource(new StringReader(contentString)));
 				document.normalize();
 				Element rootElement = document.getDocumentElement();
 				rootRequestNode = createRequestNodeForElement(rootElement, true, delegate, context);
+			} catch (ParserConfigurationException e) {
+				// This should catch a failed setFeature feature
+				logger.error("ParserConfigurationException was thrown. The feature '{}' is probably not supported by your XML processor.");
+				throw new IllegalArgumentException("Failed to parse request document.", e);
+			} catch (SAXException e) {
+				// On Apache, this should be thrown when disallowing DOCTYPE
+				logger.warn("A DOCTYPE was passed into the XML document");
+				throw new IllegalArgumentException("Failed to parse request document.", e);
+			} catch (IOException e) {
+				// XXE that points to a file that doesn't exist
+				logger.error("IOException occurred, XXE may still possible", e);
+				throw new IllegalArgumentException("Failed to parse request document.", e);
 			}
 			catch (Exception e) {
 				throw new IllegalArgumentException("Failed to parse request document.", e);
