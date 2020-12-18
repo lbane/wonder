@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>wonder.examples</groupId>
 		<artifactId>examples</artifactId>
-		<version>7.2.2-CX-20201218-1216ea6ef</version>
+		<version>7.2.3-CX-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>d2w</artifactId>
