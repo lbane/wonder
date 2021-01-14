@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>wonder</groupId>
     <artifactId>wonder</artifactId>
-    <version>7.2.3-CX-SNAPSHOT</version>
+    <version>7.3.0-CX-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Project Wonder</name>
     <url>http://wiki.objectstyle.org/confluence/display/WONDER/Home</url>
@@ -21,6 +21,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <webobjects.version>5.4.3</webobjects.version>
+        <project.scm.id>github</project.scm.id>
     </properties>
 
     <build>
@@ -825,7 +826,7 @@
         <!-- repository>
             <id>wocommunity</id>
             <name>WOCommunity Maven 2 Releases Repository</name>
-            <url>http://maven.wocommunity.org/content/groups/public</url>
+            <url>https://maven.wocommunity.org/content/groups/public</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -850,7 +851,7 @@
         <!-- pluginRepository>
             <id>wocommunity</id>
             <name>WOCommunity Maven 2 Releases Repository</name>
-            <url>http://maven.wocommunity.org/content/groups/public</url>
+            <url>https://maven.wocommunity.org/content/groups/public</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -877,13 +878,13 @@
         <repository>
             <id>wocommunity.deployment</id>
             <name>WOCommunity Maven2 Releases Repository</name>
-            <url>http://maven.wocommunity.org/content/repositories/releases</url>
+            <url>https://maven.wocommunity.org/content/repositories/releases</url>
         </repository>
         <snapshotRepository>
             <id>wocommunity.deployment</id>
             <uniqueVersion>false</uniqueVersion>
             <name>WOCommunity Maven2 Snapshots Repository</name>
-            <url>http://maven.wocommunity.org/content/repositories/snapshots/</url>
+            <url>https://maven.wocommunity.org/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement -->
 
@@ -895,9 +896,9 @@
     </scm>
 
     <!-- scm>
-        <connection>scm:git:git@github.com:wocommunity/wonder.git</connection>
-        <url>scm:git:git@github.com:wocommunity/wonder.git</url>
-        <developerConnection>scm:git:git@github.com:wocommunity/wonder.git</developerConnection>
+     <connection>scm:git:https://github.com/wocommunity/wonder.git</connection>
+     <url>scm:git:https://github.com/wocommunity/wonder.git</url>
+     <developerConnection>scm:git:https://github.com/wocommunity/wonder.git</developerConnection>
       <tag>HEAD</tag>
   </scm -->
 </project>

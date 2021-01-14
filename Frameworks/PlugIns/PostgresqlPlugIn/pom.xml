@@ -3,11 +3,10 @@
 	<parent>
 		<groupId>wonder.frameworks</groupId>
 		<artifactId>plugins</artifactId>
-		<version>7.2.3-CX-SNAPSHOT</version>
+        <version>7.3.0-CX-SNAPSHOT</version>
 	</parent>
 	<groupId>wonder.plugins</groupId>
 	<artifactId>PostgresqlPlugIn</artifactId>
-	<version>7.2.3-CX-SNAPSHOT</version>
 	<name>Postgresql PlugIn</name>
 	<packaging>woframework</packaging>
 	<dependencies>
