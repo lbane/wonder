@@ -31,7 +31,7 @@
                 <plugin>
                     <groupId>org.wocommunity</groupId>
                     <artifactId>wolifecycle-maven-plugin</artifactId>
-                    <version>2.4-CX-SNAPSHOT</version>
+                    <version>2.4-CX-20210224-a7b18e5</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
