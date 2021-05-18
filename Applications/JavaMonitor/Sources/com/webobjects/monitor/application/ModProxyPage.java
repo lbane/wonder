@@ -64,12 +64,22 @@ public class ModProxyPage extends MonitorComponent
 			anApp.extractAdaptorValuesFromSiteConfig();
 
 			String tmpAdaptor = siteConfig().woAdaptor();
-			tmpAdaptor = StringUtils.removeEnd(tmpAdaptor, "/");
-
-			NSArray<String> tmpPath = NSArray.componentsSeparatedByString(tmpAdaptor, "/");
-
-			int count = tmpPath.count();
-			String adaptorPath = "/" + tmpPath.get(count - 2) + "/" + tmpPath.get(count - 1) + "/";
+			
+			String adaptorPath;
+			if (tmpAdaptor == null || tmpAdaptor.length() == 0) {
+				// if no adaptor is set, use a default path
+				adaptorPath = "/cgi-bin/WebObjects/";
+			}
+			else {
+				// this assumes a path like http://store.apple.com/cgi-bin/WebObjects/
+				
+				// build the adaptorpath from the last 2 components
+				tmpAdaptor = StringUtils.removeEnd(tmpAdaptor, "/");
+				NSArray<String> tmpPath = NSArray.componentsSeparatedByString(tmpAdaptor, "/");
+				
+				int count = tmpPath.count();
+				adaptorPath = "/" + tmpPath.get(count - 2) + "/" + tmpPath.get(count - 1) + "/";
+			}
 
 			result.append("<Proxy balancer://" + anApp.name() + ".woa>\n");
 
