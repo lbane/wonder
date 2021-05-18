@@ -270,7 +270,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	/**
 	 * The path rewriting pattern to match (@see _rewriteURL)
 	 */
-	protected String _replaceApplicationPathPattern;
+	protected Pattern _replaceApplicationPathPattern;
 	
 	/**
 	 * The path rewriting replacement to apply to the matched pattern (@see _rewriteURL) 
@@ -1247,14 +1247,18 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 		_memoryStarvedThreshold = ERXProperties.bigDecimalForKeyWithDefault("er.extensions.ERXApplication.memoryStarvedThreshold", _memoryStarvedThreshold);
 		_memoryLowThreshold = ERXProperties.bigDecimalForKeyWithDefault("er.extensions.ERXApplication.memoryLowThreshold", _memoryLowThreshold);
 		
-	    _replaceApplicationPathPattern = ERXProperties.stringForKey("er.extensions.ERXApplication.replaceApplicationPath.pattern");
-	    if (_replaceApplicationPathPattern != null && _replaceApplicationPathPattern.length() == 0) {
+	    String replaceApplicationPathPattern = ERXProperties.stringForKey("er.extensions.ERXApplication.replaceApplicationPath.pattern");
+	    
+	    if (replaceApplicationPathPattern != null && replaceApplicationPathPattern.length() > 0) {
+	    	_replaceApplicationPathPattern = Pattern.compile(replaceApplicationPathPattern);
+	    }
+	    else {
 	    	_replaceApplicationPathPattern = null;
 	    }
 	    _replaceApplicationPathReplace = ERXProperties.stringForKey("er.extensions.ERXApplication.replaceApplicationPath.replace");
 	    
 	    if (_replaceApplicationPathPattern == null && rewriteDirectConnectURL()) {
-	    	_replaceApplicationPathPattern = "/cgi-bin/WebObjects/" + name() + applicationExtension();
+	    	_replaceApplicationPathPattern = Pattern.compile("/cgi-bin/WebObjects/" + name() + applicationExtension());
 	        if (_replaceApplicationPathReplace == null) {
 	        	_replaceApplicationPathReplace = "";
 	        }
@@ -2462,7 +2466,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	public String _rewriteURL(String url) {
 	    String processedURL = url;
 	    if (url != null && _replaceApplicationPathPattern != null && _replaceApplicationPathReplace != null) {
-	      processedURL = processedURL.replaceFirst(_replaceApplicationPathPattern, _replaceApplicationPathReplace);
+	        processedURL = _replaceApplicationPathPattern.matcher(processedURL).replaceFirst(_replaceApplicationPathReplace);
 	    }
 		return processedURL;
 	}
