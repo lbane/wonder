@@ -404,6 +404,38 @@ public abstract class ERMailDelivery {
 
 	/** 
 	 * <div class="en">
+	 * Sets the to-addresses array for the current message instance 
+	 * </div>
+	 * 
+	 * <div class="ja">
+	 * カレント・メッセージ・インスタンスの送信先 NSArray アドレスをセットします
+	 * </div>
+	 */
+	public void setReplyToAddresses(NSArray<String> toAddresses) throws MessagingException, AddressException {
+		if (toAddresses != null && toAddresses.count() > 0) {
+			final InternetAddress[] addresses = ERMailUtils.convertNSArrayToInternetAddresses(toAddresses);
+			mimeMessage().setReplyTo(addresses);
+		}
+	}
+
+	/** 
+	 * <div class="en">
+	 * Sets the to-addresses array for the current message instance 
+	 * </div>
+	 * 
+	 * <div class="ja">
+	 * カレント・メッセージ・インスタンスの送信先 NSDictionary アドレスをセットします
+	 * </div>
+	 */
+	public void setReplyToAddresses(NSDictionary<String, String> toAddresses) throws MessagingException, AddressException {
+		if (toAddresses != null && toAddresses.count() > 0) {
+			final InternetAddress[] addresses = ERMailUtils.convertNSDictionaryToInternetAddresses(toAddresses, charset());
+			mimeMessage().setReplyTo(addresses);
+		}
+	}
+
+	/** 
+	 * <div class="en">
 	 * Sets the cc-addresses array for the current message instance 
 	 * </div>
 	 * 
