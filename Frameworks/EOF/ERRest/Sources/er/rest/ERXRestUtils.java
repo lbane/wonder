@@ -17,7 +17,6 @@ import java.util.Date;
 import com.webobjects.eoaccess.EOAttribute;
 import com.webobjects.eoaccess.EOEntityClassDescription;
 import com.webobjects.eocontrol.EOClassDescription;
-import com.webobjects.eocontrol.EOKeyValueCoding;
 import com.webobjects.foundation.NSData;
 import com.webobjects.foundation.NSKeyValueCoding;
 import com.webobjects.foundation.NSPropertyListSerialization;
@@ -172,12 +171,13 @@ public class ERXRestUtils {
 		else if (value instanceof OffsetDateTime) {
 			formattedValue = ERXRestUtils.javaDateTimeFormat(context).format((TemporalAccessor)value);
 		}
-		else if (value instanceof NSData && ((NSData)value).length() == 24) {
-			formattedValue = NSPropertyListSerialization.stringFromPropertyList(value);
-		}
 		else if (value instanceof NSData) {
 			NSData valueData = (NSData) value;
-			if (valueData.length() == 16 && ERXProperties.booleanForKeyWithDefault("er.rest.format16BytesDataAsUUID", false)) {
+			int valueDataLength = valueData.length();
+			if (valueDataLength == 24) {
+				formattedValue = NSPropertyListSerialization.stringFromPropertyList(value);
+			}
+			else if (valueDataLength == 16 && ERXProperties.booleanForKeyWithDefault("er.rest.format16BytesDataAsUUID", false)) {
 				formattedValue = UUIDUtilities.encodeAsPrettyString(valueData);
 			}
 			else {
@@ -576,7 +576,7 @@ public class ERXRestUtils {
 							parsedValue = "";
 						}
 						else {
-							parsedValue = EOKeyValueCoding.NullValue;
+							parsedValue = NSKeyValueCoding.NullValue;
 						}
 					}
 					else {
