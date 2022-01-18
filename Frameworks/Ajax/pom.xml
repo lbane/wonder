@@ -8,7 +8,6 @@
 	</parent>
 	<groupId>wonder.frameworks</groupId>
 	<artifactId>ajax</artifactId>
-	<version>7.3.1-CX-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Ajax Frameworks</name>
 	<modules>
