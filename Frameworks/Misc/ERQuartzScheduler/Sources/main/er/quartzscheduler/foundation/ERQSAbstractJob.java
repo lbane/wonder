@@ -1,10 +1,11 @@
 package er.quartzscheduler.foundation;
 
-import org.apache.log4j.Logger;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.eocontrol.EOEditingContext;
 import com.webobjects.eocontrol.EOObjectStore;
@@ -13,7 +14,7 @@ import er.quartzscheduler.util.ERQSSchedulerServiceFrameworkPrincipal;
 
 public class ERQSAbstractJob implements Job
 {
-	protected static final Logger log = Logger.getLogger(ERQSJobSupervisor.class);
+	protected static final Logger log = LoggerFactory.getLogger(ERQSAbstractJob.class);
 	private EOEditingContext editingContext = null;
 	private ERQSSchedulerServiceFrameworkPrincipal schedulerFPInstance;
 	private JobExecutionContext jobContext;
@@ -22,11 +23,13 @@ public class ERQSAbstractJob implements Job
 	public ERQSAbstractJob() 
 	{
 		super();
-		if (log.isDebugEnabled())
-			log.debug("Constructor: " + this);
+		if (log.isDebugEnabled()) {
+			log.debug("Constructor: {}", this);
+		}
 	}
 
-	public void execute(final JobExecutionContext jobexecutioncontext) throws JobExecutionException 
+	@Override
+    public void execute(final JobExecutionContext jobexecutioncontext) throws JobExecutionException 
 	{
 		schedulerFPInstance = (ERQSSchedulerServiceFrameworkPrincipal) jobexecutioncontext.getMergedJobDataMap().get(ERQSSchedulerServiceFrameworkPrincipal.INSTANCE_KEY);
 		jobContext = jobexecutioncontext;

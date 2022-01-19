@@ -1,13 +1,13 @@
 package ognl.helperfunction;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Level;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.foundation.NSDictionary;
 import com.webobjects.foundation.NSMutableDictionary;
 
 public class WOHelperFunctionTagRegistry {
-	public static Logger log = Logger.getLogger(WOHelperFunctionTagRegistry.class);
+	public static org.slf4j.Logger log = LoggerFactory.getLogger(WOHelperFunctionTagRegistry.class);
 
 	private static NSMutableDictionary _tagShortcutMap = new NSMutableDictionary();
 	private static NSMutableDictionary _tagProcessorMap = new NSMutableDictionary();
@@ -38,7 +38,9 @@ public class WOHelperFunctionTagRegistry {
 	}
 
 	static {
-		WOHelperFunctionTagRegistry.log.setLevel(Level.WARN);
+		// slf4j does not let you set logging levels
+		// FIXME: after introducing log level set support enable this somehow again
+		// WOHelperFunctionTagRegistry.log.setLevel(Level.WARN);
 
 		WOHelperFunctionTagRegistry.registerTagShortcut("ERXLocalizedString", "localized"); // not in 5.4
 

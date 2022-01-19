@@ -1,7 +1,8 @@
 package er.quartzscheduler.foundation;
 
-import org.apache.log4j.Logger;
 import org.quartz.JobExecutionContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.eocontrol.EOEditingContext;
 import com.webobjects.eocontrol.EOGlobalID;
@@ -18,7 +19,7 @@ import er.quartzscheduler.util.ERQSSchedulerServiceFrameworkPrincipal;
  */
 public abstract class ERQSAbstractListener 
 {
-	protected static final Logger log = Logger.getLogger(ERQSAbstractListener.class);
+	protected static final Logger log = LoggerFactory.getLogger(ERQSAbstractListener.class);
 	private final ERQSSchedulerServiceFrameworkPrincipal schedulerFPInstance;
 	private EOEditingContext editingContext;
 

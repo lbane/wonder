@@ -122,9 +122,9 @@ public class ERD2WGraphVizPage extends ERD2WPage {
                     throw new IllegalArgumentException("Only handles 'pdf' and 'svg'");
                 }
             } catch (IOException ex) {
-                log.error(ex, ex);
+                log.error("error creating graph viz page", ex);
             } catch (TimeoutException ex) {
-                log.error(ex, ex);
+                log.error("error creating graph viz page", ex);
             } finally {
                 if(f != null) {
                     f.delete();

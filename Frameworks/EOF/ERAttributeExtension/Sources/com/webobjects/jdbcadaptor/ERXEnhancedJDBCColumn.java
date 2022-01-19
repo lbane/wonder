@@ -5,16 +5,18 @@ import com.webobjects.eoaccess.EOAttribute;
 import com.webobjects.foundation.NSForwardException;
 import com.webobjects.foundation.NSKeyValueCoding;
 import er.extensions.jdbc.ERXJDBCAdaptor.Channel;
-import org.apache.log4j.Logger;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class extends the {@code ERXJDBCColumn} to add support for custom types.
  */
 public class ERXEnhancedJDBCColumn extends ERXJDBCColumn {
-	private static final Logger log = Logger.getLogger(ERXEnhancedJDBCColumn.class);
+	private static final Logger log = LoggerFactory.getLogger(ERXEnhancedJDBCColumn.class);
 
 	public ERXEnhancedJDBCColumn(EOAttribute attribute, JDBCChannel channel, int column, ResultSet rs) {
 		super(attribute, channel, column, rs);

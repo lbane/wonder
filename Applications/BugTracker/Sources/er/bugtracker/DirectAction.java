@@ -78,7 +78,7 @@ public class DirectAction extends ERD2WDirectAction {
             ec.saveChanges();
             result = pageWithName("ERXSuccess");
         } catch (Exception e) {
-            log.error(e);
+            log.error("ping action failure", e);
         } finally {
             ERCoreBusinessLogic.setActor(null);
             ec.unlock();

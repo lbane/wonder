@@ -5,7 +5,9 @@
 // Created by bposokho on Thu Sep 19 2002
 //
 package er.directtoweb.components.relationships;
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.appserver.WOContext;
 import com.webobjects.directtoweb.D2WContext;
@@ -33,7 +35,7 @@ public class ERD2WEditSortedToManyFault extends D2WEditToManyFault {
 	 */
 	private static final long serialVersionUID = 1L;
 
-    public static final Logger log = Logger.getLogger(ERD2WEditSortedToManyFault.class);
+    public static final Logger log = LoggerFactory.getLogger(ERD2WEditSortedToManyFault.class);
 
     public ERD2WEditSortedToManyFault(WOContext context) {
         super(context);

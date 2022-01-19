@@ -22,6 +22,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -37,10 +38,10 @@ import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.log4j.Appender;
 import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -159,16 +160,16 @@ import er.extensions.statistics.ERXStats;
  */
 public abstract class ERXApplication extends ERXAjaxApplication implements ERXGracefulShutdown.GracefulApplication {
 	/** logging support */
-	public static final Logger log = Logger.getLogger(ERXApplication.class);
+	public static final Logger log = LoggerFactory.getLogger(ERXApplication.class);
 
 	/** request logging support */
-	public static final Logger requestHandlingLog = Logger.getLogger("er.extensions.ERXApplication.RequestHandling");
+	public static final Logger requestHandlingLog = LoggerFactory.getLogger("er.extensions.ERXApplication.RequestHandling");
 
 	/** statistic logging support */
-	public static final Logger statsLog = Logger.getLogger("er.extensions.ERXApplication.Statistics");
+	public static final Logger statsLog = LoggerFactory.getLogger("er.extensions.ERXApplication.Statistics");
 
 	/** startup logging support */
-	public static final Logger startupLog = Logger.getLogger("er.extensions.ERXApplication.Startup");
+	public static final Logger startupLog = LoggerFactory.getLogger("er.extensions.ERXApplication.Startup");
 
 	private static boolean wasERXApplicationMainInvoked = false;
 
@@ -763,7 +764,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 
 						if (mainBundleJarPattern.matcher(urlAsString.toLowerCase()).find()) {
 							try {
-								propertiesPath = new URL(URLDecoder.decode(urlAsString, CharEncoding.UTF_8));
+								propertiesPath = new URL(URLDecoder.decode(urlAsString, StandardCharsets.UTF_8.name()));
 								userPropertiesPath = new URL(propertiesPath.toExternalForm() + userName);
 							}
 							catch (MalformedURLException exception) {
@@ -831,7 +832,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 		InputStream is = null;
 		try {
 			if (!new File(jar).exists()) {
-				ERXApplication.log.warn("Will not process jar '" + jar + "' because it cannot be found ...");
+				ERXApplication.log.warn("Will not process jar '{}' because it cannot be found ...", jar);
 				return null;
 			}
 			f = new JarFile(jar);
@@ -845,7 +846,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 					bout.write(buf, 0, read);
 				}
 
-				String content = new String(bout.toByteArray(), CharEncoding.UTF_8);
+				String content = new String(bout.toByteArray(), StandardCharsets.UTF_8);
 				return content;
 			}
 			return null;
@@ -1179,7 +1180,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 		}
 		// ak: telling Log4J to re-init the Console appenders so we get logging
 		// into WOOutputPath again
-		for (Enumeration e = Logger.getRootLogger().getAllAppenders(); e.hasMoreElements();) {
+		for (Enumeration e = org.apache.log4j.Logger.getRootLogger().getAllAppenders(); e.hasMoreElements();) {
 			Appender appender = (Appender) e.nextElement();
 			if (appender instanceof ConsoleAppender) {
 				ConsoleAppender app = (ConsoleAppender) appender;
@@ -1630,16 +1631,16 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 			success = true;
 		}
 		catch (SecurityException e) {
-			log.error(e, e);
+			log.error("Exception while refusing new sessions", e);
 		}
 		catch (NoSuchFieldException e) {
-			log.error(e, e);
+			log.error("Exception while refusing new sessions", e);
 		}
 		catch (IllegalArgumentException e) {
-			log.error(e, e);
+			log.error("Exception while refusing new sessions", e);
 		}
 		catch (IllegalAccessException e) {
-			log.error(e, e);
+			log.error("Exception while refusing new sessions", e);
 		}
 		if(!success) {
 			super.refuseNewSessions(value);
@@ -1928,15 +1929,15 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 				// state.
 				if (shouldQuit) {
 					NSLog.err.appendln("Ran out of memory, killing this instance");
-					log.fatal("Ran out of memory, killing this instance");
-					log.fatal("Ran out of memory, killing this instance", throwable);
+					log.error("Ran out of memory, killing this instance");
+					log.error("Ran out of memory, killing this instance", throwable);
 				}
 			}
 			else {
 				// We log just in case the log4j call puts us in a bad
 				// state.
 				NSLog.err.appendln("java.lang.Error \"" + throwable.getClass().getName() + "\" occured.");
-				log.error("java.lang.Error \"" + throwable.getClass().getName() + "\" occured.", throwable);
+				log.error("java.lang.Error \"{}\" occured.", throwable.getClass().getName(), throwable);
 			}
 			if (shouldQuit)
 				Runtime.getRuntime().exit(1);
@@ -2070,7 +2071,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	public WOResponse dispatchRequestImmediately(WORequest request) {
 		WOResponse response;
 		if (ERXApplication.requestHandlingLog.isDebugEnabled()) {
-			ERXApplication.requestHandlingLog.debug(request);
+			ERXApplication.requestHandlingLog.debug("dispatching request {}", request);
 		}
 
 		try {
