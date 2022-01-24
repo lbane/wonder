@@ -428,7 +428,7 @@
             	<!-- Drop-in replacement for log4j -->
                 <groupId>ch.qos.reload4j</groupId>
                 <artifactId>reload4j</artifactId>
-                <version>1.2.18.0</version>
+                <version>1.2.18.2</version>
             </dependency>
             <!-- dependency>
                 <groupId>log4j</groupId>
