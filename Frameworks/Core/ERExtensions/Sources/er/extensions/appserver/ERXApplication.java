@@ -925,7 +925,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 			adapterUrl.appendPath(application().directActionRequestHandlerKey() + "/stop");
 			URL url = adapterUrl.toURL();
 
-			log.debug("Stopping previously running instance of " + application().name());
+			log.debug("Stopping previously running instance of {}", application().name());
 			
 			URLConnection connection = url.openConnection();
 			connection.getContent();
@@ -1032,7 +1032,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 			}
 			message = sb.toString();
 			if (message.length() > 0) {
-				startupLog.debug("The following packages appear multiple times:\n" + message);
+				startupLog.debug("The following packages appear multiple times:\n{}", message);
 			}
 			sb = new StringBuilder();
 			NSMutableSet<String> classPackages = new NSMutableSet<>();
@@ -1048,7 +1048,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 			}
 			message = sb.toString();
 			if (message.length() > 0) {
-				startupLog.debug("The following packages have different versions, you should remove the version you don't want:\n" + message);
+				startupLog.debug("The following packages have different versions, you should remove the version you don't want:\n{}", message);
 			}
 		}
 	}
@@ -1212,17 +1212,17 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 
 		String defaultEncoding = System.getProperty("er.extensions.ERXApplication.DefaultEncoding");
 		if (defaultEncoding != null) {
-			log.debug("Setting default encoding to \"" + defaultEncoding + "\"");
+			log.debug("Setting default encoding to \"{}\"", defaultEncoding);
 			setDefaultEncoding(defaultEncoding);
 		}
 
 		String defaultMessageEncoding = System.getProperty("er.extensions.ERXApplication.DefaultMessageEncoding");
 		if (defaultMessageEncoding != null) {
-			log.debug("Setting WOMessage default encoding to \"" + defaultMessageEncoding + "\"");
+			log.debug("Setting WOMessage default encoding to \"{}\"", defaultMessageEncoding);
 			WOMessage.setDefaultEncoding(defaultMessageEncoding);
 		}
 
-		log.info("Wonder version: " + ERXProperties.wonderVersion());
+		log.info("Wonder version: {}", ERXProperties.wonderVersion());
 
 		// Configure the WOStatistics CLFF logging since it can't be controlled
 		// by a property, grrr.
@@ -1409,7 +1409,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 		try {
 			int timeToLive = ERXProperties.intForKey("ERTimeToLive");
 			if (timeToLive > 0) {
-				log.info("Instance will live " + timeToLive + " seconds.");
+				log.info("Instance will live {} seconds.", timeToLive);
 				NSLog.out.appendln("Instance will live " + timeToLive + " seconds.");
 				// add a fudge factor of around 10 minutes
 				timeToLive += Math.random() * 600;
@@ -1419,7 +1419,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 			}
 			int timeToDie = ERXProperties.intForKey("ERTimeToDie");
 			if (timeToDie > 0) {
-				log.info("Instance will not live past " + timeToDie + ":00.");
+				log.info("Instance will not live past {}:00.", timeToDie);
 				NSLog.out.appendln("Instance will not live past " + timeToDie + ":00.");
 				NSTimestamp now = new NSTimestamp();
 				int s = (timeToDie - ERXTimestampUtilities.hourOfDay(now)) * 3600 - ERXTimestampUtilities.minuteOfHour(now) * 60;
@@ -1666,7 +1666,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 		if (install) {
 			int timeToKill = ERXProperties.intForKey("ERTimeToKill");
 			if (timeToKill > 0) {
-				log.warn("Registering kill timer in " + timeToKill + "seconds");
+				log.warn("Registering kill timer in {} seconds", timeToKill);
 				NSTimestamp exitDate = (new NSTimestamp()).timestampByAddingGregorianUnits(0, 0, 0, 0, 0, timeToKill);
 				_killTimer = new WOTimer(exitDate, 0, this, "killInstance", null, null, false);
 				_killTimer.schedule();
@@ -1779,7 +1779,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	 *         called
 	 */
 	public WOResponse reportException(Throwable exception, WOContext context, NSDictionary extraInfo) {
-		log.error("Exception caught: " + exception.getMessage() + "\nExtra info: " + NSPropertyListSerialization.stringFromPropertyList(extraInfo) + "\n", exception);
+		log.error("Exception caught: {}\nExtra info: {}\n", exception.getMessage(), NSPropertyListSerialization.stringFromPropertyList(extraInfo), exception);
 		return null;
 	}
 
@@ -2318,7 +2318,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 				contextDescription = "<NULL>";
 			}
 
-			log.error("There is an error in the session check-out: old context: " + contextDescription, trace());
+			log.error("There is an error in the session check-out: old context: {}", contextDescription, trace());
 			if (_context == null) {
 				return "Original context was null";
 			}
@@ -2350,7 +2350,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 				String sessionID = wosession.sessionID();
 				SessionInfo sessionInfo = _sessions.get(sessionID);
 				if (sessionInfo == null) {
-					log.error("Check-In of session that was not checked out, most likely diue to an exception in session.awake(): " + sessionID);
+					log.error("Check-In of session that was not checked out, most likely diue to an exception in session.awake(): {}", sessionID);
 				}
 				else {
 					_sessions.remove(sessionID);

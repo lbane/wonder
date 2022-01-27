@@ -79,7 +79,7 @@ public class AjaxResponse extends ERXResponse {
 				}
 				if (_contentLength() == 0) {
 					setStatus(HTTP_STATUS_INTERNAL_ERROR);
-					log.warn("You performed an Ajax update, but no response was generated. A common cause of this is that you spelled your updateContainerID wrong.  You specified a container ID '" + AjaxUpdateContainer.updateContainerID(_request) + "'."); 
+					log.warn("You performed an Ajax update, but no response was generated. A common cause of this is that you spelled your updateContainerID wrong.  You specified a container ID '{}'.", AjaxUpdateContainer.updateContainerID(_request)); 
 				}
 			}
 			finally {

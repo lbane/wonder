@@ -14,7 +14,6 @@ import com.webobjects.eocontrol.EOGlobalID;
 import com.webobjects.eocontrol.EOTemporaryGlobalID;
 import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSDictionary;
-import com.webobjects.foundation.NSLog;
 import com.webobjects.foundation.NSMutableDictionary;
 import com.webobjects.foundation.NSNotification;
 import com.webobjects.foundation.NSNotificationCenter;
@@ -38,12 +37,12 @@ public class ERXDatabase extends EODatabase {
 	private boolean _decrementSnapshot;
 
 	public static void setSnapshotCacheMapInitialCapacity( int capacity ) {
-		log.debug( "Setting SnapshotCacheMapInitialCapacity = " + capacity );
+		log.debug( "Setting SnapshotCacheMapInitialCapacity = {}", capacity );
 		SnapshotCacheMapInitialCapacity = capacity;
 	}
 	
 	public static void setSnapshotCacheMapInitialLoadFactor( float loadFactor ) {
-		log.debug( "Setting SnapshotCacheMapInitialLoadFactor = " + loadFactor );
+		log.debug( "Setting SnapshotCacheMapInitialLoadFactor = {}", loadFactor );
 		SnapshotCacheMapInitialLoadFactor = loadFactor;
 	}
 	
@@ -52,8 +51,8 @@ public class ERXDatabase extends EODatabase {
 
 		// AK: huge performance optimization when you use badly distributed LONG keys
 
-		log.debug( "Using SnapshotCacheMapInitialCapacity = " + SnapshotCacheMapInitialCapacity );
-		log.debug( "Using SnapshotCacheMapInitialLoadFactor = " + SnapshotCacheMapInitialLoadFactor );
+		log.debug( "Using SnapshotCacheMapInitialCapacity = {}", SnapshotCacheMapInitialCapacity );
+		log.debug( "Using SnapshotCacheMapInitialLoadFactor = {}", SnapshotCacheMapInitialLoadFactor );
 		_snapshots = new NSMutableDictionary() {
 			/**
 			 * Do I need to update serialVersionUID?

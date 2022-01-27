@@ -209,7 +209,7 @@ public class ERXDatabaseContextDelegate {
 						mutableConnectionDictionary.setObjectForKey("<password deleted for log>", "password");
 						connectionDictionary = mutableConnectionDictionary;
 					}
-					log.info(model.name() + ": " + (connectionDictionary == null ? "No connection dictionary!" : connectionDictionary.toString()));
+					log.info("{}: {}", model.name(), (connectionDictionary == null ? "No connection dictionary!" : connectionDictionary.toString()));
 				}
 				if ("JDBC".equals(databaseContext.adaptorContext().adaptor().name())) {
 					new ERXJDBCConnectionAnalyzer(databaseContext.database().adaptor().connectionDictionary());
@@ -347,7 +347,7 @@ public class ERXDatabaseContextDelegate {
         if(raiseException) {
         	throw new ObjectNotAvailableException("No " + (object!=null ? object.getClass().getName() : "N/A") + " found with globalID: " + gidString, gid); 
         } else if (ERXProperties.booleanForKeyWithDefault("er.extensions.ERXDatabaseContextDelegate.logTolerantEntityNotAvailable", true)) {
-        	log.error("No " + (object!=null ? object.getClass().getName() : "N/A") + " found with globalID: " + gidString + "\n" + ERXUtilities.stackTrace()); 
+        	log.error("No {} found with globalID: {}\n{}", (object!=null ? object.getClass().getName() : "N/A"), gidString, ERXUtilities.stackTrace()); 
         }
         return false;
     }
@@ -451,7 +451,7 @@ public class ERXDatabaseContextDelegate {
     								result.addObject(deleteOp);
     								skippedOps.addObject(deleteOp);
     							}
-    							log.warn("Skipped: " + insertOp + "\n" + deleteOp);
+    							log.warn("Skipped: {}\n{}", insertOp, deleteOp);
     						}
     					}
     				}

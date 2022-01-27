@@ -660,7 +660,7 @@ public class ERXCustomObject extends EOCustomObject implements ERXGuardedObjectI
             }
             throw e;
         } catch (RuntimeException e) {
-            log.error("**** During validateValueForKey "+key, e);
+            log.error("**** During validateValueForKey {}", key, e);
             throw e;
         }
         return result;
@@ -678,7 +678,7 @@ public class ERXCustomObject extends EOCustomObject implements ERXGuardedObjectI
         // This condition shouldn't ever happen, but it does ;)
         // CHECKME: This was a 4.5 issue, not sure if this one has been fixed yet.
         if (editingContext() != null && editingContext().deletedObjects().containsObject(this)) {
-            validation.warn("Calling validate for save on an eo: " + this + " that has been marked for deletion!");
+            validation.warn("Calling validate for save on an eo: {} that has been marked for deletion!", this);
         }
         super.validateForSave();
     }

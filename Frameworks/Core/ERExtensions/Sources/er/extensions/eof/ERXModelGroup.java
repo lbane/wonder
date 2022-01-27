@@ -171,7 +171,7 @@ public class ERXModelGroup extends EOModelGroup {
 		NSArray<NSBundle> frameworkBundles = NSBundle.frameworkBundles();
 		
 		if (log.isDebugEnabled()) {
-			log.debug("Loading bundles ()", frameworkBundles.valueForKey("name"));
+			log.debug("Loading bundles ({})", frameworkBundles.valueForKey("name"));
 		}
 		// clear the cached class descriptions - if descriptions are there, they
 		// are from a previous load of the models, and may be out of date
