@@ -1294,7 +1294,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 			int rotationFrequency = ERXProperties.intForKeyWithDefault("er.extensions.ERXApplication.StatisticsLogRotationFrequency", 24 * 60 * 60 * 1000);
 			String logPath = statisticsBasePath + File.separator + name() + "-" + ERXConfigurationManager.defaultManager().hostName() + "-" + port() + ".log";
 			if (log.isDebugEnabled()) {
-				log.debug("Configured statistics logging to file path \"" + logPath + "\" with rotation frequency: " + rotationFrequency);
+				log.debug("Configured statistics logging to file path \"{}\" with rotation frequency: {}", logPath, rotationFrequency);
 			}
 			statisticsStore().setLogFile(logPath, rotationFrequency);
 		}
@@ -1439,7 +1439,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 		}
 		catch (RuntimeException t) {
 			if (ERXApplication._wasMainInvoked) {
-				ERXApplication.log.error(name() + " failed to start.", t);
+				ERXApplication.log.error("{} failed to start.", name() , t);
 				//throw new ERXExceptionUtilities.HideStackTraceException(t);
 			}
 			throw t;
