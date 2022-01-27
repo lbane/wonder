@@ -828,44 +828,37 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	}
 
 	private String stringFromJar(String jar, String path) {
-		JarFile f;
-		InputStream is = null;
 		try {
 			if (!new File(jar).exists()) {
 				ERXApplication.log.warn("Will not process jar '{}' because it cannot be found ...", jar);
 				return null;
 			}
-			f = new JarFile(jar);
-			JarEntry e = (JarEntry) f.getEntry(path);
-			if (e != null) {
-				is = f.getInputStream(e);
-				ByteArrayOutputStream bout = new ByteArrayOutputStream();
-				int read = -1;
-				byte[] buf = new byte[1024 * 50];
-				while ((read = is.read(buf)) != -1) {
-					bout.write(buf, 0, read);
-				}
+			
+			try (JarFile f = new JarFile(jar)) {
+				
+				JarEntry e = (JarEntry) f.getEntry(path);
+				if (e != null) {
 
-				String content = new String(bout.toByteArray(), StandardCharsets.UTF_8);
-				return content;
+					try (InputStream is = f.getInputStream(e);
+						 ByteArrayOutputStream bout = new ByteArrayOutputStream((int)e.getSize())) {
+						
+						int read = -1;
+						byte[] buf = new byte[1024 * 50];
+						while ((read = is.read(buf)) != -1) {
+							bout.write(buf, 0, read);
+						}
+						
+						return bout.toString(StandardCharsets.UTF_8.name());
+					}
+				}
+				return null;
 			}
-			return null;
 		}
 		catch (FileNotFoundException e1) {
 			return null;
 		}
 		catch (IOException e1) {
 			throw NSForwardException._runtimeExceptionForThrowable(e1);
-		}
-		finally {
-			if (is != null) {
-				try {
-					is.close();
-				}
-				catch (IOException e) {
-					// ignore
-				}
-			}
 		}
 	}
 	}
