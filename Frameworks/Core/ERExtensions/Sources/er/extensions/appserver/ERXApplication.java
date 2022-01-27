@@ -1695,7 +1695,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	}
 
 	/** cached computed name */
-	private volatile String _userDefaultName;
+	private String _userDefaultName;
 
 	/**
 	 * Adds the ability to completely change the applications name by setting
