@@ -1695,7 +1695,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	}
 
 	/** cached computed name */
-	private String _userDefaultName;
+	private volatile String _userDefaultName;
 
 	/**
 	 * Adds the ability to completely change the applications name by setting
@@ -1706,19 +1706,30 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	 */
 	@Override
 	public String name() {
-		if (_userDefaultName == null) {
+		
+		String userDefaultName = _userDefaultName;
+		if (userDefaultName == null) {
+			
 			synchronized (this) {
-				_userDefaultName = System.getProperty("ERApplicationName");
-				if (_userDefaultName == null)
-					_userDefaultName = super.name();
-				if (_userDefaultName != null) {
-					String suffix = nameSuffix();
-					if (suffix != null && suffix.length() > 0)
-						_userDefaultName += suffix;
+				
+				userDefaultName = _userDefaultName;
+				if (userDefaultName == null) {
+					
+					userDefaultName = System.getProperty("ERApplicationName");
+					if (userDefaultName == null) {
+						userDefaultName = super.name();
+					}
+					if (userDefaultName != null) {
+						String suffix = nameSuffix();
+						if (suffix != null && suffix.length() > 0) {
+							userDefaultName += suffix;
+						}
+					}
+					_userDefaultName = userDefaultName;
 				}
 			}
 		}
-		return _userDefaultName;
+		return userDefaultName;
 	}
 
 	/**
