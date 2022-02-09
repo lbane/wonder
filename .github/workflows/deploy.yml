@@ -24,6 +24,7 @@ jobs:
           ${{ runner.os }}-
 
     - name: Set up Java 8
+      id: setup-java-8
       uses: actions/setup-java@v2
       with:
         distribution: 'temurin'
@@ -42,7 +43,7 @@ jobs:
                   <vendor>adopt</vendor>
                 </provides>
                 <configuration>
-                  <jdkHome>${{ JAVA_HOME }}</jdkHome>
+                  <jdkHome>${{ env.JAVA_HOME }}</jdkHome>
                 </configuration>
             </toolchain>
           </toolchains>
