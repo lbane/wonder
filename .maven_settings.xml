@@ -30,14 +30,6 @@
           </snapshots>
         </repository>
         <repository>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-          <id>central</id>
-          <name>remote-snapshot-repos</name>
-          <url>https://jaspersoft.jfrog.io/artifactory/remote-snapshot-repos</url>
-        </repository>
-        <repository>
           <snapshots />
           <id>snapshots</id>
           <name>remote-snapshot-repos</name>
@@ -66,14 +58,6 @@
           <snapshots>
             <enabled>true</enabled>
           </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-          <id>central</id>
-          <name>remote-snapshot-repos</name>
-          <url>https://jaspersoft.jfrog.io/artifactory/remote-snapshot-repos</url>
         </pluginRepository>
         <pluginRepository>
           <snapshots />
