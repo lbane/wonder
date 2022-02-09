@@ -26,10 +26,6 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-      with:
-        # We must fetch at least the immediate parents so that if this is
-        # a pull request then we can checkout the head.
-        fetch-depth: 2
 
     - name: Cache Maven Dependencies
       uses: actions/cache@v1
@@ -65,11 +61,6 @@ jobs:
             </toolchain>
           </toolchains>
           EOF
-    
-    # If this run was triggered by a pull request event, then checkout
-    # the head of the pull request instead of the merge commit.
-    - run: git checkout HEAD^2
-      if: ${{ github.event_name == 'pull_request' }}
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
@@ -83,8 +74,9 @@ jobs:
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
-    # - name: Autobuild
-    #  uses: github/codeql-action/autobuild@v1
+    - if: matrix.language == 'javascript'
+      name: Autobuild
+      uses: github/codeql-action/autobuild@v1
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
@@ -93,7 +85,9 @@ jobs:
     #    and modify them (or add more) to build your code if your project
     #    uses a compiled language
 
-    - run: |
+    - if: matrix.language == 'java' 
+      name: Build with maven
+      run: |
        mvn -B compile package --file pom.xml -s .maven_settings.xml -DretryFailedDeploymentCount=10
 
     - name: Perform CodeQL Analysis
