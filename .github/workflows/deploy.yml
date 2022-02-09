@@ -29,15 +29,15 @@ jobs:
         java-version: 1.8
     
     - name: Set up Toolchain
-        shell: bash
-        run: |
+      shell: bash
+      run: |
           cat << EOF > $HOME/.m2/toolchains.xml
           <?xml version="1.0" encoding="UTF8"?>
           <toolchains>
             <toolchain>
               <type>jdk</type>
                 <provides>
-                  <version>11</version>
+                  <version>8</version>
                   <vendor>adopt</vendor>
                 </provides>
                 <configuration>
