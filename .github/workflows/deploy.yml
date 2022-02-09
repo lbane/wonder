@@ -28,5 +28,24 @@ jobs:
       with:
         java-version: 1.8
     
+    - name: Set up Toolchain
+        shell: bash
+        run: |
+          cat << EOF > $HOME/.m2/toolchains.xml
+          <?xml version="1.0" encoding="UTF8"?>
+          <toolchains>
+            <toolchain>
+              <type>jdk</type>
+                <provides>
+                  <version>11</version>
+                  <vendor>adopt</vendor>
+                </provides>
+                <configuration>
+                  <jdkHome>${{ env.TOOLCHAIN_JDK }}</jdkHome>
+                </configuration>
+            </toolchain>
+          </toolchains>
+          EOF
+    
     - name: Test install Snapshots with Maven
       run: mvn -B install --file pom.xml -s .maven_settings.xml -DretryFailedDeploymentCount=10
