@@ -29,12 +29,12 @@
             <enabled>true</enabled>
           </snapshots>
         </repository>
-        <repository>
+        <!-- repository>
           <snapshots />
-          <id>snapshots</id>
+          <id>jaspersoft-third-party</id>
           <name>remote-snapshot-repos</name>
           <url>https://jaspersoft.jfrog.io/artifactory/remote-snapshot-repos</url>
-        </repository>
+        </repository -->
       </repositories>
       <pluginRepositories>
         <pluginRepository>
@@ -59,12 +59,12 @@
             <enabled>true</enabled>
           </snapshots>
         </pluginRepository>
-        <pluginRepository>
+        <!-- pluginRepository>
           <snapshots />
-          <id>snapshots</id>
+          <id>jaspersoft-third-party</id>
           <name>remote-snapshot-repos</name>
           <url>https://jaspersoft.jfrog.io/artifactory/remote-snapshot-repos</url>
-        </pluginRepository>
+        </pluginRepository -->
       </pluginRepositories>
   </profile>
 </profiles>
