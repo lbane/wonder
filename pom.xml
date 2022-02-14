@@ -563,7 +563,7 @@
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-core</artifactId>
                 <!-- a more recent version exists (e.g. 8.6.3) but upgrading must be synchronized with upgrading neo44j -->
-                <version>3.5.0</version>
+                <version>7.1.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
