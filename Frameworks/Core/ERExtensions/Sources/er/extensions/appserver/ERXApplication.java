@@ -1294,7 +1294,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 			int rotationFrequency = ERXProperties.intForKeyWithDefault("er.extensions.ERXApplication.StatisticsLogRotationFrequency", 24 * 60 * 60 * 1000);
 			String logPath = statisticsBasePath + File.separator + name() + "-" + ERXConfigurationManager.defaultManager().hostName() + "-" + port() + ".log";
 			if (log.isDebugEnabled()) {
-				log.debug("Configured statistics logging to file path \"" + logPath + "\" with rotation frequency: " + rotationFrequency);
+				log.debug("Configured statistics logging to file path \"{}\" with rotation frequency: {}", logPath, rotationFrequency);
 			}
 			statisticsStore().setLogFile(logPath, rotationFrequency);
 		}
@@ -1439,7 +1439,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 		}
 		catch (RuntimeException t) {
 			if (ERXApplication._wasMainInvoked) {
-				ERXApplication.log.error(name() + " failed to start.", t);
+				ERXApplication.log.error("{} failed to start.", name() , t);
 				//throw new ERXExceptionUtilities.HideStackTraceException(t);
 			}
 			throw t;
@@ -2101,7 +2101,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 			ERXApplication._endRequest();
 		}
 		if (requestHandlingLog.isDebugEnabled()) {
-			requestHandlingLog.debug("Returning, encoding: " + response.contentEncoding() + " response: " + response);
+			requestHandlingLog.debug("Returning, encoding: {} response: {}", response.contentEncoding(), response);
 		}
 
 		if (responseCompressionEnabled()) {
@@ -2138,7 +2138,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 							response.setHeader(String.valueOf(compressedData.length()), "content-length");
 							response.setHeader("gzip", "content-encoding");
 							if (log.isDebugEnabled()) {
-								log.debug("before: " + inputBytesLength + ", after " + compressedData.length() + ", time: " + (System.currentTimeMillis() - start));
+								log.debug("before: {}, after {}, time: {}", inputBytesLength, compressedData.length(), (System.currentTimeMillis() - start));
 							}
 						}
 					}
@@ -2190,7 +2190,15 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	 * startup.
 	 */
 	private void _displayMainMethodWarning() {
-		log.warn("\n\nIt seems that your application class " + application().getClass().getName() + " did not call " + ERXApplication.class.getName() + ".main(argv[], applicationClass) method. " + "Please modify your Application.java as the followings so that " + ERXConfigurationManager.class.getName() + " can provide its " + "rapid turnaround feature completely. \n\n" + "Please change Application.java like this: \n" + "public static void main(String argv[]) { \n" + "    ERXApplication.main(argv, Application.class); \n" + "}\n\n");
+		
+		log.warn("\n\nIt seems that your application class {} did not call {}.main(argv[], applicationClass) method. " +
+			"Please modify your Application.java as the followings so that {} can provide its " +
+			"rapid turnaround feature completely. \n\n" +
+			"Please change Application.java like this: \n" +
+			"public static void main(String argv[]) { \n" +
+			"    ERXApplication.main(argv, Application.class); \n" +
+			"}\n\n",
+			application().getClass().getName(), ERXApplication.class.getName(), ERXConfigurationManager.class.getName());
 	}
 
 	/** improved streaming support */
