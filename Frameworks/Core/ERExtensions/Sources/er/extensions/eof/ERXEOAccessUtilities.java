@@ -889,7 +889,7 @@ public class ERXEOAccessUtilities {
                 EODatabaseOperation databaseOp = (EODatabaseOperation) userInfo.objectForKey(EODatabaseContext.FailedDatabaseOperationKey);
                 wasHandled = (adaptorOp != null && databaseOp != null);
             } else {
-                log.error("Missing EOFailedAdaptorOperationKey or EOFailedDatabaseOperationKey in " + e + ": " + userInfo);
+                log.error("Missing EOFailedAdaptorOperationKey or EOFailedDatabaseOperationKey in {}: {}", e.toString(), userInfo);
             }
         }
         return wasHandled;
@@ -1114,8 +1114,7 @@ public class ERXEOAccessUtilities {
                         dbch.adaptorChannel().closeChannel();
                         
                     } else {
-                        log.warn("could not close Connection from " + dbch + " because its EOAdaptorContext "
-                                + dbch.adaptorChannel().adaptorContext() + " had open Transactions");
+                        log.warn("could not close Connection from {} because its EOAdaptorContext {} had open Transactions", dbch, dbch.adaptorChannel().adaptorContext());
                         couldClose = false;
                     }
                 }
@@ -1147,7 +1146,7 @@ public class ERXEOAccessUtilities {
                 	if(key.indexOf("@") != 0) {
                 		if(!_keysWithWarning.contains(key + "-" + entity)) {
                 			_keysWithWarning.add(key + "-" + entity);
-                			log.warn("No relationship or attribute <" + key + "> in entity: " + entity);
+                			log.warn("No relationship or attribute <{}> in entity: {}", key, entity);
                 		}
                 	}
                 }
@@ -1530,7 +1529,7 @@ public class ERXEOAccessUtilities {
                 NSArray relsUsingAttrib = ERXEOAccessUtilities.relationshipsForAttribute(entity, attrib);
                 relationships.addObjectsFromArray(relsUsingAttrib);
             } else {
-                log.error("Changed value found that isn't an attribute: " + key + "->" + changedValues.objectForKey(key));
+                log.error("Changed value found that isn't an attribute: {}->{}", key, changedValues.objectForKey(key));
             }
         }
 
@@ -2058,9 +2057,9 @@ public class ERXEOAccessUtilities {
               e.removeSharedObjectFetchSpecificationByName((String)fetchSpecNameObjectEnumerator.nextElement());
           } 
       } else if (e == null) {
-          log.warn("makeEditableSharedEntityNamed: unable to find entity named: " + entityName);
+          log.warn("makeEditableSharedEntityNamed: unable to find entity named: {}", entityName);            
       } else {
-          log.warn("makeEditableSharedEntityNamed: entity already editable: " + entityName);
+          log.warn("makeEditableSharedEntityNamed: entity already editable: {}", entityName);
       }
   }
 

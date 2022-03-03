@@ -1244,7 +1244,7 @@ public class ERXGenericRecord extends EOGenericRecord implements ERXGuardedObjec
 		// CHECKME: This was a 4.5 issue, not sure if this one has been fixed
 		// yet.
 		if (editingContext() != null && editingContext().deletedObjects().containsObject(this)) {
-			validation.warn("Calling validate for save on an eo: " + this + " that has been marked for deletion!");
+			validation.warn("Calling validate for save on an eo: {} that has been marked for deletion!", this);
 		}
 		super.validateForSave();
 	}

@@ -466,7 +466,7 @@ public  class ERXRequest extends WORequest {
         				// If a cookie with Therfore we do not override cookies if there are already there!
         				String cookieName  = httpCookie.getName();
         				String cookieValue = httpCookie.getValue();
-        				log.debug("Cookie: '"+cookieName+"' = '"+cookieValue+"'");
+        				log.debug("Cookie: '{}' = '{}'", cookieName, cookieValue);
         				NSArray<String> cookieValueArray = cookieDictionary.get(cookieName);
         				if ( cookieValueArray == null ){
         					cookieValueArray = new NSArray<>();
@@ -474,7 +474,7 @@ public  class ERXRequest extends WORequest {
         				cookieValueArray = cookieValueArray.arrayByAddingObject(cookieValue);
         				cookieDictionary.put( cookieName, cookieValueArray );
         			} catch (Throwable t) {
-        				log.warn("Unable to parse cookie '"+cookies[i]+"' : "+t.getMessage());
+        				log.warn("Unable to parse cookie '{}' : {}", cookies[i], t.getMessage());
         			}
         		}
         	}

@@ -976,7 +976,7 @@ public class ERXExtensions extends ERXFrameworkPrincipal {
         try {
             EOEntity entity = ERXEOAccessUtilities.entityNamed(sharedEC, entityName);
             if (entity == null) {
-                _log.warn("Attempting to refresh a non-existent (or not accessible) EO: " + entityName);
+                _log.warn("Attempting to refresh a non-existent (or not accessible) EO: {}", entityName);
                 return;
             }
 
@@ -1008,7 +1008,7 @@ public class ERXExtensions extends ERXFrameworkPrincipal {
                     _sharedEntityDataWasRefreshedSelector.invoke(entityClass);
             }
             } else {
-                _log.warn("Attempting to refresh a non-shared EO: " + entityName);
+                _log.warn("Attempting to refresh a non-shared EO: {}", entityName);
             }
         } catch (Exception e) {
             throw new NSForwardException(e, "Exception while refreshing shared objects for entity named " + entityName);
@@ -1063,7 +1063,7 @@ public class ERXExtensions extends ERXFrameworkPrincipal {
      */
     public static String addSessionIdFormValue(String urlString, WOSession session) {
     	if (urlString == null || session == null) {
-    		_log.warn("not adding session ID: url=" + (urlString != null ? urlString : "<null>") + " session=" + (session != null ? session : "<null>"));
+    		_log.warn("not adding session ID: url={} session={}", (urlString != null ? urlString : "<null>"), (session != null ? session : "<null>"));
     		return urlString;
     	}
     	String sessionIdKey = WOApplication.application().sessionIdKey();

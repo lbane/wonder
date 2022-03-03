@@ -94,7 +94,7 @@ public class ERXObjectStoreCoordinator extends EOObjectStoreCoordinator {
 					openLockTraces.removeObjectForKey(lockingThread);
 				}
 			} else {
-				log.error("Missing lock: " + lockingThread);
+				log.error("Missing lock: {}", lockingThread);
 			}
 			if (openLockTraces.count() == 0) {
 				openLockTraces = null;

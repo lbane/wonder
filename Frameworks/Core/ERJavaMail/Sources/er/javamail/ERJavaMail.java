@@ -130,12 +130,12 @@ public class ERJavaMail extends ERXFrameworkPrincipal {
 		// Centralize mails ?
 		boolean centralize = ERXProperties.booleanForKey("er.javamail.centralize");
 		setCentralize(centralize);
-		log.debug("er.javamail.centralize: " + centralize);
+		log.debug("er.javamail.centralize: {}", centralize);
 
 		String adminEmail = System.getProperty("er.javamail.adminEmail");
 		if (isValidEmail(adminEmail)) {
 			setAdminEmail(adminEmail);
-			log.debug("er.javamail.adminEmail: " + _adminEmail);
+			log.debug("er.javamail.adminEmail: {}", adminEmail);
 		}
 		else if (centralize) {
 			throw new IllegalArgumentException("When 'er.javamail.centralize' is true (default)," + " all outgoing mails will get sent to 'er.javamail.adminEmail'" + " instead of the normal TO addresses, but you did not provide a valid email for that property.");
@@ -144,26 +144,26 @@ public class ERJavaMail extends ERXFrameworkPrincipal {
 		// JavaMail Debug Enabled ?
 		boolean debug = ERXProperties.booleanForKey("er.javamail.debugEnabled");
 		setDebugEnabled(debug);
-		log.debug("er.javamail.debugEnabled: " + debug);
+		log.debug("er.javamail.debugEnabled: {}", debug);
 
 		// Number of messages that the sender queue can hold at a time
 		int queueSize = ERXProperties.intForKey("er.javamail.senderQueue.size");
 		if (queueSize >= 1)
 			setSenderQueueSize(queueSize);
-		log.debug("er.javamail.senderQueue.size: " + queueSize);
+		log.debug("er.javamail.senderQueue.size: {}", queueSize);
 
 		// Time to wait when sender if overflowed
 		int milliswait = ERXProperties.intForKey("er.javamail.milliSecondsWaitIfSenderOverflowed");
 		if (milliswait > 1000)
 			setMilliSecondsWaitIfSenderOverflowed(milliswait);
-		log.debug("er.javamail.milliSecondsWaitIfSenderOverflowed: " + milliswait);
+		log.debug("er.javamail.milliSecondsWaitIfSenderOverflowed: {}", milliswait);
 
 		// Smtp host
 		setupSmtpHostSafely();
 
 		// Default X-Mailer header
 		setDefaultXMailerHeader(System.getProperty("er.javamail.XMailerHeader"));
-		log.debug("er.javamail.XMailHeader: " + defaultXMailerHeader());
+		log.debug("er.javamail.XMailHeader: {}", defaultXMailerHeader());
 	}
 
 	/**
@@ -216,12 +216,12 @@ public class ERJavaMail extends ERXFrameworkPrincipal {
 		else {
 			properties.setProperty("mail." + smtpProtocol + ".host", smtpHost);
 		}
-		log.debug("er.javamail.smtpHost: " + smtpHost);
+		log.debug("er.javamail.smtpHost: {}", smtpHost);
 
 		String port = ERXProperties.stringForKeyWithDefault("er.javamail.smtpPort" + contextSuffix, ERXProperties.stringForKey("er.javamail.smtpPort"));
 		if (port != null && port.length() > 0) {
 			properties.setProperty("mail." + smtpProtocol + ".port", port);
-			log.debug("ERJavaMail will use smtp port: " + port);
+			log.debug("ERJavaMail will use smtp port: {}", port);
 		}
 
 		boolean smtpAuth = ERXProperties.booleanForKeyWithDefault("er.javamail.smtpAuth" + contextSuffix, ERXProperties.booleanForKey("er.javamail.smtpAuth"));
@@ -235,7 +235,7 @@ public class ERJavaMail extends ERXFrameworkPrincipal {
 			properties.setProperty("mail." + smtpProtocol + ".user", user);
 			String password = ERXProperties.stringForKeyWithDefault("er.javamail.smtpPassword" + contextSuffix, ERXProperties.stringForKey("er.javamail.smtpPassword"));
 			if (password == null || password.length() == 0) {
-				log.warn("You specified er.javamail.smtpAuth=true, but you didn't set er.javamail.smtpPassword for the " + user + " mail user.");
+				log.warn("You specified er.javamail.smtpAuth=true, but you didn't set er.javamail.smtpPassword for the {} mail user.", user);
 			}
 			if (password != null) {
 				properties.setProperty("mail." + smtpProtocol + ".password", password);

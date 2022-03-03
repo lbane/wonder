@@ -100,7 +100,7 @@ public abstract class ERXFrameworkPrincipal {
             NSNotificationCenter.defaultCenter().removeObserver(this, ERXApplication.ApplicationDidCreateNotification, null);
             for (ERXFrameworkPrincipal principal : launchingFrameworks) {
                 principal.finishInitialization();
-                ERXApplication.log.debug("Finished initialization after launch: " + principal);
+                ERXApplication.log.debug("Finished initialization after launch: {}", principal);
             }
         }
         
