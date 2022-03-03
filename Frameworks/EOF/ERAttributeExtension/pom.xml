@@ -30,10 +30,6 @@
 			<groupId>com.webobjects</groupId>
 			<artifactId>JavaEOAccess</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>ch.qos.reload4j</groupId>
-			<artifactId>reload4j</artifactId>
-		</dependency>
 	</dependencies>
 	<build>
 		<sourceDirectory>Sources</sourceDirectory>

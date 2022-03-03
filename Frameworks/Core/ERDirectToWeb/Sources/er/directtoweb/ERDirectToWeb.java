@@ -510,6 +510,8 @@ public class ERDirectToWeb extends ERXFrameworkPrincipal {
         ERD2WModel.erDefaultModel().prepareDataStructures();
     }
 
+    public static Logger trace;
+
     public void configureTraceRuleFiring(NSNotification n) {
         ERDirectToWeb.configureTraceRuleFiring();
     }
