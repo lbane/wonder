@@ -61,7 +61,7 @@ public class ERHTTPChannel extends EOHTTPChannel {
 	@Override
 	public Object responseToMessage(Object message, NSCoder coder) {
 		if (log.isDebugEnabled()) {
-			log.debug("request: " + message.toString().replace('\n', ' '));
+			log.debug("request: {}", message.toString().replace('\n', ' '));
 		}
 		
 		if (NSPropertyListSerialization.booleanForString(System.getProperty("er.distribution.disallowHttpRequestsOnEventThread")) &&

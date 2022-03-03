@@ -78,7 +78,7 @@ public class ERD2WCustomQueryBoolean extends D2WQueryBoolean {
         } else {
             displayGroup().queryMatch().takeValueForKey(obj, propertyKey());
             if(log.isDebugEnabled())
-              log.debug(obj.toString());
+              log.debug("{}", obj);
         }
     }
 

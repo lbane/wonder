@@ -153,7 +153,7 @@ public class InstantMessengerConnection {
 				instantMessenger.sendMessage(message.buddyName(), message.contents(), true);
 			}
 			catch (MessageException e) {
-				InstantMessengerAdaptor.log.error(e);
+				InstantMessengerAdaptor.log.error("Error sending message", e);
 			}
 		}
 	}

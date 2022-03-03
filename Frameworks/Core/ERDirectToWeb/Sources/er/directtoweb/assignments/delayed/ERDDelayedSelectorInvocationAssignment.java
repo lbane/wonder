@@ -75,7 +75,7 @@ public class ERDDelayedSelectorInvocationAssignment extends ERDDelayedAssignment
 
     public static class DefaultImplementation {
 
-        private static final Logger _log = LoggerFactory.getLogger(ERDDelayedSelectorInvocationAssignment.class);
+        private static final Logger _log = LoggerFactory.getLogger(ERDDelayedSelectorInvocationAssignment.DefaultImplementation.class);
 
         // we cache 0 - 5 arguments
         private static Class[][] _parameterTypesArrays = new Class[5 + 1][];

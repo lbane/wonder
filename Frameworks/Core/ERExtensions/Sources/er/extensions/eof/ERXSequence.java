@@ -208,7 +208,7 @@ public class ERXSequence {
 	            		con.setReadOnly(false);
 	            	}
 	            } catch (SQLException e) {
-	                log.error(e.getMessage(), e);
+	                log.error("Transaction failed", e);
 	            }
 
 	            for(int tries = 0; tries < 5; tries++) {

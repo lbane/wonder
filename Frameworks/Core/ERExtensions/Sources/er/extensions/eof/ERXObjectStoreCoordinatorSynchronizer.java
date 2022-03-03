@@ -631,7 +631,7 @@ public class ERXObjectStoreCoordinatorSynchronizer {
 					}
 				}
 			} catch (Throwable e) {
-				log.error(e.getMessage(), e);
+				log.error("ERXObjectStoreCoordingator synchronizer run failed", e);
 			}
 		}
 		

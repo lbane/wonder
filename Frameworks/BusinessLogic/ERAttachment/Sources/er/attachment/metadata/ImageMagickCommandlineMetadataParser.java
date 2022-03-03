@@ -6,8 +6,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.StreamSupport;
 
-import org.apache.log4j.lf5.util.StreamUtils;
+import org.apache.commons.io.IOUtils;
 
 import er.extensions.foundation.ERXProperties;
 
@@ -69,7 +70,7 @@ public class ImageMagickCommandlineMetadataParser implements IERMetadataParser {
     byte[] metadataBytes;
     if (metadataFile.exists() && metadataFile.length() > 0) {
       try (FileInputStream fis = new FileInputStream(metadataFile); ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-        StreamUtils.copy(fis, baos, ImageMagickCommandlineMetadataParser.BUFFER_SIZE);
+        IOUtils.copy(fis, baos, ImageMagickCommandlineMetadataParser.BUFFER_SIZE);
         metadataBytes = baos.toByteArray();
       }
       metadataFile.delete();

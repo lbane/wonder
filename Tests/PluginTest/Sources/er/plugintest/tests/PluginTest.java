@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webobjects.eoaccess.EOAdaptorChannel;
 import com.webobjects.eoaccess.EOModel;
@@ -22,10 +23,9 @@ public class PluginTest extends ERXTestCase {
 	
 	public PluginTest(String name) {
 		super(name);
-
 	}
 
-	public static final Logger log = Logger.getLogger(PluginTest.class);
+	public static final Logger log = LoggerFactory.getLogger(PluginTest.class);
 	protected EOModel model;
 	protected String adaptorName = "DB2";
 

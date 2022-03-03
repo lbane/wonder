@@ -149,7 +149,7 @@ public class WOHelperFunctionHTMLParser {
 			while (true);
 		}
 		catch (NoSuchElementException e) {
-			log.error(e.getMessage(), e);
+			log.error("No element found", e);
 			didParseText();
 			return;
 		}

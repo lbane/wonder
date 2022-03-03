@@ -22,6 +22,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -37,7 +38,6 @@ import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.log4j.Appender;
 import org.apache.log4j.ConsoleAppender;
 import org.slf4j.Logger;
@@ -271,7 +271,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	/**
 	 * The path rewriting pattern to match (@see _rewriteURL)
 	 */
-	protected String _replaceApplicationPathPattern;
+	protected Pattern _replaceApplicationPathPattern;
 	
 	/**
 	 * The path rewriting replacement to apply to the matched pattern (@see _rewriteURL) 
@@ -764,7 +764,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 
 						if (mainBundleJarPattern.matcher(urlAsString.toLowerCase()).find()) {
 							try {
-								propertiesPath = new URL(URLDecoder.decode(urlAsString, CharEncoding.UTF_8));
+								propertiesPath = new URL(URLDecoder.decode(urlAsString, StandardCharsets.UTF_8.name()));
 								userPropertiesPath = new URL(propertiesPath.toExternalForm() + userName);
 							}
 							catch (MalformedURLException exception) {
@@ -832,7 +832,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 		InputStream is = null;
 		try {
 			if (!new File(jar).exists()) {
-				ERXApplication.log.warn("Will not process jar '" + jar + "' because it cannot be found ...");
+				ERXApplication.log.warn("Will not process jar '{}' because it cannot be found ...", jar);
 				return null;
 			}
 			f = new JarFile(jar);
@@ -846,7 +846,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 					bout.write(buf, 0, read);
 				}
 
-				String content = new String(bout.toByteArray(), CharEncoding.UTF_8);
+				String content = new String(bout.toByteArray(), StandardCharsets.UTF_8);
 				return content;
 			}
 			return null;
@@ -1248,14 +1248,18 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 		_memoryStarvedThreshold = ERXProperties.bigDecimalForKeyWithDefault("er.extensions.ERXApplication.memoryStarvedThreshold", _memoryStarvedThreshold);
 		_memoryLowThreshold = ERXProperties.bigDecimalForKeyWithDefault("er.extensions.ERXApplication.memoryLowThreshold", _memoryLowThreshold);
 		
-	    _replaceApplicationPathPattern = ERXProperties.stringForKey("er.extensions.ERXApplication.replaceApplicationPath.pattern");
-	    if (_replaceApplicationPathPattern != null && _replaceApplicationPathPattern.length() == 0) {
+	    String replaceApplicationPathPattern = ERXProperties.stringForKey("er.extensions.ERXApplication.replaceApplicationPath.pattern");
+	    
+	    if (replaceApplicationPathPattern != null && replaceApplicationPathPattern.length() > 0) {
+	    	_replaceApplicationPathPattern = Pattern.compile(replaceApplicationPathPattern);
+	    }
+	    else {
 	    	_replaceApplicationPathPattern = null;
 	    }
 	    _replaceApplicationPathReplace = ERXProperties.stringForKey("er.extensions.ERXApplication.replaceApplicationPath.replace");
 	    
 	    if (_replaceApplicationPathPattern == null && rewriteDirectConnectURL()) {
-	    	_replaceApplicationPathPattern = "/cgi-bin/WebObjects/" + name() + applicationExtension();
+	    	_replaceApplicationPathPattern = Pattern.compile("/cgi-bin/WebObjects/" + name() + applicationExtension());
 	        if (_replaceApplicationPathReplace == null) {
 	        	_replaceApplicationPathReplace = "";
 	        }
@@ -1627,16 +1631,16 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 			success = true;
 		}
 		catch (SecurityException e) {
-			log.error(e.getMessage(), e);
+			log.error("Exception while refusing new sessions", e);
 		}
 		catch (NoSuchFieldException e) {
-			log.error(e.getMessage(), e);
+			log.error("Exception while refusing new sessions", e);
 		}
 		catch (IllegalArgumentException e) {
-			log.error(e.getMessage(), e);
+			log.error("Exception while refusing new sessions", e);
 		}
 		catch (IllegalAccessException e) {
-			log.error(e.getMessage(), e);
+			log.error("Exception while refusing new sessions", e);
 		}
 		if(!success) {
 			super.refuseNewSessions(value);
@@ -1933,7 +1937,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 				// We log just in case the log4j call puts us in a bad
 				// state.
 				NSLog.err.appendln("java.lang.Error \"" + throwable.getClass().getName() + "\" occured.");
-				log.error("java.lang.Error \"" + throwable.getClass().getName() + "\" occured.", throwable);
+				log.error("java.lang.Error \"{}\" occured.", throwable.getClass().getName(), throwable);
 			}
 			if (shouldQuit)
 				Runtime.getRuntime().exit(1);
@@ -2067,7 +2071,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	public WOResponse dispatchRequestImmediately(WORequest request) {
 		WOResponse response;
 		if (ERXApplication.requestHandlingLog.isDebugEnabled()) {
-			ERXApplication.requestHandlingLog.debug(request.toString());
+			ERXApplication.requestHandlingLog.debug("dispatching request {}", request);
 		}
 
 		try {
@@ -2463,7 +2467,7 @@ public abstract class ERXApplication extends ERXAjaxApplication implements ERXGr
 	public String _rewriteURL(String url) {
 	    String processedURL = url;
 	    if (url != null && _replaceApplicationPathPattern != null && _replaceApplicationPathReplace != null) {
-	      processedURL = processedURL.replaceFirst(_replaceApplicationPathPattern, _replaceApplicationPathReplace);
+	        processedURL = _replaceApplicationPathPattern.matcher(processedURL).replaceFirst(_replaceApplicationPathReplace);
 	    }
 		return processedURL;
 	}

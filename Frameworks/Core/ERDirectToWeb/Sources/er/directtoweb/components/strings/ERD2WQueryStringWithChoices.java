@@ -26,7 +26,7 @@ public class ERD2WQueryStringWithChoices extends ERD2WQueryStringOperator {
 	private static final long serialVersionUID = 1L;
 
     /** logging support */
-    public static final Logger log = LoggerFactory.getLogger(ERDEditStringWithChoices.class);
+    public static final Logger log = LoggerFactory.getLogger(ERD2WQueryStringWithChoices.class);
     public ERXKeyValuePair currentChoice;
     public NSArray _choices;
     

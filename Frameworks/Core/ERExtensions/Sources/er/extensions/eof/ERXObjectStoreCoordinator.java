@@ -131,12 +131,12 @@ public class ERXObjectStoreCoordinator extends EOObjectStoreCoordinator {
 	public void unlock() {
 		boolean tracing = ERXEC.markOpenLocks();
 		if (lockingThread != null && lockingThread != Thread.currentThread()) {
-			log.error("Unlocking thread is not locking thread: LOCKING " + lockingThread + " vs UNLOCKING " + Thread.currentThread(), new RuntimeException("UnlockingTrace"));
+			log.error("Unlocking thread is not locking thread: LOCKING {} vs UNLOCKING {}", lockingThread, Thread.currentThread(), new RuntimeException("UnlockingTrace"));
 			if (tracing) {
 				NSMutableArray<Exception> traces = openLockTraces.objectForKey(lockingThread);
 				if (traces != null) {
 					for (Exception trace : traces) {
-						log.error("Currenty locking threads: " + lockingThread, trace);
+						log.error("Currenty locking threads: {}", lockingThread, trace);
 					}
 				}
 				else {

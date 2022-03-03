@@ -253,9 +253,9 @@ public class ERXDatabaseContextDelegate {
     		EOAdaptor adaptor=dbc.adaptorContext().adaptor();
     		boolean shouldHandleConnection = false;
     		if(e instanceof EOGeneralAdaptorException)
-    			log.error(((EOGeneralAdaptorException)e).userInfo().toString());
+    			log.error("EOGeneralAdaptorException with user info {}", ((EOGeneralAdaptorException)e).userInfo());
     		else
-    			log.error(e.getMessage(), e);
+    			log.error("database exception", e);
     		if (adaptor.isDroppedConnectionException(e))
     			shouldHandleConnection = true;
     		// FIXME: Should provide api to extend the list of bad exceptions.
@@ -266,7 +266,7 @@ public class ERXDatabaseContextDelegate {
     			shouldHandleConnection = false;
     		} else {
     			if(e instanceof EOGeneralAdaptorException)
-    				log.info(((EOGeneralAdaptorException)e).userInfo().toString());
+    				log.info("EOGeneralAdaptorException with user info {}", ((EOGeneralAdaptorException)e).userInfo());
     			throw e;
     		}
         	return shouldHandleConnection;

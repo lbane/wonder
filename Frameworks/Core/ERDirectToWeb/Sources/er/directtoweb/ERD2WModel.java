@@ -362,7 +362,7 @@ public class ERD2WModel extends D2WModel {
             try {
                 ERXFileUtilities.writeInputStreamToFile(new ByteArrayInputStream(cacheToBytes(_cache)), new File(fileName));
             } catch(IOException ex) {
-                log.error(ex.getMessage(), ex);
+                log.error("Dumping cache to file failed", ex);
             }
         }
     }
@@ -374,7 +374,7 @@ public class ERD2WModel extends D2WModel {
             try {
                 _cache = cacheFromBytes(ERXFileUtilities.bytesFromFile(new File(fileName)));
             } catch(IOException ex) {
-                log.error(ex.getMessage(), ex);
+                log.error("Restoring cache from file failed", ex);
             }
         }
     }
@@ -1086,7 +1086,7 @@ public class ERD2WModel extends D2WModel {
             ostream.close();
             return ostream.toByteArray();
         } catch(Exception ex) {
-            log.error(ex.getMessage(),ex);
+            log.error(ex.getMessage(), ex);
         }
         return null;
     }
@@ -1110,7 +1110,7 @@ public class ERD2WModel extends D2WModel {
             istream.close();
             return newCache;
         } catch(Exception ex) {
-            log.error(ex.getMessage(),ex);
+            log.error("Could not restore cache from bytes", ex);
         }
         return null;
     }

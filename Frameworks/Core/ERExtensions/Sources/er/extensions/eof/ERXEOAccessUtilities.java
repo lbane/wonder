@@ -170,12 +170,14 @@ public class ERXEOAccessUtilities {
             if (possibleEntities.count() > 0) {
                 result = (EOEntity) possibleEntities.lastObject();
             }
+            
+            if (log.isWarnEnabled() && possibleEntities.count() > 1) {
+                log.warn("Found multiple entities: {} for table name: {}", possibleEntities.valueForKey("name"), tableName);
+            }
 
-            if (log.isWarnEnabled() && possibleEntities.count() > 1)
-                log.warn("Found multiple entities: " + possibleEntities.valueForKey("name") + " for table name: " + tableName);
-
-            if (log.isDebugEnabled())
-                log.debug("Found possible entities: " + possibleEntities.valueForKey("name") + " for table name: " + tableName + " result: " + result);
+            if (log.isDebugEnabled()) {
+                log.debug("Found possible entities: {} for table name: {} result: {}", possibleEntities.valueForKey("name"), tableName, result);
+            }
         }
         return result;
     }

@@ -29,7 +29,7 @@ public class ERDControllerButton extends ERDActionButton implements ERDBranchInt
 	private static final long serialVersionUID = 1L;
 
     /** logging support */
-    private static final Logger log = LoggerFactory.getLogger(ERDActionBar.class);
+    private static final Logger log = LoggerFactory.getLogger(ERDControllerButton.class);
 
     public ERDControllerButton(WOContext context) {
         super(context);

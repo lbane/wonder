@@ -14,7 +14,7 @@ import er.quartzscheduler.util.ERQSSchedulerServiceFrameworkPrincipal;
 
 public class ERQSAbstractJob implements Job
 {
-	protected static final Logger log = LoggerFactory.getLogger(ERQSJobSupervisor.class);
+	protected static final Logger log = LoggerFactory.getLogger(ERQSAbstractJob.class);
 	private EOEditingContext editingContext = null;
 	private ERQSSchedulerServiceFrameworkPrincipal schedulerFPInstance;
 	private JobExecutionContext jobContext;
@@ -23,11 +23,13 @@ public class ERQSAbstractJob implements Job
 	public ERQSAbstractJob() 
 	{
 		super();
-		if (log.isDebugEnabled())
-			log.debug("Constructor: " + this);
+		if (log.isDebugEnabled()) {
+			log.debug("Constructor: {}", this);
+		}
 	}
 
-	public void execute(final JobExecutionContext jobexecutioncontext) throws JobExecutionException 
+	@Override
+    public void execute(final JobExecutionContext jobexecutioncontext) throws JobExecutionException 
 	{
 		schedulerFPInstance = (ERQSSchedulerServiceFrameworkPrincipal) jobexecutioncontext.getMergedJobDataMap().get(ERQSSchedulerServiceFrameworkPrincipal.INSTANCE_KEY);
 		jobContext = jobexecutioncontext;

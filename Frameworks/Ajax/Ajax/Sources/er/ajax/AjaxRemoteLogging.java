@@ -94,20 +94,23 @@ public class AjaxRemoteLogging extends AjaxDynamicElement {
 			// trigger session loading if present
 			WOSession existing = existingSession();
 			Logger log = LoggerFactory.getLogger(logger);
-			if ("error".equalsIgnoreCase(level)) {
-				log.error(msg);
+			if ("fatal".equalsIgnoreCase(level)) {
+				log.error("{}", msg);
+			}
+			else if ("error".equalsIgnoreCase(level)) {
+				log.error("{}", msg);
 			}
 			else if ("warn".equalsIgnoreCase(level)) {
-				log.warn(msg);
+				log.warn("{}", msg);
 			}
 			else if ("info".equalsIgnoreCase(level)) {
-				log.info(msg);
+				log.info("{}", msg);
 			}
 			else if ("debug".equalsIgnoreCase(level)) {
-				log.debug(msg);
+				log.debug("{}", msg);
 			}
 			else if ("trace".equalsIgnoreCase(level)) {
-				log.trace(msg);
+				log.trace("{}", msg);
 			}
 			return new ERXResponse();
 		}

@@ -44,7 +44,7 @@ public class ERD2WGroupingListXMLPageTemplate extends ERD2WGroupingListPage {
     public ERD2WGroupingListXMLPageTemplate(WOContext context) {super(context);}
     
     /** logging support */
-    public final static Logger log = LoggerFactory.getLogger(ERD2WGroupingListXMLPageTemplate.class);
+    public static final Logger log = LoggerFactory.getLogger(ERD2WGroupingListXMLPageTemplate.class);
 
     private final static String NULL="N/A";
     

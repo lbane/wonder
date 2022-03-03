@@ -24,7 +24,6 @@ public class ERJQMobile extends ERXFrameworkPrincipal
 	@Override
 	public void finishInitialization()
 	{
-		log.debug(frameworkName() + " loaded");
+		log.debug("{} loaded", frameworkName());
 	}
-
 }

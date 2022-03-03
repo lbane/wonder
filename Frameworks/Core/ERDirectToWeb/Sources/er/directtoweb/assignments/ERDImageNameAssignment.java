@@ -29,7 +29,7 @@ public class ERDImageNameAssignment extends ERDAssignment implements ERDLocaliza
     public static final Logger log = LoggerFactory.getLogger("er.directtoweb.rules.ERDImageNameAssignment");
 
     /** holds the array of keys this assignment depends upon */
-    public static final NSArray _DEPENDENT_KEYS=new NSArray(new String[] { "baseImageDirectory", "sectionKey", "tabKey"});
+    public static final NSArray<String> _DEPENDENT_KEYS=new NSArray<>(new String[] { "baseImageDirectory", "sectionKey", "tabKey"});
 
     /**
      * Static constructor required by the EOKeyValueUnarchiver

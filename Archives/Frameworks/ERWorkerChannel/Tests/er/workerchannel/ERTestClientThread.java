@@ -8,11 +8,12 @@ package er.workerchannel;
 
 import java.util.Random;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ERTestClientThread extends Thread {
 
-    public static Logger log = Logger.getLogger(ERTestClientThread.class);
+    public static Logger log = LoggerFactory.getLogger(ERTestClientThread.class);
 
     private final ERWorkerChannel _channel;
     private final int _repeat;
@@ -29,7 +30,7 @@ public class ERTestClientThread extends Thread {
             for (int i = 0; i < _repeat; i++) {
                 ERWorkUnit work = new ERTestWorkUnit(getName(), i);
                 _channel.scheduleWorkUnit(work);
-                log.info("Scheduled: " + work);
+                log.info("Scheduled: {}", work);
                 Thread.sleep(random.nextInt(1000));
             }
         } catch (InterruptedException e) {
