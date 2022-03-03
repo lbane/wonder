@@ -6,22 +6,27 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _Director extends  ERXGenericRecord {
   public static final String ENTITY_NAME = "Director";
 
   // Attribute Keys
+
   // Relationship Keys
 
   // Attributes
+
   // Relationships
 
-  private static Logger LOG = Logger.getLogger(_Director.class);
+  private static final Logger log = LoggerFactory.getLogger(_Director.class);
 
   public Director localInstanceIn(EOEditingContext editingContext) {
     Director localInstance = (Director)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -33,7 +38,7 @@ public abstract class _Director extends  ERXGenericRecord {
 
 
   public static Director createDirector(EOEditingContext editingContext) {
-    Director eo = (Director) EOUtilities.createAndInsertInstance(editingContext, _Director.ENTITY_NAME);    
+    Director eo = (Director) EOUtilities.createAndInsertInstance(editingContext, _Director.ENTITY_NAME);
     return eo;
   }
 
@@ -51,13 +56,12 @@ public abstract class _Director extends  ERXGenericRecord {
 
   public static NSArray<Director> fetchDirectors(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<Director> fetchSpec = new ERXFetchSpecification<Director>(_Director.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<Director> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static Director fetchDirector(EOEditingContext editingContext, String keyName, Object value) {
-    return _Director.fetchDirector(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Director.fetchDirector(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Director fetchDirector(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -77,7 +81,7 @@ public abstract class _Director extends  ERXGenericRecord {
   }
 
   public static Director fetchRequiredDirector(EOEditingContext editingContext, String keyName, Object value) {
-    return _Director.fetchRequiredDirector(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Director.fetchRequiredDirector(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Director fetchRequiredDirector(EOEditingContext editingContext, EOQualifier qualifier) {

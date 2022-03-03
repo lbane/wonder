@@ -6,24 +6,29 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _TalentPhoto extends  ERXGenericRecord {
   public static final String ENTITY_NAME = "TalentPhoto";
 
   // Attribute Keys
+
   // Relationship Keys
-  public static final ERXKey<er.distribution.example.server.eo.Talent> TALENT = new ERXKey<er.distribution.example.server.eo.Talent>("talent");
+  public static final ERXKey<er.distribution.example.server.eo.Talent> TALENT = new ERXKey<er.distribution.example.server.eo.Talent>("talent", Type.ToOneRelationship);
 
   // Attributes
+
   // Relationships
   public static final String TALENT_KEY = TALENT.key();
 
-  private static Logger LOG = Logger.getLogger(_TalentPhoto.class);
+  private static final Logger log = LoggerFactory.getLogger(_TalentPhoto.class);
 
   public TalentPhoto localInstanceIn(EOEditingContext editingContext) {
     TalentPhoto localInstance = (TalentPhoto)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -36,31 +41,29 @@ public abstract class _TalentPhoto extends  ERXGenericRecord {
   public er.distribution.example.server.eo.Talent talent() {
     return (er.distribution.example.server.eo.Talent)storedValueForKey(_TalentPhoto.TALENT_KEY);
   }
-  
+
   public void setTalent(er.distribution.example.server.eo.Talent value) {
     takeStoredValueForKey(value, _TalentPhoto.TALENT_KEY);
   }
 
   public void setTalentRelationship(er.distribution.example.server.eo.Talent value) {
-    if (_TalentPhoto.LOG.isDebugEnabled()) {
-      _TalentPhoto.LOG.debug("updating talent from " + talent() + " to " + value);
-    }
+    log.debug("updating talent from {} to {}", talent(), value);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	setTalent(value);
+      setTalent(value);
     }
     else if (value == null) {
-    	er.distribution.example.server.eo.Talent oldValue = talent();
-    	if (oldValue != null) {
-    		removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _TalentPhoto.TALENT_KEY);
+      er.distribution.example.server.eo.Talent oldValue = talent();
+      if (oldValue != null) {
+        removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _TalentPhoto.TALENT_KEY);
       }
     } else {
-    	addObjectToBothSidesOfRelationshipWithKey(value, _TalentPhoto.TALENT_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(value, _TalentPhoto.TALENT_KEY);
     }
   }
-  
+
 
   public static TalentPhoto createTalentPhoto(EOEditingContext editingContext, er.distribution.example.server.eo.Talent talent) {
-    TalentPhoto eo = (TalentPhoto) EOUtilities.createAndInsertInstance(editingContext, _TalentPhoto.ENTITY_NAME);    
+    TalentPhoto eo = (TalentPhoto) EOUtilities.createAndInsertInstance(editingContext, _TalentPhoto.ENTITY_NAME);
     eo.setTalentRelationship(talent);
     return eo;
   }
@@ -79,13 +82,12 @@ public abstract class _TalentPhoto extends  ERXGenericRecord {
 
   public static NSArray<TalentPhoto> fetchTalentPhotos(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<TalentPhoto> fetchSpec = new ERXFetchSpecification<TalentPhoto>(_TalentPhoto.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<TalentPhoto> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static TalentPhoto fetchTalentPhoto(EOEditingContext editingContext, String keyName, Object value) {
-    return _TalentPhoto.fetchTalentPhoto(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _TalentPhoto.fetchTalentPhoto(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static TalentPhoto fetchTalentPhoto(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -105,7 +107,7 @@ public abstract class _TalentPhoto extends  ERXGenericRecord {
   }
 
   public static TalentPhoto fetchRequiredTalentPhoto(EOEditingContext editingContext, String keyName, Object value) {
-    return _TalentPhoto.fetchRequiredTalentPhoto(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _TalentPhoto.fetchRequiredTalentPhoto(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static TalentPhoto fetchRequiredTalentPhoto(EOEditingContext editingContext, EOQualifier qualifier) {

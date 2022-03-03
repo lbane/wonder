@@ -6,28 +6,33 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _Review extends  ERXGenericRecord {
   public static final String ENTITY_NAME = "Review";
 
   // Attribute Keys
-  public static final ERXKey<String> REVIEW = new ERXKey<String>("review");
-  public static final ERXKey<String> REVIEWER = new ERXKey<String>("reviewer");
+  public static final ERXKey<String> REVIEW = new ERXKey<String>("review", Type.Attribute);
+  public static final ERXKey<String> REVIEWER = new ERXKey<String>("reviewer", Type.Attribute);
+
   // Relationship Keys
-  public static final ERXKey<er.distribution.example.server.eo.Movie> MOVIE = new ERXKey<er.distribution.example.server.eo.Movie>("movie");
+  public static final ERXKey<er.distribution.example.server.eo.Movie> MOVIE = new ERXKey<er.distribution.example.server.eo.Movie>("movie", Type.ToOneRelationship);
 
   // Attributes
   public static final String REVIEW_KEY = REVIEW.key();
   public static final String REVIEWER_KEY = REVIEWER.key();
+
   // Relationships
   public static final String MOVIE_KEY = MOVIE.key();
 
-  private static Logger LOG = Logger.getLogger(_Review.class);
+  private static final Logger log = LoggerFactory.getLogger(_Review.class);
 
   public Review localInstanceIn(EOEditingContext editingContext) {
     Review localInstance = (Review)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -42,9 +47,7 @@ public abstract class _Review extends  ERXGenericRecord {
   }
 
   public void setReview(String value) {
-    if (_Review.LOG.isDebugEnabled()) {
-    	_Review.LOG.debug( "updating review from " + review() + " to " + value);
-    }
+    log.debug( "updating review from {} to {}", review(), value);
     takeStoredValueForKey(value, _Review.REVIEW_KEY);
   }
 
@@ -53,40 +56,36 @@ public abstract class _Review extends  ERXGenericRecord {
   }
 
   public void setReviewer(String value) {
-    if (_Review.LOG.isDebugEnabled()) {
-    	_Review.LOG.debug( "updating reviewer from " + reviewer() + " to " + value);
-    }
+    log.debug( "updating reviewer from {} to {}", reviewer(), value);
     takeStoredValueForKey(value, _Review.REVIEWER_KEY);
   }
 
   public er.distribution.example.server.eo.Movie movie() {
     return (er.distribution.example.server.eo.Movie)storedValueForKey(_Review.MOVIE_KEY);
   }
-  
+
   public void setMovie(er.distribution.example.server.eo.Movie value) {
     takeStoredValueForKey(value, _Review.MOVIE_KEY);
   }
 
   public void setMovieRelationship(er.distribution.example.server.eo.Movie value) {
-    if (_Review.LOG.isDebugEnabled()) {
-      _Review.LOG.debug("updating movie from " + movie() + " to " + value);
-    }
+    log.debug("updating movie from {} to {}", movie(), value);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	setMovie(value);
+      setMovie(value);
     }
     else if (value == null) {
-    	er.distribution.example.server.eo.Movie oldValue = movie();
-    	if (oldValue != null) {
-    		removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Review.MOVIE_KEY);
+      er.distribution.example.server.eo.Movie oldValue = movie();
+      if (oldValue != null) {
+        removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Review.MOVIE_KEY);
       }
     } else {
-    	addObjectToBothSidesOfRelationshipWithKey(value, _Review.MOVIE_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(value, _Review.MOVIE_KEY);
     }
   }
-  
+
 
   public static Review createReview(EOEditingContext editingContext, er.distribution.example.server.eo.Movie movie) {
-    Review eo = (Review) EOUtilities.createAndInsertInstance(editingContext, _Review.ENTITY_NAME);    
+    Review eo = (Review) EOUtilities.createAndInsertInstance(editingContext, _Review.ENTITY_NAME);
     eo.setMovieRelationship(movie);
     return eo;
   }
@@ -105,13 +104,12 @@ public abstract class _Review extends  ERXGenericRecord {
 
   public static NSArray<Review> fetchReviews(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<Review> fetchSpec = new ERXFetchSpecification<Review>(_Review.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<Review> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static Review fetchReview(EOEditingContext editingContext, String keyName, Object value) {
-    return _Review.fetchReview(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Review.fetchReview(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Review fetchReview(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -131,7 +129,7 @@ public abstract class _Review extends  ERXGenericRecord {
   }
 
   public static Review fetchRequiredReview(EOEditingContext editingContext, String keyName, Object value) {
-    return _Review.fetchRequiredReview(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Review.fetchRequiredReview(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Review fetchRequiredReview(EOEditingContext editingContext, EOQualifier qualifier) {

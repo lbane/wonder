@@ -6,28 +6,33 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _Studio extends  ERXGenericRecord {
   public static final String ENTITY_NAME = "Studio";
 
   // Attribute Keys
-  public static final ERXKey<java.math.BigDecimal> BUDGET = new ERXKey<java.math.BigDecimal>("budget");
-  public static final ERXKey<String> NAME = new ERXKey<String>("name");
+  public static final ERXKey<java.math.BigDecimal> BUDGET = new ERXKey<java.math.BigDecimal>("budget", Type.Attribute);
+  public static final ERXKey<String> NAME = new ERXKey<String>("name", Type.Attribute);
+
   // Relationship Keys
-  public static final ERXKey<er.distribution.example.server.eo.Movie> MOVIES = new ERXKey<er.distribution.example.server.eo.Movie>("movies");
+  public static final ERXKey<er.distribution.example.server.eo.Movie> MOVIES = new ERXKey<er.distribution.example.server.eo.Movie>("movies", Type.ToManyRelationship);
 
   // Attributes
   public static final String BUDGET_KEY = BUDGET.key();
   public static final String NAME_KEY = NAME.key();
+
   // Relationships
   public static final String MOVIES_KEY = MOVIES.key();
 
-  private static Logger LOG = Logger.getLogger(_Studio.class);
+  private static final Logger log = LoggerFactory.getLogger(_Studio.class);
 
   public Studio localInstanceIn(EOEditingContext editingContext) {
     Studio localInstance = (Studio)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -42,9 +47,7 @@ public abstract class _Studio extends  ERXGenericRecord {
   }
 
   public void setBudget(java.math.BigDecimal value) {
-    if (_Studio.LOG.isDebugEnabled()) {
-    	_Studio.LOG.debug( "updating budget from " + budget() + " to " + value);
-    }
+    log.debug( "updating budget from {} to {}", budget(), value);
     takeStoredValueForKey(value, _Studio.BUDGET_KEY);
   }
 
@@ -53,9 +56,7 @@ public abstract class _Studio extends  ERXGenericRecord {
   }
 
   public void setName(String value) {
-    if (_Studio.LOG.isDebugEnabled()) {
-    	_Studio.LOG.debug( "updating name from " + name() + " to " + value);
-    }
+    log.debug( "updating name from {} to {}", name(), value);
     takeStoredValueForKey(value, _Studio.NAME_KEY);
   }
 
@@ -75,16 +76,13 @@ public abstract class _Studio extends  ERXGenericRecord {
     NSArray<er.distribution.example.server.eo.Movie> results;
     if (fetch) {
       EOQualifier fullQualifier;
-      EOQualifier inverseQualifier = new EOKeyValueQualifier(er.distribution.example.server.eo.Movie.STUDIO_KEY, EOQualifier.QualifierOperatorEqual, this);
-    	
+      EOQualifier inverseQualifier = ERXQ.equals(er.distribution.example.server.eo.Movie.STUDIO_KEY, this);
+
       if (qualifier == null) {
         fullQualifier = inverseQualifier;
       }
       else {
-        NSMutableArray<EOQualifier> qualifiers = new NSMutableArray<EOQualifier>();
-        qualifiers.addObject(qualifier);
-        qualifiers.addObject(inverseQualifier);
-        fullQualifier = new EOAndQualifier(qualifiers);
+        fullQualifier = ERXQ.and(qualifier, inverseQualifier);
       }
 
       results = er.distribution.example.server.eo.Movie.fetchMovies(editingContext(), fullQualifier, sortOrderings);
@@ -100,7 +98,7 @@ public abstract class _Studio extends  ERXGenericRecord {
     }
     return results;
   }
-  
+
   public void addToMovies(er.distribution.example.server.eo.Movie object) {
     includeObjectIntoPropertyWithKey(object, _Studio.MOVIES_KEY);
   }
@@ -110,33 +108,27 @@ public abstract class _Studio extends  ERXGenericRecord {
   }
 
   public void addToMoviesRelationship(er.distribution.example.server.eo.Movie object) {
-    if (_Studio.LOG.isDebugEnabled()) {
-      _Studio.LOG.debug("adding " + object + " to movies relationship");
-    }
+    log.debug("adding {} to movies relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	addToMovies(object);
+      addToMovies(object);
     }
     else {
-    	addObjectToBothSidesOfRelationshipWithKey(object, _Studio.MOVIES_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(object, _Studio.MOVIES_KEY);
     }
   }
 
   public void removeFromMoviesRelationship(er.distribution.example.server.eo.Movie object) {
-    if (_Studio.LOG.isDebugEnabled()) {
-      _Studio.LOG.debug("removing " + object + " from movies relationship");
-    }
+    log.debug("removing {} from movies relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	removeFromMovies(object);
+      removeFromMovies(object);
     }
     else {
-    	removeObjectFromBothSidesOfRelationshipWithKey(object, _Studio.MOVIES_KEY);
+      removeObjectFromBothSidesOfRelationshipWithKey(object, _Studio.MOVIES_KEY);
     }
   }
 
   public er.distribution.example.server.eo.Movie createMoviesRelationship() {
-    EOClassDescription eoClassDesc = EOClassDescription.classDescriptionForEntityName( er.distribution.example.server.eo.Movie.ENTITY_NAME );
-    EOEnterpriseObject eo = eoClassDesc.createInstanceWithEditingContext(editingContext(), null);
-    editingContext().insertObject(eo);
+    EOEnterpriseObject eo = EOUtilities.createAndInsertInstance(editingContext(),  er.distribution.example.server.eo.Movie.ENTITY_NAME );
     addObjectToBothSidesOfRelationshipWithKey(eo, _Studio.MOVIES_KEY);
     return (er.distribution.example.server.eo.Movie) eo;
   }
@@ -157,9 +149,9 @@ public abstract class _Studio extends  ERXGenericRecord {
   public static Studio createStudio(EOEditingContext editingContext, java.math.BigDecimal budget
 , String name
 ) {
-    Studio eo = (Studio) EOUtilities.createAndInsertInstance(editingContext, _Studio.ENTITY_NAME);    
-		eo.setBudget(budget);
-		eo.setName(name);
+    Studio eo = (Studio) EOUtilities.createAndInsertInstance(editingContext, _Studio.ENTITY_NAME);
+    eo.setBudget(budget);
+    eo.setName(name);
     return eo;
   }
 
@@ -177,13 +169,12 @@ public abstract class _Studio extends  ERXGenericRecord {
 
   public static NSArray<Studio> fetchStudios(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<Studio> fetchSpec = new ERXFetchSpecification<Studio>(_Studio.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<Studio> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static Studio fetchStudio(EOEditingContext editingContext, String keyName, Object value) {
-    return _Studio.fetchStudio(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Studio.fetchStudio(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Studio fetchStudio(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -203,7 +194,7 @@ public abstract class _Studio extends  ERXGenericRecord {
   }
 
   public static Studio fetchRequiredStudio(EOEditingContext editingContext, String keyName, Object value) {
-    return _Studio.fetchRequiredStudio(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Studio.fetchRequiredStudio(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Studio fetchRequiredStudio(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -226,11 +217,11 @@ public abstract class _Studio extends  ERXGenericRecord {
     fetchSpec = fetchSpec.fetchSpecificationWithQualifierBindings(bindings);
     return (NSArray<NSDictionary>)editingContext.objectsWithFetchSpecification(fetchSpec);
   }
-  
+
   public static NSArray<NSDictionary> fetchRawFetchAllStudios(EOEditingContext editingContext)
   {
     EOFetchSpecification fetchSpec = EOFetchSpecification.fetchSpecificationNamed("RawFetchAllStudios", _Studio.ENTITY_NAME);
     return (NSArray<NSDictionary>)editingContext.objectsWithFetchSpecification(fetchSpec);
   }
-  
+
 }

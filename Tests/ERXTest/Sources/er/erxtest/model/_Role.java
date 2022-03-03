@@ -6,24 +6,29 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _Role extends er.extensions.eof.ERXGenericRecord {
   public static final String ENTITY_NAME = "Role";
 
   // Attribute Keys
+
   // Relationship Keys
-  public static final ERXKey<er.erxtest.model.Employee> EMPLOYEES = new ERXKey<er.erxtest.model.Employee>("employees");
+  public static final ERXKey<er.erxtest.model.Employee> EMPLOYEES = new ERXKey<er.erxtest.model.Employee>("employees", Type.ToManyRelationship);
 
   // Attributes
+
   // Relationships
   public static final String EMPLOYEES_KEY = EMPLOYEES.key();
 
-  private static Logger LOG = Logger.getLogger(_Role.class);
+  private static final Logger log = LoggerFactory.getLogger(_Role.class);
 
   public Role localInstanceIn(EOEditingContext editingContext) {
     Role localInstance = (Role)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -52,7 +57,7 @@ public abstract class _Role extends er.extensions.eof.ERXGenericRecord {
       }
     return results;
   }
-  
+
   public void addToEmployees(er.erxtest.model.Employee object) {
     includeObjectIntoPropertyWithKey(object, _Role.EMPLOYEES_KEY);
   }
@@ -62,33 +67,27 @@ public abstract class _Role extends er.extensions.eof.ERXGenericRecord {
   }
 
   public void addToEmployeesRelationship(er.erxtest.model.Employee object) {
-    if (_Role.LOG.isDebugEnabled()) {
-      _Role.LOG.debug("adding " + object + " to employees relationship");
-    }
+    log.debug("adding {} to employees relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	addToEmployees(object);
+      addToEmployees(object);
     }
     else {
-    	addObjectToBothSidesOfRelationshipWithKey(object, _Role.EMPLOYEES_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(object, _Role.EMPLOYEES_KEY);
     }
   }
 
   public void removeFromEmployeesRelationship(er.erxtest.model.Employee object) {
-    if (_Role.LOG.isDebugEnabled()) {
-      _Role.LOG.debug("removing " + object + " from employees relationship");
-    }
+    log.debug("removing {} from employees relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	removeFromEmployees(object);
+      removeFromEmployees(object);
     }
     else {
-    	removeObjectFromBothSidesOfRelationshipWithKey(object, _Role.EMPLOYEES_KEY);
+      removeObjectFromBothSidesOfRelationshipWithKey(object, _Role.EMPLOYEES_KEY);
     }
   }
 
   public er.erxtest.model.Employee createEmployeesRelationship() {
-    EOClassDescription eoClassDesc = EOClassDescription.classDescriptionForEntityName( er.erxtest.model.Employee.ENTITY_NAME );
-    EOEnterpriseObject eo = eoClassDesc.createInstanceWithEditingContext(editingContext(), null);
-    editingContext().insertObject(eo);
+    EOEnterpriseObject eo = EOUtilities.createAndInsertInstance(editingContext(),  er.erxtest.model.Employee.ENTITY_NAME );
     addObjectToBothSidesOfRelationshipWithKey(eo, _Role.EMPLOYEES_KEY);
     return (er.erxtest.model.Employee) eo;
   }
@@ -107,7 +106,7 @@ public abstract class _Role extends er.extensions.eof.ERXGenericRecord {
 
 
   public static Role createRole(EOEditingContext editingContext) {
-    Role eo = (Role) EOUtilities.createAndInsertInstance(editingContext, _Role.ENTITY_NAME);    
+    Role eo = (Role) EOUtilities.createAndInsertInstance(editingContext, _Role.ENTITY_NAME);
     return eo;
   }
 
@@ -125,13 +124,12 @@ public abstract class _Role extends er.extensions.eof.ERXGenericRecord {
 
   public static NSArray<Role> fetchRoles(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<Role> fetchSpec = new ERXFetchSpecification<Role>(_Role.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<Role> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static Role fetchRole(EOEditingContext editingContext, String keyName, Object value) {
-    return _Role.fetchRole(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Role.fetchRole(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Role fetchRole(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -151,7 +149,7 @@ public abstract class _Role extends er.extensions.eof.ERXGenericRecord {
   }
 
   public static Role fetchRequiredRole(EOEditingContext editingContext, String keyName, Object value) {
-    return _Role.fetchRequiredRole(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Role.fetchRequiredRole(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Role fetchRequiredRole(EOEditingContext editingContext, EOQualifier qualifier) {

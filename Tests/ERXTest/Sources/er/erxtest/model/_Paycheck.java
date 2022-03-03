@@ -6,30 +6,35 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _Paycheck extends er.extensions.eof.ERXGenericRecord {
   public static final String ENTITY_NAME = "Paycheck";
 
   // Attribute Keys
-  public static final ERXKey<java.math.BigDecimal> AMOUNT = new ERXKey<java.math.BigDecimal>("amount");
-  public static final ERXKey<Boolean> CASHED = new ERXKey<Boolean>("cashed");
-  public static final ERXKey<NSTimestamp> PAYMENT_DATE = new ERXKey<NSTimestamp>("paymentDate");
+  public static final ERXKey<java.math.BigDecimal> AMOUNT = new ERXKey<java.math.BigDecimal>("amount", Type.Attribute);
+  public static final ERXKey<Boolean> CASHED = new ERXKey<Boolean>("cashed", Type.Attribute);
+  public static final ERXKey<NSTimestamp> PAYMENT_DATE = new ERXKey<NSTimestamp>("paymentDate", Type.Attribute);
+
   // Relationship Keys
-  public static final ERXKey<er.erxtest.model.Employee> EMPLOYEE = new ERXKey<er.erxtest.model.Employee>("employee");
+  public static final ERXKey<er.erxtest.model.Employee> EMPLOYEE = new ERXKey<er.erxtest.model.Employee>("employee", Type.ToOneRelationship);
 
   // Attributes
   public static final String AMOUNT_KEY = AMOUNT.key();
   public static final String CASHED_KEY = CASHED.key();
   public static final String PAYMENT_DATE_KEY = PAYMENT_DATE.key();
+
   // Relationships
   public static final String EMPLOYEE_KEY = EMPLOYEE.key();
 
-  private static Logger LOG = Logger.getLogger(_Paycheck.class);
+  private static final Logger log = LoggerFactory.getLogger(_Paycheck.class);
 
   public Paycheck localInstanceIn(EOEditingContext editingContext) {
     Paycheck localInstance = (Paycheck)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -44,9 +49,7 @@ public abstract class _Paycheck extends er.extensions.eof.ERXGenericRecord {
   }
 
   public void setAmount(java.math.BigDecimal value) {
-    if (_Paycheck.LOG.isDebugEnabled()) {
-    	_Paycheck.LOG.debug( "updating amount from " + amount() + " to " + value);
-    }
+    log.debug( "updating amount from {} to {}", amount(), value);
     takeStoredValueForKey(value, _Paycheck.AMOUNT_KEY);
   }
 
@@ -55,9 +58,7 @@ public abstract class _Paycheck extends er.extensions.eof.ERXGenericRecord {
   }
 
   public void setCashed(Boolean value) {
-    if (_Paycheck.LOG.isDebugEnabled()) {
-    	_Paycheck.LOG.debug( "updating cashed from " + cashed() + " to " + value);
-    }
+    log.debug( "updating cashed from {} to {}", cashed(), value);
     takeStoredValueForKey(value, _Paycheck.CASHED_KEY);
   }
 
@@ -66,46 +67,42 @@ public abstract class _Paycheck extends er.extensions.eof.ERXGenericRecord {
   }
 
   public void setPaymentDate(NSTimestamp value) {
-    if (_Paycheck.LOG.isDebugEnabled()) {
-    	_Paycheck.LOG.debug( "updating paymentDate from " + paymentDate() + " to " + value);
-    }
+    log.debug( "updating paymentDate from {} to {}", paymentDate(), value);
     takeStoredValueForKey(value, _Paycheck.PAYMENT_DATE_KEY);
   }
 
   public er.erxtest.model.Employee employee() {
     return (er.erxtest.model.Employee)storedValueForKey(_Paycheck.EMPLOYEE_KEY);
   }
-  
+
   public void setEmployee(er.erxtest.model.Employee value) {
     takeStoredValueForKey(value, _Paycheck.EMPLOYEE_KEY);
   }
 
   public void setEmployeeRelationship(er.erxtest.model.Employee value) {
-    if (_Paycheck.LOG.isDebugEnabled()) {
-      _Paycheck.LOG.debug("updating employee from " + employee() + " to " + value);
-    }
+    log.debug("updating employee from {} to {}", employee(), value);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	setEmployee(value);
+      setEmployee(value);
     }
     else if (value == null) {
-    	er.erxtest.model.Employee oldValue = employee();
-    	if (oldValue != null) {
-    		removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Paycheck.EMPLOYEE_KEY);
+      er.erxtest.model.Employee oldValue = employee();
+      if (oldValue != null) {
+        removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Paycheck.EMPLOYEE_KEY);
       }
     } else {
-    	addObjectToBothSidesOfRelationshipWithKey(value, _Paycheck.EMPLOYEE_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(value, _Paycheck.EMPLOYEE_KEY);
     }
   }
-  
+
 
   public static Paycheck createPaycheck(EOEditingContext editingContext, java.math.BigDecimal amount
 , Boolean cashed
 , NSTimestamp paymentDate
 , er.erxtest.model.Employee employee) {
-    Paycheck eo = (Paycheck) EOUtilities.createAndInsertInstance(editingContext, _Paycheck.ENTITY_NAME);    
-		eo.setAmount(amount);
-		eo.setCashed(cashed);
-		eo.setPaymentDate(paymentDate);
+    Paycheck eo = (Paycheck) EOUtilities.createAndInsertInstance(editingContext, _Paycheck.ENTITY_NAME);
+    eo.setAmount(amount);
+    eo.setCashed(cashed);
+    eo.setPaymentDate(paymentDate);
     eo.setEmployeeRelationship(employee);
     return eo;
   }
@@ -124,13 +121,12 @@ public abstract class _Paycheck extends er.extensions.eof.ERXGenericRecord {
 
   public static NSArray<Paycheck> fetchPaychecks(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<Paycheck> fetchSpec = new ERXFetchSpecification<Paycheck>(_Paycheck.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<Paycheck> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static Paycheck fetchPaycheck(EOEditingContext editingContext, String keyName, Object value) {
-    return _Paycheck.fetchPaycheck(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Paycheck.fetchPaycheck(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Paycheck fetchPaycheck(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -150,7 +146,7 @@ public abstract class _Paycheck extends er.extensions.eof.ERXGenericRecord {
   }
 
   public static Paycheck fetchRequiredPaycheck(EOEditingContext editingContext, String keyName, Object value) {
-    return _Paycheck.fetchRequiredPaycheck(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Paycheck.fetchRequiredPaycheck(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Paycheck fetchRequiredPaycheck(EOEditingContext editingContext, EOQualifier qualifier) {

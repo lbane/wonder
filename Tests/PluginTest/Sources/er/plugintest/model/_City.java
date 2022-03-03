@@ -6,32 +6,37 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _City extends  ERXGenericRecord {
   public static final String ENTITY_NAME = "City";
 
   // Attribute Keys
-  public static final ERXKey<String> DESCRIPTION = new ERXKey<String>("description");
-  public static final ERXKey<String> DISTICT = new ERXKey<String>("distict");
-  public static final ERXKey<String> NAME = new ERXKey<String>("name");
-  public static final ERXKey<Integer> POPULATION = new ERXKey<Integer>("population");
+  public static final ERXKey<String> DESCRIPTION = new ERXKey<String>("description", Type.Attribute);
+  public static final ERXKey<String> DISTICT = new ERXKey<String>("distict", Type.Attribute);
+  public static final ERXKey<String> NAME = new ERXKey<String>("name", Type.Attribute);
+  public static final ERXKey<Integer> POPULATION = new ERXKey<Integer>("population", Type.Attribute);
+
   // Relationship Keys
-  public static final ERXKey<er.plugintest.model.Country> COUNTRY = new ERXKey<er.plugintest.model.Country>("country");
+  public static final ERXKey<er.plugintest.model.Country> COUNTRY = new ERXKey<er.plugintest.model.Country>("country", Type.ToOneRelationship);
 
   // Attributes
   public static final String DESCRIPTION_KEY = DESCRIPTION.key();
   public static final String DISTICT_KEY = DISTICT.key();
   public static final String NAME_KEY = NAME.key();
   public static final String POPULATION_KEY = POPULATION.key();
+
   // Relationships
   public static final String COUNTRY_KEY = COUNTRY.key();
 
-  private static Logger LOG = Logger.getLogger(_City.class);
+  private static final Logger log = LoggerFactory.getLogger(_City.class);
 
   public City localInstanceIn(EOEditingContext editingContext) {
     City localInstance = (City)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -46,9 +51,7 @@ public abstract class _City extends  ERXGenericRecord {
   }
 
   public void setDescription(String value) {
-    if (_City.LOG.isDebugEnabled()) {
-    	_City.LOG.debug( "updating description from " + description() + " to " + value);
-    }
+    log.debug( "updating description from {} to {}", description(), value);
     takeStoredValueForKey(value, _City.DESCRIPTION_KEY);
   }
 
@@ -57,9 +60,7 @@ public abstract class _City extends  ERXGenericRecord {
   }
 
   public void setDistict(String value) {
-    if (_City.LOG.isDebugEnabled()) {
-    	_City.LOG.debug( "updating distict from " + distict() + " to " + value);
-    }
+    log.debug( "updating distict from {} to {}", distict(), value);
     takeStoredValueForKey(value, _City.DISTICT_KEY);
   }
 
@@ -68,9 +69,7 @@ public abstract class _City extends  ERXGenericRecord {
   }
 
   public void setName(String value) {
-    if (_City.LOG.isDebugEnabled()) {
-    	_City.LOG.debug( "updating name from " + name() + " to " + value);
-    }
+    log.debug( "updating name from {} to {}", name(), value);
     takeStoredValueForKey(value, _City.NAME_KEY);
   }
 
@@ -79,42 +78,38 @@ public abstract class _City extends  ERXGenericRecord {
   }
 
   public void setPopulation(Integer value) {
-    if (_City.LOG.isDebugEnabled()) {
-    	_City.LOG.debug( "updating population from " + population() + " to " + value);
-    }
+    log.debug( "updating population from {} to {}", population(), value);
     takeStoredValueForKey(value, _City.POPULATION_KEY);
   }
 
   public er.plugintest.model.Country country() {
     return (er.plugintest.model.Country)storedValueForKey(_City.COUNTRY_KEY);
   }
-  
+
   public void setCountry(er.plugintest.model.Country value) {
     takeStoredValueForKey(value, _City.COUNTRY_KEY);
   }
 
   public void setCountryRelationship(er.plugintest.model.Country value) {
-    if (_City.LOG.isDebugEnabled()) {
-      _City.LOG.debug("updating country from " + country() + " to " + value);
-    }
+    log.debug("updating country from {} to {}", country(), value);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	setCountry(value);
+      setCountry(value);
     }
     else if (value == null) {
-    	er.plugintest.model.Country oldValue = country();
-    	if (oldValue != null) {
-    		removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _City.COUNTRY_KEY);
+      er.plugintest.model.Country oldValue = country();
+      if (oldValue != null) {
+        removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _City.COUNTRY_KEY);
       }
     } else {
-    	addObjectToBothSidesOfRelationshipWithKey(value, _City.COUNTRY_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(value, _City.COUNTRY_KEY);
     }
   }
-  
+
 
   public static City createCity(EOEditingContext editingContext, String name
 ) {
-    City eo = (City) EOUtilities.createAndInsertInstance(editingContext, _City.ENTITY_NAME);    
-		eo.setName(name);
+    City eo = (City) EOUtilities.createAndInsertInstance(editingContext, _City.ENTITY_NAME);
+    eo.setName(name);
     return eo;
   }
 
@@ -132,13 +127,12 @@ public abstract class _City extends  ERXGenericRecord {
 
   public static NSArray<City> fetchCities(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<City> fetchSpec = new ERXFetchSpecification<City>(_City.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<City> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static City fetchCity(EOEditingContext editingContext, String keyName, Object value) {
-    return _City.fetchCity(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _City.fetchCity(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static City fetchCity(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -158,7 +152,7 @@ public abstract class _City extends  ERXGenericRecord {
   }
 
   public static City fetchRequiredCity(EOEditingContext editingContext, String keyName, Object value) {
-    return _City.fetchRequiredCity(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _City.fetchRequiredCity(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static City fetchRequiredCity(EOEditingContext editingContext, EOQualifier qualifier) {

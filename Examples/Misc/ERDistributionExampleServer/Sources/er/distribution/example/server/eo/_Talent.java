@@ -6,32 +6,37 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _Talent extends  ERXGenericRecord {
   public static final String ENTITY_NAME = "Talent";
 
   // Attribute Keys
-  public static final ERXKey<String> FIRST_NAME = new ERXKey<String>("firstName");
-  public static final ERXKey<String> LAST_NAME = new ERXKey<String>("lastName");
+  public static final ERXKey<String> FIRST_NAME = new ERXKey<String>("firstName", Type.Attribute);
+  public static final ERXKey<String> LAST_NAME = new ERXKey<String>("lastName", Type.Attribute);
+
   // Relationship Keys
-  public static final ERXKey<er.distribution.example.server.eo.Movie> MOVIES_DIRECTED = new ERXKey<er.distribution.example.server.eo.Movie>("moviesDirected");
-  public static final ERXKey<er.distribution.example.server.eo.TalentPhoto> PHOTO = new ERXKey<er.distribution.example.server.eo.TalentPhoto>("photo");
-  public static final ERXKey<er.distribution.example.server.eo.MovieRole> ROLES = new ERXKey<er.distribution.example.server.eo.MovieRole>("roles");
+  public static final ERXKey<er.distribution.example.server.eo.Movie> MOVIES_DIRECTED = new ERXKey<er.distribution.example.server.eo.Movie>("moviesDirected", Type.ToManyRelationship);
+  public static final ERXKey<er.distribution.example.server.eo.TalentPhoto> PHOTO = new ERXKey<er.distribution.example.server.eo.TalentPhoto>("photo", Type.ToOneRelationship);
+  public static final ERXKey<er.distribution.example.server.eo.MovieRole> ROLES = new ERXKey<er.distribution.example.server.eo.MovieRole>("roles", Type.ToManyRelationship);
 
   // Attributes
   public static final String FIRST_NAME_KEY = FIRST_NAME.key();
   public static final String LAST_NAME_KEY = LAST_NAME.key();
+
   // Relationships
   public static final String MOVIES_DIRECTED_KEY = MOVIES_DIRECTED.key();
   public static final String PHOTO_KEY = PHOTO.key();
   public static final String ROLES_KEY = ROLES.key();
 
-  private static Logger LOG = Logger.getLogger(_Talent.class);
+  private static final Logger log = LoggerFactory.getLogger(_Talent.class);
 
   public Talent localInstanceIn(EOEditingContext editingContext) {
     Talent localInstance = (Talent)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -46,9 +51,7 @@ public abstract class _Talent extends  ERXGenericRecord {
   }
 
   public void setFirstName(String value) {
-    if (_Talent.LOG.isDebugEnabled()) {
-    	_Talent.LOG.debug( "updating firstName from " + firstName() + " to " + value);
-    }
+    log.debug( "updating firstName from {} to {}", firstName(), value);
     takeStoredValueForKey(value, _Talent.FIRST_NAME_KEY);
   }
 
@@ -57,37 +60,33 @@ public abstract class _Talent extends  ERXGenericRecord {
   }
 
   public void setLastName(String value) {
-    if (_Talent.LOG.isDebugEnabled()) {
-    	_Talent.LOG.debug( "updating lastName from " + lastName() + " to " + value);
-    }
+    log.debug( "updating lastName from {} to {}", lastName(), value);
     takeStoredValueForKey(value, _Talent.LAST_NAME_KEY);
   }
 
   public er.distribution.example.server.eo.TalentPhoto photo() {
     return (er.distribution.example.server.eo.TalentPhoto)storedValueForKey(_Talent.PHOTO_KEY);
   }
-  
+
   public void setPhoto(er.distribution.example.server.eo.TalentPhoto value) {
     takeStoredValueForKey(value, _Talent.PHOTO_KEY);
   }
 
   public void setPhotoRelationship(er.distribution.example.server.eo.TalentPhoto value) {
-    if (_Talent.LOG.isDebugEnabled()) {
-      _Talent.LOG.debug("updating photo from " + photo() + " to " + value);
-    }
+    log.debug("updating photo from {} to {}", photo(), value);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	setPhoto(value);
+      setPhoto(value);
     }
     else if (value == null) {
-    	er.distribution.example.server.eo.TalentPhoto oldValue = photo();
-    	if (oldValue != null) {
-    		removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Talent.PHOTO_KEY);
+      er.distribution.example.server.eo.TalentPhoto oldValue = photo();
+      if (oldValue != null) {
+        removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Talent.PHOTO_KEY);
       }
     } else {
-    	addObjectToBothSidesOfRelationshipWithKey(value, _Talent.PHOTO_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(value, _Talent.PHOTO_KEY);
     }
   }
-  
+
   public NSArray<er.distribution.example.server.eo.Movie> moviesDirected() {
     return (NSArray<er.distribution.example.server.eo.Movie>)storedValueForKey(_Talent.MOVIES_DIRECTED_KEY);
   }
@@ -107,7 +106,7 @@ public abstract class _Talent extends  ERXGenericRecord {
       }
     return results;
   }
-  
+
   public void addToMoviesDirected(er.distribution.example.server.eo.Movie object) {
     includeObjectIntoPropertyWithKey(object, _Talent.MOVIES_DIRECTED_KEY);
   }
@@ -117,33 +116,27 @@ public abstract class _Talent extends  ERXGenericRecord {
   }
 
   public void addToMoviesDirectedRelationship(er.distribution.example.server.eo.Movie object) {
-    if (_Talent.LOG.isDebugEnabled()) {
-      _Talent.LOG.debug("adding " + object + " to moviesDirected relationship");
-    }
+    log.debug("adding {} to moviesDirected relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	addToMoviesDirected(object);
+      addToMoviesDirected(object);
     }
     else {
-    	addObjectToBothSidesOfRelationshipWithKey(object, _Talent.MOVIES_DIRECTED_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(object, _Talent.MOVIES_DIRECTED_KEY);
     }
   }
 
   public void removeFromMoviesDirectedRelationship(er.distribution.example.server.eo.Movie object) {
-    if (_Talent.LOG.isDebugEnabled()) {
-      _Talent.LOG.debug("removing " + object + " from moviesDirected relationship");
-    }
+    log.debug("removing {} from moviesDirected relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	removeFromMoviesDirected(object);
+      removeFromMoviesDirected(object);
     }
     else {
-    	removeObjectFromBothSidesOfRelationshipWithKey(object, _Talent.MOVIES_DIRECTED_KEY);
+      removeObjectFromBothSidesOfRelationshipWithKey(object, _Talent.MOVIES_DIRECTED_KEY);
     }
   }
 
   public er.distribution.example.server.eo.Movie createMoviesDirectedRelationship() {
-    EOClassDescription eoClassDesc = EOClassDescription.classDescriptionForEntityName( er.distribution.example.server.eo.Movie.ENTITY_NAME );
-    EOEnterpriseObject eo = eoClassDesc.createInstanceWithEditingContext(editingContext(), null);
-    editingContext().insertObject(eo);
+    EOEnterpriseObject eo = EOUtilities.createAndInsertInstance(editingContext(),  er.distribution.example.server.eo.Movie.ENTITY_NAME );
     addObjectToBothSidesOfRelationshipWithKey(eo, _Talent.MOVIES_DIRECTED_KEY);
     return (er.distribution.example.server.eo.Movie) eo;
   }
@@ -176,16 +169,13 @@ public abstract class _Talent extends  ERXGenericRecord {
     NSArray<er.distribution.example.server.eo.MovieRole> results;
     if (fetch) {
       EOQualifier fullQualifier;
-      EOQualifier inverseQualifier = new EOKeyValueQualifier(er.distribution.example.server.eo.MovieRole.TALENT_KEY, EOQualifier.QualifierOperatorEqual, this);
-    	
+      EOQualifier inverseQualifier = ERXQ.equals(er.distribution.example.server.eo.MovieRole.TALENT_KEY, this);
+
       if (qualifier == null) {
         fullQualifier = inverseQualifier;
       }
       else {
-        NSMutableArray<EOQualifier> qualifiers = new NSMutableArray<EOQualifier>();
-        qualifiers.addObject(qualifier);
-        qualifiers.addObject(inverseQualifier);
-        fullQualifier = new EOAndQualifier(qualifiers);
+        fullQualifier = ERXQ.and(qualifier, inverseQualifier);
       }
 
       results = er.distribution.example.server.eo.MovieRole.fetchMovieRoles(editingContext(), fullQualifier, sortOrderings);
@@ -201,7 +191,7 @@ public abstract class _Talent extends  ERXGenericRecord {
     }
     return results;
   }
-  
+
   public void addToRoles(er.distribution.example.server.eo.MovieRole object) {
     includeObjectIntoPropertyWithKey(object, _Talent.ROLES_KEY);
   }
@@ -211,33 +201,27 @@ public abstract class _Talent extends  ERXGenericRecord {
   }
 
   public void addToRolesRelationship(er.distribution.example.server.eo.MovieRole object) {
-    if (_Talent.LOG.isDebugEnabled()) {
-      _Talent.LOG.debug("adding " + object + " to roles relationship");
-    }
+    log.debug("adding {} to roles relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	addToRoles(object);
+      addToRoles(object);
     }
     else {
-    	addObjectToBothSidesOfRelationshipWithKey(object, _Talent.ROLES_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(object, _Talent.ROLES_KEY);
     }
   }
 
   public void removeFromRolesRelationship(er.distribution.example.server.eo.MovieRole object) {
-    if (_Talent.LOG.isDebugEnabled()) {
-      _Talent.LOG.debug("removing " + object + " from roles relationship");
-    }
+    log.debug("removing {} from roles relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	removeFromRoles(object);
+      removeFromRoles(object);
     }
     else {
-    	removeObjectFromBothSidesOfRelationshipWithKey(object, _Talent.ROLES_KEY);
+      removeObjectFromBothSidesOfRelationshipWithKey(object, _Talent.ROLES_KEY);
     }
   }
 
   public er.distribution.example.server.eo.MovieRole createRolesRelationship() {
-    EOClassDescription eoClassDesc = EOClassDescription.classDescriptionForEntityName( er.distribution.example.server.eo.MovieRole.ENTITY_NAME );
-    EOEnterpriseObject eo = eoClassDesc.createInstanceWithEditingContext(editingContext(), null);
-    editingContext().insertObject(eo);
+    EOEnterpriseObject eo = EOUtilities.createAndInsertInstance(editingContext(),  er.distribution.example.server.eo.MovieRole.ENTITY_NAME );
     addObjectToBothSidesOfRelationshipWithKey(eo, _Talent.ROLES_KEY);
     return (er.distribution.example.server.eo.MovieRole) eo;
   }
@@ -258,9 +242,9 @@ public abstract class _Talent extends  ERXGenericRecord {
   public static Talent createTalent(EOEditingContext editingContext, String firstName
 , String lastName
 ) {
-    Talent eo = (Talent) EOUtilities.createAndInsertInstance(editingContext, _Talent.ENTITY_NAME);    
-		eo.setFirstName(firstName);
-		eo.setLastName(lastName);
+    Talent eo = (Talent) EOUtilities.createAndInsertInstance(editingContext, _Talent.ENTITY_NAME);
+    eo.setFirstName(firstName);
+    eo.setLastName(lastName);
     return eo;
   }
 
@@ -278,13 +262,12 @@ public abstract class _Talent extends  ERXGenericRecord {
 
   public static NSArray<Talent> fetchTalents(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<Talent> fetchSpec = new ERXFetchSpecification<Talent>(_Talent.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<Talent> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static Talent fetchTalent(EOEditingContext editingContext, String keyName, Object value) {
-    return _Talent.fetchTalent(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Talent.fetchTalent(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Talent fetchTalent(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -304,7 +287,7 @@ public abstract class _Talent extends  ERXGenericRecord {
   }
 
   public static Talent fetchRequiredTalent(EOEditingContext editingContext, String keyName, Object value) {
-    return _Talent.fetchRequiredTalent(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Talent.fetchRequiredTalent(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Talent fetchRequiredTalent(EOEditingContext editingContext, EOQualifier qualifier) {

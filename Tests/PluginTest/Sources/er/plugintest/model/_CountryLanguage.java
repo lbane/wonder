@@ -6,30 +6,35 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _CountryLanguage extends  ERXGenericRecord {
   public static final String ENTITY_NAME = "CountryLanguage";
 
   // Attribute Keys
-  public static final ERXKey<Boolean> IS_OFFICIAL = new ERXKey<Boolean>("isOfficial");
-  public static final ERXKey<String> LANGUAGE = new ERXKey<String>("language");
-  public static final ERXKey<java.math.BigDecimal> PERCENTAGE = new ERXKey<java.math.BigDecimal>("percentage");
+  public static final ERXKey<Boolean> IS_OFFICIAL = new ERXKey<Boolean>("isOfficial", Type.Attribute);
+  public static final ERXKey<String> LANGUAGE = new ERXKey<String>("language", Type.Attribute);
+  public static final ERXKey<java.math.BigDecimal> PERCENTAGE = new ERXKey<java.math.BigDecimal>("percentage", Type.Attribute);
+
   // Relationship Keys
-  public static final ERXKey<er.plugintest.model.Country> COUNTRY = new ERXKey<er.plugintest.model.Country>("country");
+  public static final ERXKey<er.plugintest.model.Country> COUNTRY = new ERXKey<er.plugintest.model.Country>("country", Type.ToOneRelationship);
 
   // Attributes
   public static final String IS_OFFICIAL_KEY = IS_OFFICIAL.key();
   public static final String LANGUAGE_KEY = LANGUAGE.key();
   public static final String PERCENTAGE_KEY = PERCENTAGE.key();
+
   // Relationships
   public static final String COUNTRY_KEY = COUNTRY.key();
 
-  private static Logger LOG = Logger.getLogger(_CountryLanguage.class);
+  private static final Logger log = LoggerFactory.getLogger(_CountryLanguage.class);
 
   public CountryLanguage localInstanceIn(EOEditingContext editingContext) {
     CountryLanguage localInstance = (CountryLanguage)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -44,9 +49,7 @@ public abstract class _CountryLanguage extends  ERXGenericRecord {
   }
 
   public void setIsOfficial(Boolean value) {
-    if (_CountryLanguage.LOG.isDebugEnabled()) {
-    	_CountryLanguage.LOG.debug( "updating isOfficial from " + isOfficial() + " to " + value);
-    }
+    log.debug( "updating isOfficial from {} to {}", isOfficial(), value);
     takeStoredValueForKey(value, _CountryLanguage.IS_OFFICIAL_KEY);
   }
 
@@ -55,9 +58,7 @@ public abstract class _CountryLanguage extends  ERXGenericRecord {
   }
 
   public void setLanguage(String value) {
-    if (_CountryLanguage.LOG.isDebugEnabled()) {
-    	_CountryLanguage.LOG.debug( "updating language from " + language() + " to " + value);
-    }
+    log.debug( "updating language from {} to {}", language(), value);
     takeStoredValueForKey(value, _CountryLanguage.LANGUAGE_KEY);
   }
 
@@ -66,46 +67,42 @@ public abstract class _CountryLanguage extends  ERXGenericRecord {
   }
 
   public void setPercentage(java.math.BigDecimal value) {
-    if (_CountryLanguage.LOG.isDebugEnabled()) {
-    	_CountryLanguage.LOG.debug( "updating percentage from " + percentage() + " to " + value);
-    }
+    log.debug( "updating percentage from {} to {}", percentage(), value);
     takeStoredValueForKey(value, _CountryLanguage.PERCENTAGE_KEY);
   }
 
   public er.plugintest.model.Country country() {
     return (er.plugintest.model.Country)storedValueForKey(_CountryLanguage.COUNTRY_KEY);
   }
-  
+
   public void setCountry(er.plugintest.model.Country value) {
     takeStoredValueForKey(value, _CountryLanguage.COUNTRY_KEY);
   }
 
   public void setCountryRelationship(er.plugintest.model.Country value) {
-    if (_CountryLanguage.LOG.isDebugEnabled()) {
-      _CountryLanguage.LOG.debug("updating country from " + country() + " to " + value);
-    }
+    log.debug("updating country from {} to {}", country(), value);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	setCountry(value);
+      setCountry(value);
     }
     else if (value == null) {
-    	er.plugintest.model.Country oldValue = country();
-    	if (oldValue != null) {
-    		removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _CountryLanguage.COUNTRY_KEY);
+      er.plugintest.model.Country oldValue = country();
+      if (oldValue != null) {
+        removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _CountryLanguage.COUNTRY_KEY);
       }
     } else {
-    	addObjectToBothSidesOfRelationshipWithKey(value, _CountryLanguage.COUNTRY_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(value, _CountryLanguage.COUNTRY_KEY);
     }
   }
-  
+
 
   public static CountryLanguage createCountryLanguage(EOEditingContext editingContext, Boolean isOfficial
 , String language
 , java.math.BigDecimal percentage
 ) {
-    CountryLanguage eo = (CountryLanguage) EOUtilities.createAndInsertInstance(editingContext, _CountryLanguage.ENTITY_NAME);    
-		eo.setIsOfficial(isOfficial);
-		eo.setLanguage(language);
-		eo.setPercentage(percentage);
+    CountryLanguage eo = (CountryLanguage) EOUtilities.createAndInsertInstance(editingContext, _CountryLanguage.ENTITY_NAME);
+    eo.setIsOfficial(isOfficial);
+    eo.setLanguage(language);
+    eo.setPercentage(percentage);
     return eo;
   }
 
@@ -123,13 +120,12 @@ public abstract class _CountryLanguage extends  ERXGenericRecord {
 
   public static NSArray<CountryLanguage> fetchCountryLanguages(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<CountryLanguage> fetchSpec = new ERXFetchSpecification<CountryLanguage>(_CountryLanguage.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<CountryLanguage> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static CountryLanguage fetchCountryLanguage(EOEditingContext editingContext, String keyName, Object value) {
-    return _CountryLanguage.fetchCountryLanguage(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _CountryLanguage.fetchCountryLanguage(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static CountryLanguage fetchCountryLanguage(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -149,7 +145,7 @@ public abstract class _CountryLanguage extends  ERXGenericRecord {
   }
 
   public static CountryLanguage fetchRequiredCountryLanguage(EOEditingContext editingContext, String keyName, Object value) {
-    return _CountryLanguage.fetchRequiredCountryLanguage(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _CountryLanguage.fetchRequiredCountryLanguage(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static CountryLanguage fetchRequiredCountryLanguage(EOEditingContext editingContext, EOQualifier qualifier) {

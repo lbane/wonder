@@ -6,28 +6,33 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _Voting extends  ERXGenericRecord {
   public static final String ENTITY_NAME = "Voting";
 
   // Attribute Keys
-  public static final ERXKey<Integer> NUMBER_OF_VOTES = new ERXKey<Integer>("numberOfVotes");
-  public static final ERXKey<Double> RUNNING_AVERAGE = new ERXKey<Double>("runningAverage");
+  public static final ERXKey<Integer> NUMBER_OF_VOTES = new ERXKey<Integer>("numberOfVotes", Type.Attribute);
+  public static final ERXKey<Double> RUNNING_AVERAGE = new ERXKey<Double>("runningAverage", Type.Attribute);
+
   // Relationship Keys
-  public static final ERXKey<er.distribution.example.server.eo.Movie> MOVIE = new ERXKey<er.distribution.example.server.eo.Movie>("movie");
+  public static final ERXKey<er.distribution.example.server.eo.Movie> MOVIE = new ERXKey<er.distribution.example.server.eo.Movie>("movie", Type.ToOneRelationship);
 
   // Attributes
   public static final String NUMBER_OF_VOTES_KEY = NUMBER_OF_VOTES.key();
   public static final String RUNNING_AVERAGE_KEY = RUNNING_AVERAGE.key();
+
   // Relationships
   public static final String MOVIE_KEY = MOVIE.key();
 
-  private static Logger LOG = Logger.getLogger(_Voting.class);
+  private static final Logger log = LoggerFactory.getLogger(_Voting.class);
 
   public Voting localInstanceIn(EOEditingContext editingContext) {
     Voting localInstance = (Voting)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -42,9 +47,7 @@ public abstract class _Voting extends  ERXGenericRecord {
   }
 
   public void setNumberOfVotes(Integer value) {
-    if (_Voting.LOG.isDebugEnabled()) {
-    	_Voting.LOG.debug( "updating numberOfVotes from " + numberOfVotes() + " to " + value);
-    }
+    log.debug( "updating numberOfVotes from {} to {}", numberOfVotes(), value);
     takeStoredValueForKey(value, _Voting.NUMBER_OF_VOTES_KEY);
   }
 
@@ -53,40 +56,36 @@ public abstract class _Voting extends  ERXGenericRecord {
   }
 
   public void setRunningAverage(Double value) {
-    if (_Voting.LOG.isDebugEnabled()) {
-    	_Voting.LOG.debug( "updating runningAverage from " + runningAverage() + " to " + value);
-    }
+    log.debug( "updating runningAverage from {} to {}", runningAverage(), value);
     takeStoredValueForKey(value, _Voting.RUNNING_AVERAGE_KEY);
   }
 
   public er.distribution.example.server.eo.Movie movie() {
     return (er.distribution.example.server.eo.Movie)storedValueForKey(_Voting.MOVIE_KEY);
   }
-  
+
   public void setMovie(er.distribution.example.server.eo.Movie value) {
     takeStoredValueForKey(value, _Voting.MOVIE_KEY);
   }
 
   public void setMovieRelationship(er.distribution.example.server.eo.Movie value) {
-    if (_Voting.LOG.isDebugEnabled()) {
-      _Voting.LOG.debug("updating movie from " + movie() + " to " + value);
-    }
+    log.debug("updating movie from {} to {}", movie(), value);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	setMovie(value);
+      setMovie(value);
     }
     else if (value == null) {
-    	er.distribution.example.server.eo.Movie oldValue = movie();
-    	if (oldValue != null) {
-    		removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Voting.MOVIE_KEY);
+      er.distribution.example.server.eo.Movie oldValue = movie();
+      if (oldValue != null) {
+        removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Voting.MOVIE_KEY);
       }
     } else {
-    	addObjectToBothSidesOfRelationshipWithKey(value, _Voting.MOVIE_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(value, _Voting.MOVIE_KEY);
     }
   }
-  
+
 
   public static Voting createVoting(EOEditingContext editingContext, er.distribution.example.server.eo.Movie movie) {
-    Voting eo = (Voting) EOUtilities.createAndInsertInstance(editingContext, _Voting.ENTITY_NAME);    
+    Voting eo = (Voting) EOUtilities.createAndInsertInstance(editingContext, _Voting.ENTITY_NAME);
     eo.setMovieRelationship(movie);
     return eo;
   }
@@ -105,13 +104,12 @@ public abstract class _Voting extends  ERXGenericRecord {
 
   public static NSArray<Voting> fetchVotings(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<Voting> fetchSpec = new ERXFetchSpecification<Voting>(_Voting.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<Voting> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static Voting fetchVoting(EOEditingContext editingContext, String keyName, Object value) {
-    return _Voting.fetchVoting(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Voting.fetchVoting(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Voting fetchVoting(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -131,7 +129,7 @@ public abstract class _Voting extends  ERXGenericRecord {
   }
 
   public static Voting fetchRequiredVoting(EOEditingContext editingContext, String keyName, Object value) {
-    return _Voting.fetchRequiredVoting(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Voting.fetchRequiredVoting(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Voting fetchRequiredVoting(EOEditingContext editingContext, EOQualifier qualifier) {

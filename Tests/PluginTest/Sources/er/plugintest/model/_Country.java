@@ -6,35 +6,39 @@ import com.webobjects.eocontrol.*;
 import com.webobjects.foundation.*;
 import java.math.*;
 import java.util.*;
-import org.apache.log4j.Logger;
 
 import er.extensions.eof.*;
+import er.extensions.eof.ERXKey.Type;
 import er.extensions.foundation.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("all")
 public abstract class _Country extends  ERXGenericRecord {
   public static final String ENTITY_NAME = "Country";
 
   // Attribute Keys
-  public static final ERXKey<String> CODE = new ERXKey<String>("code");
-  public static final ERXKey<String> CODE2 = new ERXKey<String>("code2");
-  public static final ERXKey<er.plugintest.model.Continent> CONTINENT = new ERXKey<er.plugintest.model.Continent>("continent");
-  public static final ERXKey<NSData> FLAG = new ERXKey<NSData>("flag");
-  public static final ERXKey<java.math.BigDecimal> G_NP = new ERXKey<java.math.BigDecimal>("gNP");
-  public static final ERXKey<java.math.BigDecimal> G_NP_OLD = new ERXKey<java.math.BigDecimal>("gNPOld");
-  public static final ERXKey<String> GOVERNMENT_FORM = new ERXKey<String>("governmentForm");
-  public static final ERXKey<String> HEAD_OF_STATE = new ERXKey<String>("headOfState");
-  public static final ERXKey<Integer> INDEP_YEAR = new ERXKey<Integer>("indepYear");
-  public static final ERXKey<Double> LIFE_EXPECTANCY = new ERXKey<Double>("lifeExpectancy");
-  public static final ERXKey<String> LOCAL_NAME = new ERXKey<String>("localName");
-  public static final ERXKey<String> NAME = new ERXKey<String>("name");
-  public static final ERXKey<Integer> POPULATION = new ERXKey<Integer>("population");
-  public static final ERXKey<String> REGION = new ERXKey<String>("region");
-  public static final ERXKey<Double> SURFACE_AREA = new ERXKey<Double>("surfaceArea");
+  public static final ERXKey<String> CODE = new ERXKey<String>("code", Type.Attribute);
+  public static final ERXKey<String> CODE2 = new ERXKey<String>("code2", Type.Attribute);
+  public static final ERXKey<er.plugintest.model.Continent> CONTINENT = new ERXKey<er.plugintest.model.Continent>("continent", Type.Attribute);
+  public static final ERXKey<NSData> FLAG = new ERXKey<NSData>("flag", Type.Attribute);
+  public static final ERXKey<java.math.BigDecimal> G_NP = new ERXKey<java.math.BigDecimal>("gNP", Type.Attribute);
+  public static final ERXKey<java.math.BigDecimal> G_NP_OLD = new ERXKey<java.math.BigDecimal>("gNPOld", Type.Attribute);
+  public static final ERXKey<String> GOVERNMENT_FORM = new ERXKey<String>("governmentForm", Type.Attribute);
+  public static final ERXKey<String> HEAD_OF_STATE = new ERXKey<String>("headOfState", Type.Attribute);
+  public static final ERXKey<Integer> INDEP_YEAR = new ERXKey<Integer>("indepYear", Type.Attribute);
+  public static final ERXKey<Double> LIFE_EXPECTANCY = new ERXKey<Double>("lifeExpectancy", Type.Attribute);
+  public static final ERXKey<String> LOCAL_NAME = new ERXKey<String>("localName", Type.Attribute);
+  public static final ERXKey<String> NAME = new ERXKey<String>("name", Type.Attribute);
+  public static final ERXKey<Integer> POPULATION = new ERXKey<Integer>("population", Type.Attribute);
+  public static final ERXKey<String> REGION = new ERXKey<String>("region", Type.Attribute);
+  public static final ERXKey<Double> SURFACE_AREA = new ERXKey<Double>("surfaceArea", Type.Attribute);
+
   // Relationship Keys
-  public static final ERXKey<er.plugintest.model.City> CAPITAL = new ERXKey<er.plugintest.model.City>("capital");
-  public static final ERXKey<er.plugintest.model.City> CITIES = new ERXKey<er.plugintest.model.City>("cities");
-  public static final ERXKey<er.plugintest.model.CountryLanguage> COUNTRY_LANGUAGES = new ERXKey<er.plugintest.model.CountryLanguage>("countryLanguages");
+  public static final ERXKey<er.plugintest.model.City> CAPITAL = new ERXKey<er.plugintest.model.City>("capital", Type.ToOneRelationship);
+  public static final ERXKey<er.plugintest.model.City> CITIES = new ERXKey<er.plugintest.model.City>("cities", Type.ToManyRelationship);
+  public static final ERXKey<er.plugintest.model.CountryLanguage> COUNTRY_LANGUAGES = new ERXKey<er.plugintest.model.CountryLanguage>("countryLanguages", Type.ToManyRelationship);
 
   // Attributes
   public static final String CODE_KEY = CODE.key();
@@ -52,12 +56,13 @@ public abstract class _Country extends  ERXGenericRecord {
   public static final String POPULATION_KEY = POPULATION.key();
   public static final String REGION_KEY = REGION.key();
   public static final String SURFACE_AREA_KEY = SURFACE_AREA.key();
+
   // Relationships
   public static final String CAPITAL_KEY = CAPITAL.key();
   public static final String CITIES_KEY = CITIES.key();
   public static final String COUNTRY_LANGUAGES_KEY = COUNTRY_LANGUAGES.key();
 
-  private static Logger LOG = Logger.getLogger(_Country.class);
+  private static final Logger log = LoggerFactory.getLogger(_Country.class);
 
   public Country localInstanceIn(EOEditingContext editingContext) {
     Country localInstance = (Country)EOUtilities.localInstanceOfObject(editingContext, this);
@@ -72,9 +77,7 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void setCode(String value) {
-    if (_Country.LOG.isDebugEnabled()) {
-    	_Country.LOG.debug( "updating code from " + code() + " to " + value);
-    }
+    log.debug( "updating code from {} to {}", code(), value);
     takeStoredValueForKey(value, _Country.CODE_KEY);
   }
 
@@ -83,9 +86,7 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void setCode2(String value) {
-    if (_Country.LOG.isDebugEnabled()) {
-    	_Country.LOG.debug( "updating code2 from " + code2() + " to " + value);
-    }
+    log.debug( "updating code2 from {} to {}", code2(), value);
     takeStoredValueForKey(value, _Country.CODE2_KEY);
   }
 
@@ -94,9 +95,7 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void setContinent(er.plugintest.model.Continent value) {
-    if (_Country.LOG.isDebugEnabled()) {
-    	_Country.LOG.debug( "updating continent from " + continent() + " to " + value);
-    }
+    log.debug( "updating continent from {} to {}", continent(), value);
     takeStoredValueForKey(value, _Country.CONTINENT_KEY);
   }
 
@@ -105,9 +104,7 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void setFlag(NSData value) {
-    if (_Country.LOG.isDebugEnabled()) {
-    	_Country.LOG.debug( "updating flag from " + flag() + " to " + value);
-    }
+    log.debug( "updating flag from {} to {}", flag(), value);
     takeStoredValueForKey(value, _Country.FLAG_KEY);
   }
 
@@ -116,9 +113,7 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void setGNP(java.math.BigDecimal value) {
-    if (_Country.LOG.isDebugEnabled()) {
-    	_Country.LOG.debug( "updating gNP from " + gNP() + " to " + value);
-    }
+    log.debug( "updating gNP from {} to {}", gNP(), value);
     takeStoredValueForKey(value, _Country.G_NP_KEY);
   }
 
@@ -127,9 +122,7 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void setGNPOld(java.math.BigDecimal value) {
-    if (_Country.LOG.isDebugEnabled()) {
-    	_Country.LOG.debug( "updating gNPOld from " + gNPOld() + " to " + value);
-    }
+    log.debug( "updating gNPOld from {} to {}", gNPOld(), value);
     takeStoredValueForKey(value, _Country.G_NP_OLD_KEY);
   }
 
@@ -138,9 +131,7 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void setGovernmentForm(String value) {
-    if (_Country.LOG.isDebugEnabled()) {
-    	_Country.LOG.debug( "updating governmentForm from " + governmentForm() + " to " + value);
-    }
+    log.debug( "updating governmentForm from {} to {}", governmentForm(), value);
     takeStoredValueForKey(value, _Country.GOVERNMENT_FORM_KEY);
   }
 
@@ -149,9 +140,7 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void setHeadOfState(String value) {
-    if (_Country.LOG.isDebugEnabled()) {
-    	_Country.LOG.debug( "updating headOfState from " + headOfState() + " to " + value);
-    }
+    log.debug( "updating headOfState from {} to {}", headOfState(), value);
     takeStoredValueForKey(value, _Country.HEAD_OF_STATE_KEY);
   }
 
@@ -160,9 +149,7 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void setIndepYear(Integer value) {
-    if (_Country.LOG.isDebugEnabled()) {
-    	_Country.LOG.debug( "updating indepYear from " + indepYear() + " to " + value);
-    }
+    log.debug( "updating indepYear from {} to {}", indepYear(), value);
     takeStoredValueForKey(value, _Country.INDEP_YEAR_KEY);
   }
 
@@ -171,9 +158,7 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void setLifeExpectancy(Double value) {
-    if (_Country.LOG.isDebugEnabled()) {
-    	_Country.LOG.debug( "updating lifeExpectancy from " + lifeExpectancy() + " to " + value);
-    }
+    log.debug( "updating lifeExpectancy from {} to {}", lifeExpectancy(), value);
     takeStoredValueForKey(value, _Country.LIFE_EXPECTANCY_KEY);
   }
 
@@ -182,9 +167,7 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void setLocalName(String value) {
-    if (_Country.LOG.isDebugEnabled()) {
-    	_Country.LOG.debug( "updating localName from " + localName() + " to " + value);
-    }
+    log.debug( "updating localName from {} to {}", localName(), value);
     takeStoredValueForKey(value, _Country.LOCAL_NAME_KEY);
   }
 
@@ -193,9 +176,7 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void setName(String value) {
-    if (_Country.LOG.isDebugEnabled()) {
-    	_Country.LOG.debug( "updating name from " + name() + " to " + value);
-    }
+    log.debug( "updating name from {} to {}", name(), value);
     takeStoredValueForKey(value, _Country.NAME_KEY);
   }
 
@@ -204,9 +185,7 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void setPopulation(Integer value) {
-    if (_Country.LOG.isDebugEnabled()) {
-    	_Country.LOG.debug( "updating population from " + population() + " to " + value);
-    }
+    log.debug( "updating population from {} to {}", population(), value);
     takeStoredValueForKey(value, _Country.POPULATION_KEY);
   }
 
@@ -215,9 +194,7 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void setRegion(String value) {
-    if (_Country.LOG.isDebugEnabled()) {
-    	_Country.LOG.debug( "updating region from " + region() + " to " + value);
-    }
+    log.debug( "updating region from {} to {}", region(), value);
     takeStoredValueForKey(value, _Country.REGION_KEY);
   }
 
@@ -226,37 +203,33 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void setSurfaceArea(Double value) {
-    if (_Country.LOG.isDebugEnabled()) {
-    	_Country.LOG.debug( "updating surfaceArea from " + surfaceArea() + " to " + value);
-    }
+    log.debug( "updating surfaceArea from {} to {}", surfaceArea(), value);
     takeStoredValueForKey(value, _Country.SURFACE_AREA_KEY);
   }
 
   public er.plugintest.model.City capital() {
     return (er.plugintest.model.City)storedValueForKey(_Country.CAPITAL_KEY);
   }
-  
+
   public void setCapital(er.plugintest.model.City value) {
     takeStoredValueForKey(value, _Country.CAPITAL_KEY);
   }
 
   public void setCapitalRelationship(er.plugintest.model.City value) {
-    if (_Country.LOG.isDebugEnabled()) {
-      _Country.LOG.debug("updating capital from " + capital() + " to " + value);
-    }
+    log.debug("updating capital from {} to {}", capital(), value);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	setCapital(value);
+      setCapital(value);
     }
     else if (value == null) {
-    	er.plugintest.model.City oldValue = capital();
-    	if (oldValue != null) {
-    		removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Country.CAPITAL_KEY);
+      er.plugintest.model.City oldValue = capital();
+      if (oldValue != null) {
+        removeObjectFromBothSidesOfRelationshipWithKey(oldValue, _Country.CAPITAL_KEY);
       }
     } else {
-    	addObjectToBothSidesOfRelationshipWithKey(value, _Country.CAPITAL_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(value, _Country.CAPITAL_KEY);
     }
   }
-  
+
   public NSArray<er.plugintest.model.City> cities() {
     return (NSArray<er.plugintest.model.City>)storedValueForKey(_Country.CITIES_KEY);
   }
@@ -273,16 +246,13 @@ public abstract class _Country extends  ERXGenericRecord {
     NSArray<er.plugintest.model.City> results;
     if (fetch) {
       EOQualifier fullQualifier;
-      EOQualifier inverseQualifier = new EOKeyValueQualifier(er.plugintest.model.City.COUNTRY_KEY, EOQualifier.QualifierOperatorEqual, this);
-    	
+      EOQualifier inverseQualifier = ERXQ.equals(er.plugintest.model.City.COUNTRY_KEY, this);
+
       if (qualifier == null) {
         fullQualifier = inverseQualifier;
       }
       else {
-        NSMutableArray<EOQualifier> qualifiers = new NSMutableArray<EOQualifier>();
-        qualifiers.addObject(qualifier);
-        qualifiers.addObject(inverseQualifier);
-        fullQualifier = new EOAndQualifier(qualifiers);
+        fullQualifier = ERXQ.and(qualifier, inverseQualifier);
       }
 
       results = er.plugintest.model.City.fetchCities(editingContext(), fullQualifier, sortOrderings);
@@ -298,7 +268,7 @@ public abstract class _Country extends  ERXGenericRecord {
     }
     return results;
   }
-  
+
   public void addToCities(er.plugintest.model.City object) {
     includeObjectIntoPropertyWithKey(object, _Country.CITIES_KEY);
   }
@@ -308,33 +278,27 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void addToCitiesRelationship(er.plugintest.model.City object) {
-    if (_Country.LOG.isDebugEnabled()) {
-      _Country.LOG.debug("adding " + object + " to cities relationship");
-    }
+    log.debug("adding {} to cities relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	addToCities(object);
+      addToCities(object);
     }
     else {
-    	addObjectToBothSidesOfRelationshipWithKey(object, _Country.CITIES_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(object, _Country.CITIES_KEY);
     }
   }
 
   public void removeFromCitiesRelationship(er.plugintest.model.City object) {
-    if (_Country.LOG.isDebugEnabled()) {
-      _Country.LOG.debug("removing " + object + " from cities relationship");
-    }
+    log.debug("removing {} from cities relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	removeFromCities(object);
+      removeFromCities(object);
     }
     else {
-    	removeObjectFromBothSidesOfRelationshipWithKey(object, _Country.CITIES_KEY);
+      removeObjectFromBothSidesOfRelationshipWithKey(object, _Country.CITIES_KEY);
     }
   }
 
   public er.plugintest.model.City createCitiesRelationship() {
-    EOClassDescription eoClassDesc = EOClassDescription.classDescriptionForEntityName( er.plugintest.model.City.ENTITY_NAME );
-    EOEnterpriseObject eo = eoClassDesc.createInstanceWithEditingContext(editingContext(), null);
-    editingContext().insertObject(eo);
+    EOEnterpriseObject eo = EOUtilities.createAndInsertInstance(editingContext(),  er.plugintest.model.City.ENTITY_NAME );
     addObjectToBothSidesOfRelationshipWithKey(eo, _Country.CITIES_KEY);
     return (er.plugintest.model.City) eo;
   }
@@ -367,16 +331,13 @@ public abstract class _Country extends  ERXGenericRecord {
     NSArray<er.plugintest.model.CountryLanguage> results;
     if (fetch) {
       EOQualifier fullQualifier;
-      EOQualifier inverseQualifier = new EOKeyValueQualifier(er.plugintest.model.CountryLanguage.COUNTRY_KEY, EOQualifier.QualifierOperatorEqual, this);
-    	
+      EOQualifier inverseQualifier = ERXQ.equals(er.plugintest.model.CountryLanguage.COUNTRY_KEY, this);
+
       if (qualifier == null) {
         fullQualifier = inverseQualifier;
       }
       else {
-        NSMutableArray<EOQualifier> qualifiers = new NSMutableArray<EOQualifier>();
-        qualifiers.addObject(qualifier);
-        qualifiers.addObject(inverseQualifier);
-        fullQualifier = new EOAndQualifier(qualifiers);
+        fullQualifier = ERXQ.and(qualifier, inverseQualifier);
       }
 
       results = er.plugintest.model.CountryLanguage.fetchCountryLanguages(editingContext(), fullQualifier, sortOrderings);
@@ -392,7 +353,7 @@ public abstract class _Country extends  ERXGenericRecord {
     }
     return results;
   }
-  
+
   public void addToCountryLanguages(er.plugintest.model.CountryLanguage object) {
     includeObjectIntoPropertyWithKey(object, _Country.COUNTRY_LANGUAGES_KEY);
   }
@@ -402,33 +363,27 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public void addToCountryLanguagesRelationship(er.plugintest.model.CountryLanguage object) {
-    if (_Country.LOG.isDebugEnabled()) {
-      _Country.LOG.debug("adding " + object + " to countryLanguages relationship");
-    }
+    log.debug("adding {} to countryLanguages relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	addToCountryLanguages(object);
+      addToCountryLanguages(object);
     }
     else {
-    	addObjectToBothSidesOfRelationshipWithKey(object, _Country.COUNTRY_LANGUAGES_KEY);
+      addObjectToBothSidesOfRelationshipWithKey(object, _Country.COUNTRY_LANGUAGES_KEY);
     }
   }
 
   public void removeFromCountryLanguagesRelationship(er.plugintest.model.CountryLanguage object) {
-    if (_Country.LOG.isDebugEnabled()) {
-      _Country.LOG.debug("removing " + object + " from countryLanguages relationship");
-    }
+    log.debug("removing {} from countryLanguages relationship", object);
     if (er.extensions.eof.ERXGenericRecord.InverseRelationshipUpdater.updateInverseRelationships()) {
-    	removeFromCountryLanguages(object);
+      removeFromCountryLanguages(object);
     }
     else {
-    	removeObjectFromBothSidesOfRelationshipWithKey(object, _Country.COUNTRY_LANGUAGES_KEY);
+      removeObjectFromBothSidesOfRelationshipWithKey(object, _Country.COUNTRY_LANGUAGES_KEY);
     }
   }
 
   public er.plugintest.model.CountryLanguage createCountryLanguagesRelationship() {
-    EOClassDescription eoClassDesc = EOClassDescription.classDescriptionForEntityName( er.plugintest.model.CountryLanguage.ENTITY_NAME );
-    EOEnterpriseObject eo = eoClassDesc.createInstanceWithEditingContext(editingContext(), null);
-    editingContext().insertObject(eo);
+    EOEnterpriseObject eo = EOUtilities.createAndInsertInstance(editingContext(),  er.plugintest.model.CountryLanguage.ENTITY_NAME );
     addObjectToBothSidesOfRelationshipWithKey(eo, _Country.COUNTRY_LANGUAGES_KEY);
     return (er.plugintest.model.CountryLanguage) eo;
   }
@@ -449,9 +404,9 @@ public abstract class _Country extends  ERXGenericRecord {
   public static Country createCountry(EOEditingContext editingContext, String code
 , String name
 ) {
-    Country eo = (Country) EOUtilities.createAndInsertInstance(editingContext, _Country.ENTITY_NAME);    
-		eo.setCode(code);
-		eo.setName(name);
+    Country eo = (Country) EOUtilities.createAndInsertInstance(editingContext, _Country.ENTITY_NAME);
+    eo.setCode(code);
+    eo.setName(name);
     return eo;
   }
 
@@ -469,13 +424,12 @@ public abstract class _Country extends  ERXGenericRecord {
 
   public static NSArray<Country> fetchCountries(EOEditingContext editingContext, EOQualifier qualifier, NSArray<EOSortOrdering> sortOrderings) {
     ERXFetchSpecification<Country> fetchSpec = new ERXFetchSpecification<Country>(_Country.ENTITY_NAME, qualifier, sortOrderings);
-    fetchSpec.setIsDeep(true);
     NSArray<Country> eoObjects = fetchSpec.fetchObjects(editingContext);
     return eoObjects;
   }
 
   public static Country fetchCountry(EOEditingContext editingContext, String keyName, Object value) {
-    return _Country.fetchCountry(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Country.fetchCountry(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Country fetchCountry(EOEditingContext editingContext, EOQualifier qualifier) {
@@ -495,7 +449,7 @@ public abstract class _Country extends  ERXGenericRecord {
   }
 
   public static Country fetchRequiredCountry(EOEditingContext editingContext, String keyName, Object value) {
-    return _Country.fetchRequiredCountry(editingContext, new EOKeyValueQualifier(keyName, EOQualifier.QualifierOperatorEqual, value));
+    return _Country.fetchRequiredCountry(editingContext, ERXQ.equals(keyName, value));
   }
 
   public static Country fetchRequiredCountry(EOEditingContext editingContext, EOQualifier qualifier) {

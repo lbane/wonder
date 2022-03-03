@@ -1,4 +1,4 @@
-// $LastChangedRevision: 5773 $ DO NOT EDIT.  Make changes to SecondEntity.java instead.
+// $LastChangedRevision$ DO NOT EDIT.  Make changes to SecondEntity.java instead.
 package er.neo4jadaptor.test.eo;
 
 import com.webobjects.eoaccess.*;

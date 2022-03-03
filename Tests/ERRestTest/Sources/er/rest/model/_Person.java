@@ -1,18 +1,12 @@
-// $LastChangedRevision: 5773 $ DO NOT EDIT.  Make changes to Person.java instead.
+// $LastChangedRevision$ DO NOT EDIT.  Make changes to Person.java instead.
 package er.rest.model;
 
-import java.util.NoSuchElementException;
-
+import com.webobjects.eoaccess.*;
+import com.webobjects.eocontrol.*;
+import com.webobjects.foundation.*;
+import java.math.*;
+import java.util.*;
 import org.apache.log4j.Logger;
-
-import com.webobjects.eoaccess.EOUtilities;
-import com.webobjects.eocontrol.EOEditingContext;
-import com.webobjects.eocontrol.EOFetchSpecification;
-import com.webobjects.eocontrol.EOGenericRecord;
-import com.webobjects.eocontrol.EOKeyValueQualifier;
-import com.webobjects.eocontrol.EOQualifier;
-import com.webobjects.eocontrol.EOSortOrdering;
-import com.webobjects.foundation.NSArray;
 
 @SuppressWarnings("all")
 public abstract class _Person extends  EOGenericRecord {
@@ -58,11 +52,11 @@ public abstract class _Person extends  EOGenericRecord {
     takeStoredValueForKey(value, "name");
   }
 
-  public Double salary() {
-    return (Double) storedValueForKey("salary");
+  public java.math.BigDecimal salary() {
+    return (java.math.BigDecimal) storedValueForKey("salary");
   }
 
-  public void setSalary(Double value) {
+  public void setSalary(java.math.BigDecimal value) {
     if (_Person.LOG.isDebugEnabled()) {
     	_Person.LOG.debug( "updating salary from " + salary() + " to " + value);
     }
