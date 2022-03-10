@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>wonder.frameworks</groupId>
 		<artifactId>plugins</artifactId>
-		<version>7.4.1-CX</version>
+		<version>7.4.2-CX-SNAPSHOT</version>
 	</parent>
 	<groupId>wonder.plugins</groupId>
 	<artifactId>DerbyPlugIn</artifactId>
