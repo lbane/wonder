@@ -37,9 +37,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -5787,13 +5790,16 @@ public class ERXPropertyListSerialization {
 
         StringWriter stringOut = new StringWriter();
         try {
-            OutputFormat format = new OutputFormat(doc); // Serialize DOM
-            XMLSerializer serial = new XMLSerializer(stringOut, format);
-            serial.asDOMSerializer(); // As a DOM serializer
-            serial.serialize(doc.getDocumentElement());
-        } catch (IOException e) {
+        	DOMSource source = new DOMSource(doc.getDocumentElement());
+        	StreamResult result = new StreamResult(stringOut);
+
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.transform(source, result);
+            
+            return stringOut.toString();
+        } catch (TransformerException e) {
             throw new NSForwardException(e);
         }
-        return stringOut.toString();
     }
 }
