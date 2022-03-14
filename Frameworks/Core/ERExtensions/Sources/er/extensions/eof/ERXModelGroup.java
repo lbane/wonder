@@ -207,7 +207,7 @@ public class ERXModelGroup extends EOModelGroup {
 					modelNameURLDictionary.setObjectForKey(url, modelName);
 					modelNames.addObject(modelName);
 				}
-				else if (NSLog.debugLoggingAllowedForLevelAndGroups(1, 32768L)) {
+				else if (NSLog.debugLoggingAllowedForLevelAndGroups(NSLog.DebugLevelCritical, NSLog.DebugGroupModel)) {
 					NSLog.debug.appendln("Ignoring model at path \"" + modelPath + "\" because the model group " + this + " already contains the model from the path \"" + eomodel.pathURL() + "\"");
 				}
 			}
