@@ -954,11 +954,11 @@ public class ERXPropertyListSerialization {
 			 */
 			protected String unescapeString(String toRestore) {
 				String result = toRestore.replace("&amp;", "&");
-				result = toRestore.replace("&lt;", "<");
-				result = toRestore.replace("&gt;", ">");
-				result = toRestore.replace("&apos;", "'");
-				result = toRestore.replace("&quot;", "\"");
-				result = toRestore.replace("&lt;", "<");
+				result = result.replace("&lt;", "<");
+				result = result.replace("&gt;", ">");
+				result = result.replace("&apos;", "'");
+				result = result.replace("&quot;", "\"");
+				result = result.replace("&lt;", "<");
 				return result;
 			}
 
