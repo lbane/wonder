@@ -25,6 +25,7 @@ import com.webobjects.eoaccess.EOEntity;
 import com.webobjects.eoaccess.EOJoin;
 import com.webobjects.eoaccess.EOModel;
 import com.webobjects.eoaccess.EOModelGroup;
+import com.webobjects.eoaccess.EOProperty;
 import com.webobjects.eoaccess.EORelationship;
 import com.webobjects.eoaccess.ERXModel;
 import com.webobjects.eocontrol.EOKeyValueCodingAdditions;
@@ -215,8 +216,8 @@ public class ERXModelGroup extends EOModelGroup {
 
 		NSMutableArray<URL> modelURLs = new NSMutableArray<>();
 		// First, add prototypes if specified
-		for(Enumeration prototypeModelNamesEnum = _prototypeModelNames.objectEnumerator(); prototypeModelNamesEnum.hasMoreElements(); ) {
-			String prototypeModelName = (String) prototypeModelNamesEnum.nextElement();
+		for(Enumeration<String> prototypeModelNamesEnum = _prototypeModelNames.objectEnumerator(); prototypeModelNamesEnum.hasMoreElements(); ) {
+			String prototypeModelName = prototypeModelNamesEnum.nextElement();
 			URL prototypeModelURL = (URL) modelNameURLDictionary.removeObjectForKey(prototypeModelName); // WO53
 			modelNames.removeObject(prototypeModelName);
 			if (prototypeModelURL != null) {
@@ -309,30 +310,30 @@ public class ERXModelGroup extends EOModelGroup {
 		}
 
 		protected void adjustLocalizedAttributes(EOModelGroup group) {
-			for (Enumeration enumerator = group.models().objectEnumerator(); enumerator.hasMoreElements();) {
-				EOModel model = (EOModel) enumerator.nextElement();
-				for (Enumeration e1 = model.entities().objectEnumerator(); e1.hasMoreElements();) {
-					EOEntity entity = (EOEntity) e1.nextElement();
+			for (Enumeration<EOModel> enumerator = group.models().objectEnumerator(); enumerator.hasMoreElements();) {
+				EOModel model = enumerator.nextElement();
+				for (Enumeration<EOEntity> e1 = model.entities().objectEnumerator(); e1.hasMoreElements();) {
+					EOEntity entity = e1.nextElement();
 					adjustLocalizedAttributes(entity);
 				}
 			}
 		}
 
 		protected void adjustLocalizedAttributes(EOEntity entity) {
-			NSArray attributes = entity.attributes().immutableClone();
-			NSArray classProperties = entity.classProperties().immutableClone();
-			NSArray attributesUsedForLocking = entity.attributesUsedForLocking().immutableClone();
+			NSArray<EOAttribute> attributes = entity.attributes().immutableClone();
+			NSArray<EOProperty> classProperties = entity.classProperties().immutableClone();
+			NSArray<EOAttribute> attributesUsedForLocking = entity.attributesUsedForLocking().immutableClone();
 			if (attributes == null)
-				attributes = NSArray.EmptyArray;
+				attributes = NSArray.emptyArray();
 			if (classProperties == null)
-				classProperties = NSArray.EmptyArray;
+				classProperties = NSArray.emptyArray();
 			if (attributesUsedForLocking == null)
-				attributesUsedForLocking = NSArray.EmptyArray;
-			NSMutableArray mutableClassProperties = classProperties.mutableClone();
-			NSMutableArray mutableAttributesUsedForLocking = attributesUsedForLocking.mutableClone();
+				attributesUsedForLocking = NSArray.emptyArray();
+			NSMutableArray<EOProperty> mutableClassProperties = classProperties.mutableClone();
+			NSMutableArray<EOAttribute> mutableAttributesUsedForLocking = attributesUsedForLocking.mutableClone();
 			if (attributes != null) {
-				for (Enumeration e = attributes.objectEnumerator(); e.hasMoreElements();) {
-					EOAttribute attribute = (EOAttribute) e.nextElement();
+				for (Enumeration<EOAttribute> e = attributes.objectEnumerator(); e.hasMoreElements();) {
+					EOAttribute attribute = e.nextElement();
 					boolean isClassProperty = classProperties.containsObject(attribute);
 					boolean isUsedForLocking = attributesUsedForLocking.containsObject(attribute);
 					Object languagesObject = attribute.userInfo() != null ? attribute.userInfo().objectForKey(LANGUAGES_KEY) : null;
