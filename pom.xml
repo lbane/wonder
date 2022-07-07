@@ -46,12 +46,12 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.2.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>3.0.0-M1</version>
+                    <version>3.0.0-M2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -71,7 +71,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.3.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -91,12 +91,12 @@
 			  <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>3.2.2</version>
 			  </plugin>
 			  <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
-				<version>3.9.1</version>
+				<version>3.11.0</version>
 			  </plugin>
             </plugins>
         </pluginManagement>
@@ -412,7 +412,7 @@
             <dependency>
                 <groupId>com.sun.mail</groupId>
                 <artifactId>dsn</artifactId>
-                <version>1.6.2</version>
+                <version>1.6.7</version>
             </dependency>
             <dependency>
                 <groupId>jdom</groupId>
@@ -428,7 +428,7 @@
             	<!-- Drop-in replacement for log4j -->
                 <groupId>ch.qos.reload4j</groupId>
                 <artifactId>reload4j</artifactId>
-                <version>1.2.19</version>
+                <version>1.2.21</version>
             </dependency>
             <!-- dependency>
                 <groupId>log4j</groupId>
@@ -449,7 +449,7 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.13.1</version>
+                <version>4.13.2</version>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>
@@ -459,7 +459,7 @@
             <dependency>
                 <groupId>com.ibm.icu</groupId>
                 <artifactId>icu4j</artifactId>
-                <version>68.2</version>
+                <version>71.1</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -479,7 +479,7 @@
             <dependency>
                 <groupId>ognl</groupId>
                 <artifactId>ognl</artifactId>
-                <version>3.2.18</version>
+                <version>3.2.21</version>
             </dependency>
             <dependency>
                 <groupId>metaparadigm</groupId>
@@ -521,7 +521,7 @@
             <dependency>
                 <groupId>org.apache.mina</groupId>
                 <artifactId>mina-core</artifactId>
-                <version>2.1.5</version>
+                <version>2.1.6</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
@@ -532,7 +532,7 @@
             <dependency>
                 <groupId>commons-cli</groupId>
                 <artifactId>commons-cli</artifactId>
-                <version>1.4</version>
+                <version>1.5.0</version>
             </dependency>
             <dependency>
                 <groupId>commons-collections</groupId>
@@ -547,7 +547,7 @@
             <dependency>
                 <groupId>javax.jms</groupId>
                 <artifactId>jms</artifactId>
-                <version>1.0.2</version>
+                <version>1.1</version>
             </dependency>
             <dependency>
                 <groupId>openjms</groupId>
@@ -568,7 +568,7 @@
             <dependency>
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-analyzers</artifactId>
-                <version>3.5.0</version>
+                <version>3.6.2</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.lucene</groupId>
@@ -594,7 +594,7 @@
             <dependency>
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
-                <version>2.1.210</version>
+                <version>2.1.214</version>
             </dependency>
             <dependency>
                 <groupId>com.octo.captcha</groupId>
@@ -624,7 +624,7 @@
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.8.0</version>
+                <version>2.11.0</version>
             </dependency>
             <dependency>
                 <groupId>commons-httpclient</groupId>
@@ -716,7 +716,7 @@
             <dependency>
                 <groupId>org.xhtmlrenderer</groupId>
                 <artifactId>flying-saucer-core</artifactId>
-                <version>9.1.20</version>
+                <version>9.1.22</version>
             </dependency>
             <dependency>
                 <groupId>net.sf.ujac</groupId>
@@ -736,7 +736,7 @@
             <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
-                <version>3.27.0-GA</version>
+                <version>3.29.0-GA</version>
             </dependency>
             <dependency>
                 <groupId>gluonj</groupId>
@@ -747,7 +747,7 @@
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi</artifactId>
-                <version>5.2.0</version>
+                <version>5.2.2</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
@@ -757,17 +757,17 @@
             <dependency>
                 <groupId>org.apache.xmlgraphics</groupId>
                 <artifactId>xmlgraphics-commons</artifactId>
-                <version>2.6</version>
+                <version>2.7</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.xmlgraphics</groupId>
                 <artifactId>fop</artifactId>
-                <version>2.5</version>
+                <version>2.7</version>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
-                <version>20.1.0</version>
+                <version>23.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.openid4java</groupId>
@@ -782,12 +782,12 @@
             <dependency>
                 <groupId>net.sf.jasperreports</groupId>
                 <artifactId>jasperreports</artifactId>
-                <version>6.19.0</version>
+                <version>6.19.1</version>
             </dependency>
             <dependency>
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
-                <version>2.10.13</version>
+                <version>2.10.14</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
@@ -797,12 +797,12 @@
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpcore</artifactId>
-                <version>4.4.14</version>
+                <version>4.4.15</version>
             </dependency>
             <dependency>
                 <groupId>com.drewnoakes</groupId>
                 <artifactId>metadata-extractor</artifactId>
-                <version>2.15.0</version>
+                <version>2.18.0</version>
             </dependency>
             <dependency>
                 <groupId>org.neo4j</groupId>
@@ -825,7 +825,7 @@
             <dependency>
                 <groupId>org.apache.sshd</groupId>
                 <artifactId>sshd-core</artifactId>
-                <version>2.7.0</version>
+                <version>2.8.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.sshd</groupId>
@@ -840,7 +840,7 @@
             <dependency>
                 <groupId>com.sun.xml.ws</groupId>
                 <artifactId>jaxws-rt</artifactId>
-                <version>2.3.3</version>
+                <version>2.3.5</version>
             </dependency>
             <dependency>
                 <groupId>com.googlecode.json-simple</groupId>
@@ -854,7 +854,7 @@
         <repository>
             <id>nexus</id>
             <name>CX Internal Releases Repository</name>
-            <url>http://jupiter.docxcellence.lan:8081/repository/maven-public/</url>
+            <url>http://nexus.docxcellence.lan:8081/repository/maven-public/</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -879,7 +879,7 @@
         <pluginRepository>
             <id>wocommunity</id>
             <name>CX Internal Releases Repository</name>
-            <url>http://jupiter.docxcellence.lan:8081/repository/maven-public/</url>
+            <url>http://nexus.docxcellence.lan:8081/repository/maven-public/</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -904,12 +904,12 @@
 		<repository>
 		  <id>nexus</id>
 		  <name>Releases</name>
-		  <url>http://jupiter.docxcellence.lan:8081/repository/maven-releases</url>
+		  <url>http://nexus.docxcellence.lan:8081/repository/maven-releases</url>
 		</repository>
 		<snapshotRepository>
 		  <id>nexus</id>
 		  <name>Snapshot</name>
-		  <url>http://jupiter.docxcellence.lan:8081/repository/maven-snapshots</url>
+		  <url>http://nexus.docxcellence.lan:8081/repository/maven-snapshots</url>
 		</snapshotRepository>
 	  </distributionManagement>
 
