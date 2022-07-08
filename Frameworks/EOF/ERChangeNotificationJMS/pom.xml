@@ -26,9 +26,10 @@
 			<groupId>com.webobjects</groupId>
 			<artifactId>JavaEOAccess</artifactId>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.jms/jms-api -->
 		<dependency>
 			<groupId>javax.jms</groupId>
-			<artifactId>jms</artifactId>
+			<artifactId>jms-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>javax.naming</groupId>
