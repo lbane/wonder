@@ -2,13 +2,14 @@ package er.jgroups;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.URL;
 
+import org.jgroups.BytesMessage;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
-import org.jgroups.ReceiverAdapter;
+import org.jgroups.Receiver;
 import org.jgroups.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,7 @@ import er.extensions.remoteSynchronizer.ERXRemoteSynchronizer.RefByteArrayOutput
  */
 
 public class ERJGroupsNotificationCenter extends ERXRemoteNotificationCenter {
-    private static final Logger log = LoggerFactory.getLogger(ERJGroupsNotificationCenter.class);
+    protected static final Logger log = LoggerFactory.getLogger(ERJGroupsNotificationCenter.class);
 
     private String _groupName;
 
@@ -44,6 +45,7 @@ public class ERJGroupsNotificationCenter extends ERXRemoteNotificationCenter {
 
     private static volatile ERJGroupsNotificationCenter _sharedInstance;
 
+    @SuppressWarnings("resource")
     protected ERJGroupsNotificationCenter() throws Exception {
         String jgroupsPropertiesFile = ERXProperties.stringForKey("er.extensions.jgroupsNotificationCenter.properties");
         String jgroupsPropertiesFramework = null;
@@ -60,41 +62,42 @@ public class ERJGroupsNotificationCenter extends ERXRemoteNotificationCenter {
             System.setProperty("bind.address", localBindAddressStr);
         }
 
-        URL propertiesUrl = WOApplication.application().resourceManager().pathURLForResourceNamed(jgroupsPropertiesFile, jgroupsPropertiesFramework, null);
-        _channel = new JChannel(propertiesUrl);
-        _postLocal = ERXProperties.booleanForKeyWithDefault("er.extensions.jgroupsNotificationCenter.postLocal", false);
-        _channel.setDiscardOwnMessages(Boolean.FALSE);
-        _channel.connect(_groupName);
-        _channel.setReceiver(new ReceiverAdapter() {
+        try (InputStream propertiesStream = WOApplication.application().resourceManager().inputStreamForResourceNamed(jgroupsPropertiesFile, jgroupsPropertiesFramework, null)) {
+            _channel = new JChannel(propertiesStream);
+            _postLocal = ERXProperties.booleanForKeyWithDefault("er.extensions.jgroupsNotificationCenter.postLocal", false);
+            _channel.setDiscardOwnMessages(Boolean.FALSE);
+            _channel.connect(_groupName);
+            _channel.setReceiver(new Receiver() {
 
-            @Override
-            public void receive(Message message) {
-                try {
-                    byte[] buffer = message.getBuffer();
-                    ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
-                    ObjectInputStream dis = new ObjectInputStream(bais);
-                    String name = (String) dis.readObject();
-                    Object object = dis.readObject();
-                    NSDictionary userInfo = (NSDictionary) dis.readObject();
-                    NSNotification notification = new NSNotification(name, object, userInfo);
-                    if (log.isDebugEnabled()) {
-                        log.debug("Received notification: {}", notification);
-                    } else if (log.isInfoEnabled()) {
-                        log.info("Received {} notification.", notification.name());
+                @Override
+                public void receive(Message message) {
+                    try {
+                        byte[] buffer = message.getArray();
+                        ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
+                        ObjectInputStream dis = new ObjectInputStream(bais);
+                        String name = (String) dis.readObject();
+                        Object object = dis.readObject();
+                        NSDictionary userInfo = (NSDictionary) dis.readObject();
+                        NSNotification notification = new NSNotification(name, object, userInfo);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Received notification: {}", notification);
+                        } else if (log.isInfoEnabled()) {
+                            log.info("Received {} notification.", notification.name());
+                        }
+                        postLocalNotification(notification);
+                    } catch (IOException e) {
+                        log.error("Failed to read notification.", e);
+                    } catch (ClassNotFoundException e) {
+                        log.error("Failed to find class.", e);
                     }
-                    postLocalNotification(notification);
-                } catch (IOException e) {
-                    log.error("Failed to read notification.", e);
-                } catch (ClassNotFoundException e) {
-                    log.error("Failed to find class.", e);
                 }
-            }
 
-            @Override
-            public void viewAccepted(View view) {
-                // System.out.println(".viewAccepted: " + view);
-            }
-        });
+                @Override
+                public void viewAccepted(View view) {
+                    // System.out.println(".viewAccepted: " + view);
+                }
+            });
+        }
     }
 
     public static void install() {
@@ -125,19 +128,23 @@ public class ERJGroupsNotificationCenter extends ERXRemoteNotificationCenter {
     }
 
     protected void writeNotification(NSNotification notification) throws Exception, IOException {
-        RefByteArrayOutputStream baos = new RefByteArrayOutputStream();
-        ObjectOutputStream dos = new ObjectOutputStream(baos);
-        dos.writeObject(notification.name());
-        dos.writeObject(notification.object());
-        dos.writeObject(notification.userInfo());
-        dos.flush();
-        dos.close();
-        if (log.isDebugEnabled()) {
-            log.debug("Sending notification: {}", notification);
-        } else if (log.isInfoEnabled()) {
-            log.info("Sending {} notification.", notification.name());
+        try (RefByteArrayOutputStream baos = new RefByteArrayOutputStream()) {
+            
+            try (ObjectOutputStream dos = new ObjectOutputStream(baos)) {
+                dos.writeObject(notification.name());
+                dos.writeObject(notification.object());
+                dos.writeObject(notification.userInfo());
+                dos.flush();
+            }
+            
+            if (log.isDebugEnabled()) {
+                log.debug("Sending notification: {}", notification);
+            } else if (log.isInfoEnabled()) {
+                log.info("Sending {} notification.", notification.name());
+            }
+            
+            Message message = new BytesMessage(null, baos.buffer());
+            _channel.send(message);
         }
-        Message message = new Message(null, null, baos.buffer(), 0, baos.size());
-        _channel.send(message);
     }
 }

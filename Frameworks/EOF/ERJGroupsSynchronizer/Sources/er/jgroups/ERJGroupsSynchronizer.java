@@ -4,12 +4,13 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.Enumeration;
 
+import org.jgroups.BytesMessage;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
-import org.jgroups.ReceiverAdapter;
+import org.jgroups.Receiver;
 import org.jgroups.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,7 @@ import er.extensions.remoteSynchronizer.ERXRemoteSynchronizer;
  * @author mschrag
  */
 public class ERJGroupsSynchronizer extends ERXRemoteSynchronizer {
-	private static final Logger log = LoggerFactory.getLogger(ERXRemoteSynchronizer.class);
+	protected static final Logger log = LoggerFactory.getLogger(ERJGroupsSynchronizer.class);
 
 	private String _groupName;
 	private JChannel _channel;
@@ -69,11 +70,12 @@ public class ERJGroupsSynchronizer extends ERXRemoteSynchronizer {
 		}
 		_groupName = ERXProperties.stringForKeyWithDefault("er.extensions.jgroupsSynchronizer.groupName", WOApplication.application().name());
 
-		URL propertiesUrl = WOApplication.application().resourceManager().pathURLForResourceNamed(jgroupsPropertiesFile, jgroupsPropertiesFramework, null);
-		_channel = new JChannel(propertiesUrl);
-		_channel.setDiscardOwnMessages(Boolean.TRUE);
+		try (final InputStream propertiesUrl = WOApplication.application().resourceManager().inputStreamForResourceNamed(jgroupsPropertiesFile, jgroupsPropertiesFramework, null)) {
+		    _channel = new JChannel(propertiesUrl);
+		    _channel.setDiscardOwnMessages(Boolean.TRUE);
 
-		_registerForCleanup();
+		    _registerForCleanup();
+		}
 	}
 
 	@Override
@@ -86,13 +88,15 @@ public class ERJGroupsSynchronizer extends ERXRemoteSynchronizer {
 		_channel.disconnect();
 	}
 
+	@SuppressWarnings("resource")
 	@Override
 	public void listen() {
-		_channel.setReceiver(new ReceiverAdapter() {
+		_channel.setReceiver(new Receiver() {
 
+			@Override
 			public void receive(Message message) {
 				try {
-					byte[] buffer = message.getBuffer();
+					byte[] buffer = message.getArray();
 					ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
 					DataInputStream dis = new DataInputStream(bais);
 					int transactionCount = dis.readInt();
@@ -111,6 +115,7 @@ public class ERJGroupsSynchronizer extends ERXRemoteSynchronizer {
 				}
 			}
 
+			@Override
 			public void viewAccepted(View view) {
 				// System.out.println(".viewAccepted: " + view);
 			}
@@ -128,19 +133,21 @@ public class ERJGroupsSynchronizer extends ERXRemoteSynchronizer {
 			log.info("No changes to send!");
 			return;
 		}
-		RefByteArrayOutputStream baos = new RefByteArrayOutputStream();
-		DataOutputStream dos = new DataOutputStream(baos);
-		dos.writeInt(cacheChanges.count());
-		for (Enumeration cacheChangesEnum = cacheChanges.objectEnumerator(); cacheChangesEnum.hasMoreElements();) {
-			ERXDatabase.CacheChange cacheChange = (ERXDatabase.CacheChange) cacheChangesEnum.nextElement();
-			_writeCacheChange(dos, cacheChange);
+		
+		try (RefByteArrayOutputStream baos = new RefByteArrayOutputStream()) {
+		    try (DataOutputStream dos = new DataOutputStream(baos)) {
+		        dos.writeInt(cacheChanges.count());
+		        for (Enumeration cacheChangesEnum = cacheChanges.objectEnumerator(); cacheChangesEnum.hasMoreElements();) {
+		            ERXDatabase.CacheChange cacheChange = (ERXDatabase.CacheChange) cacheChangesEnum.nextElement();
+		            _writeCacheChange(dos, cacheChange);
+		        }
+		        dos.flush();
+		    }
+		    log.info("Sending {} changes.", cacheChanges.count());
+		    log.debug("  Changes = {}", cacheChanges);
+		    Message message = new BytesMessage(null, baos.buffer());
+		    _channel.send(message);
 		}
-		dos.flush();
-		dos.close();
-		log.info("Sending {} changes.", cacheChanges.count());
-		log.debug("  Changes = {}", cacheChanges);
-		Message message = new Message(null, null, baos.buffer(), 0, baos.size());
-		_channel.send(message);
 	}
 
 	private void _registerForCleanup() {
