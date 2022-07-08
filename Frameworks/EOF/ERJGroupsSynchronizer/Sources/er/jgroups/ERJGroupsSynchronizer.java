@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
 
-import org.jgroups.BytesMessage;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.Receiver;
@@ -96,7 +95,7 @@ public class ERJGroupsSynchronizer extends ERXRemoteSynchronizer {
 			@Override
 			public void receive(Message message) {
 				try {
-					byte[] buffer = message.getArray();
+					byte[] buffer = message.getRawBuffer();
 					ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
 					DataInputStream dis = new DataInputStream(bais);
 					int transactionCount = dis.readInt();
@@ -145,7 +144,9 @@ public class ERJGroupsSynchronizer extends ERXRemoteSynchronizer {
 		    }
 		    log.info("Sending {} changes.", cacheChanges.count());
 		    log.debug("  Changes = {}", cacheChanges);
-		    Message message = new BytesMessage(null, baos.buffer());
+		    //BytesMessage is used in the next version 5.x of jgroups
+		    //Message message = new BytesMessage(null, baos.buffer());
+		    Message message = new Message(null, baos.buffer());
 		    _channel.send(message);
 		}
 	}

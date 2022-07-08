@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.jgroups.BytesMessage;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.Receiver;
@@ -72,7 +71,7 @@ public class ERJGroupsNotificationCenter extends ERXRemoteNotificationCenter {
                 @Override
                 public void receive(Message message) {
                     try {
-                        byte[] buffer = message.getArray();
+                        byte[] buffer = message.getRawBuffer();
                         ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
                         ObjectInputStream dis = new ObjectInputStream(bais);
                         String name = (String) dis.readObject();
@@ -143,7 +142,9 @@ public class ERJGroupsNotificationCenter extends ERXRemoteNotificationCenter {
                 log.info("Sending {} notification.", notification.name());
             }
             
-            Message message = new BytesMessage(null, baos.buffer());
+            //BytesMessage is used in the next version 5.x of jgroups
+            //Message message = new BytesMessage(null, baos.buffer());
+            Message message = new Message(null, baos.buffer());
             _channel.send(message);
         }
     }

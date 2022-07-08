@@ -579,7 +579,7 @@
                 <groupId>org.jgroups</groupId>
                 <artifactId>jgroups</artifactId>
                 <!-- new version available, but apparently with API differences -->
-                <version>5.2.2.Final</version>
+                <version>4.2.21.Final</version>
             </dependency>
             <dependency>
                 <groupId>commons-logging</groupId>
