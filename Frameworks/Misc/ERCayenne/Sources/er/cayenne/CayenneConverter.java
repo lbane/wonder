@@ -9,7 +9,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.cayenne.exp.Expression;
+import org.apache.cayenne.configuration.EmptyConfigurationNodeVisitor;
+import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.map.DataMap;
 import org.apache.cayenne.map.DbAttribute;
 import org.apache.cayenne.map.DbEntity;
@@ -19,9 +20,14 @@ import org.apache.cayenne.map.DeleteRule;
 import org.apache.cayenne.map.ObjAttribute;
 import org.apache.cayenne.map.ObjEntity;
 import org.apache.cayenne.map.ObjRelationship;
-import org.apache.cayenne.query.SelectQuery;
+import org.apache.cayenne.map.QueryDescriptor;
+import org.apache.cayenne.map.SelectQueryDescriptor;
+import org.apache.cayenne.query.Ordering;
+import org.apache.cayenne.query.PrefetchTreeNode;
+import org.apache.cayenne.query.QueryMetadata;
 import org.apache.cayenne.query.SortOrder;
 import org.apache.cayenne.util.Util;
+import org.apache.cayenne.util.XMLEncoder;
 
 import com.webobjects.eoaccess.EOAttribute;
 import com.webobjects.eoaccess.EOEntity;
@@ -106,7 +112,7 @@ import er.extensions.eof.ERXGenericRecord;
  * The converter attempts to convert qualifiers for any fetch specifications you've defined in your model, but this should be considered just a best attempt, not guaranteed to be correct.
  */
 public class CayenneConverter {
-
+    
 	public static void main(String[] args) {
 		try {
 			EOModelGroup.defaultGroup().addModelWithPath(args[0]);
@@ -156,7 +162,8 @@ public class CayenneConverter {
 			File sourcesFolder = new File(projectFolder.getAbsolutePath(), "Sources");
 			File newModelFile = new File(sourcesFolder.getAbsolutePath(), model.name() + ".map.xml");
 			try (PrintWriter writer = new PrintWriter(newModelFile, "UTF8")) {
-				dataMap.encodeAsXML(writer);
+			    XMLEncoder xenc = new XMLEncoder(writer);
+			    dataMap.encodeAsXML(xenc, new EmptyConfigurationNodeVisitor());
 			}
 			
 			System.err.println("\nWrote cayenne map (model) file to: " +  newModelFile.getCanonicalPath() + "\n");
@@ -303,12 +310,15 @@ public class CayenneConverter {
 
 	private void convertFetchSpecification(EOEntity entity, DataMap dataMap, String fetchSpecName) {
 		EOFetchSpecification fetchSpec = entity.fetchSpecificationNamed(fetchSpecName);
+		
+		SelectQueryDescriptor query = QueryDescriptor.selectQueryDescriptor();
 
-		SelectQuery query = new SelectQuery(dataMap.getObjEntity(entity.name()));
 		query.setName(fetchSpecName);
 
 		query.setDistinct(fetchSpec.usesDistinct());
-		query.setFetchingDataRows(fetchSpec.fetchesRawRows());
+		if (fetchSpec.fetchesRawRows()) {
+		    query.setProperty(QueryMetadata.FETCHING_DATA_ROWS_PROPERTY, Boolean.TRUE.toString());
+		}
 		
 		String qualString = fetchSpec.qualifier().toString();
 		qualString = qualString.replace(" caseinsensitivelike ", " likeIgnoreCase ");
@@ -320,16 +330,20 @@ public class CayenneConverter {
 		}
 		
 		try {
-			query.setQualifier(Expression.fromString(qualString));
+			query.setQualifier(ExpressionFactory.exp(qualString));
 		} catch (Exception e) {
 			System.out.println("unable to parse qualifier for fetchSpec '" + fetchSpecName + "'. qual=" + qualString + "\n" + e.getMessage());
 		}
-		query.setFetchLimit(fetchSpec.fetchLimit());
+		
+		query.setProperty(QueryMetadata.FETCH_LIMIT_PROPERTY, Integer.toString(fetchSpec.fetchLimit()));
+		
+		// There does not seem to be a ways to spec this in Cayenne
 		//query.setResolvingInherited(fetchSpec.isDeep());
-		query.setStatementFetchSize(fetchSpec.fetchLimit());
+		//query.setStatementFetchSize(fetchSpec.fetchLimit());
 		
 		for (String	keyPath : fetchSpec.prefetchingRelationshipKeyPaths()) {
-			query.addPrefetch(keyPath);
+		    // I don't know, what the "right" semantics are here, but JOINT-senantics are the default
+			query.addPrefetch(keyPath, PrefetchTreeNode.JOINT_PREFETCH_SEMANTICS);
 		}
 		
 		for (EOSortOrdering sortOrdering : fetchSpec.sortOrderings()) {
@@ -341,10 +355,11 @@ public class CayenneConverter {
 			} else if (sortOrdering.selector().equals(EOSortOrdering.CompareDescending)) {
 				order = SortOrder.DESCENDING;
 			}
-			query.addOrdering(sortOrdering.key(), order);
+			Ordering ordering = new Ordering(sortOrdering.key(), order);
+			query.addOrdering(ordering);
 		}
 		
-		dataMap.addQuery(query);
+		dataMap.addQueryDescriptor(query);
 	}
 	
 	public String getJavaClassName(EOAttribute attr) {

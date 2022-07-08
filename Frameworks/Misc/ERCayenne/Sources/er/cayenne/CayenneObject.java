@@ -22,30 +22,37 @@ public class CayenneObject extends CayenneDataObject implements NSKeyValueCoding
 	public CayenneObject() {
 	}
 
+	@Override
 	public void takeValueForKey(Object value, String key) {
-		NSKeyValueCoding.DefaultImplementation.takeValueForKey(this, value, key);
+	    NSKeyValueCoding.DefaultImplementation.takeValueForKey(this, value, key);
 	}
 
+	@Override
 	public Object valueForKey(String key) {
-		return NSKeyValueCoding.DefaultImplementation.valueForKey(this, key);
+	    return NSKeyValueCoding.DefaultImplementation.valueForKey(this, key);
 	}
 
+	@Override
 	public void takeValueForKeyPath(Object value, String keyPath) {
-		NSKeyValueCodingAdditions.DefaultImplementation.takeValueForKeyPath(this, value, keyPath);
+	    NSKeyValueCodingAdditions.DefaultImplementation.takeValueForKeyPath(this, value, keyPath);
 	}
 
+	@Override
 	public Object valueForKeyPath(String keyPath) {
 		return NSKeyValueCodingAdditions.DefaultImplementation.valueForKeyPath(this, keyPath);
 	}
 
+	@Override
 	public Object handleQueryWithUnboundKey(String key) {
 		return NSKeyValueCoding.DefaultImplementation.handleQueryWithUnboundKey(this, key);
 	}
 
+	@Override
 	public void handleTakeValueForUnboundKey(Object value, String key) {
 		NSKeyValueCoding.DefaultImplementation.handleTakeValueForUnboundKey(this, value, key);
 	}
 
+	@Override
 	public void unableToSetNullForKey(String key) {
 		NSKeyValueCoding.DefaultImplementation.unableToSetNullForKey(this, key);
 	}

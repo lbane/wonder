@@ -1,6 +1,7 @@
 package er.cayenne;
 
 import org.apache.cayenne.ObjectContext;
+import org.apache.cayenne.configuration.CayenneRuntime;
 import org.apache.cayenne.configuration.server.ServerRuntime;
 
 import com.webobjects.appserver.WORequest;
@@ -24,7 +25,7 @@ public abstract class CayenneApplication extends ERXApplication {
 		if (runtime == null) {
 			throw new IllegalStateException("Cayenne runtime was not created.");
 		}
-		ServerRuntime.bindThreadInjector(runtime.getInjector());
+		CayenneRuntime.bindThreadInjector(runtime.getInjector());
 	}
 
 	/**
@@ -38,8 +39,8 @@ public abstract class CayenneApplication extends ERXApplication {
 
 	@Override
 	public WOResponse dispatchRequest(WORequest request) {
-    	ServerRuntime.bindThreadInjector(runtime.getInjector());
-		return super.dispatchRequest(request);
+	    CayenneRuntime.bindThreadInjector(runtime.getInjector());
+	    return super.dispatchRequest(request);
 	}
 	
 	@Override
@@ -58,7 +59,7 @@ public abstract class CayenneApplication extends ERXApplication {
 	 * @return a org.apache.cayenne.ObjectContext object
 	 */
 	public ObjectContext newObjectContext() {
-		return runtime.getContext();
+		return runtime.newContext();
 	}
 	
 }
