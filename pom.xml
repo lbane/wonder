@@ -688,6 +688,11 @@
                 <version>10.15.2.0</version>
             </dependency>
             <dependency>
+                <groupId>com.microsoft.sqlserver</groupId>
+                <artifactId>mssql-jdbc</artifactId>
+                <version>10.2.0.jre8</version>
+            </dependency>
+            <dependency>
                 <groupId>net.sf.ezmorph</groupId>
                 <artifactId>ezmorph</artifactId>
                 <version>1.0.6</version>
