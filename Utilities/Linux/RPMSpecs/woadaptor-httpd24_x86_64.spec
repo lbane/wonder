@@ -1,9 +1,10 @@
 Summary: woadaptor is a Apache 2.4 module to connect to wotaskd.
 Name: woadaptor-httpd24
-Version: 6
-Release: 2.2
-#Prefix: /
-#BuildArch: x86_64
+Version: 6.1
+Release: 1
+Prefix: /
+ExclusiveArch: x86_64
+ExclusiveOS: linux
 Group: System Environment/Daemons
 Source0: Adaptors-src-20220829.tar.gz
 URL: http://wiki.wocommunity.org/
@@ -28,6 +29,7 @@ Web server (Apache) and your wotaskd instances.
 
 %build
 #cd Adaptors
+# TODO: This should be handled in a patch file
 sed -i 's/ADAPTOR_OS = MACOS/ADAPTOR_OS = LINUX/' make.config
 sed -i 's/ADAPTORS = CGI Apache2.2/ADAPTORS = CGI Apache2.4/' make.config
 make CC=gcc
@@ -36,10 +38,10 @@ make CC=gcc
 rm -Rf %{buildroot}
 mkdir -p %{buildroot}%{_libdir}/httpd/modules/
 mkdir -p %{buildroot}/etc/httpd/conf.d/
-mkdir -p %{buildroot}/opt/Local/Library/WebServer/Documents/WebObjects
+#mkdir -p %%{buildroot}/opt/Local/Library/WebServer/Documents/WebObjects
 %{__cp} $RPM_BUILD_DIR/Adaptors/Apache2.4/mod_WebObjects.so %{buildroot}%{_libdir}/httpd/modules/
-%{__cp} $RPM_BUILD_DIR/Adaptors/Apache2.4/apache.conf %{buildroot}/etc/httpd/conf.d/webobjects.conf
-#sed -i 's"^ScriptAlias /cgi-bin/"## ScriptAlias /cgi-bin/"' /etc/httpd/conf/httpd.conf
+%{__cp} $RPM_BUILD_DIR/Adaptors/Apache2.4/apache.conf %{buildroot}%{_sysconfdir}/httpd/conf.d/webobjects.conf
+#sed -i 's"^ScriptAlias /cgi-bin/"## ScriptAlias /cgi-bin/"' %%{buildroot}%%{_sysconfdir}/httpd/conf/httpd.conf
 
 %clean
 rm -rf %{buildroot}
@@ -51,15 +53,22 @@ service httpd graceful > /dev/null 2>&1
 
 %preun
 if [ "$1" = "0" ]; then
-  mv /etc/httpd/conf.d/webobjects.conf /etc/httpd/conf.d/webobjects.conf.bak
-  rm %{_libdir}/httpd/modules/mod_WebObjects.so
+  # do we really need to make a backup?
+  cp %{_sysconfdir}/httpd/conf.d/webobjects.conf %{_sysconfdir}/httpd/conf.d/webobjects.conf.bak
+  # removing the file is part of the package managers jobs
+  # rm %%{_libdir}/httpd/modules/mod_WebObjects.so
+  # service httpd graceful
+fi
+
+%postun
+if [ "$1" = "0" ]; then
   service httpd graceful
 fi
 
 %files
 %defattr(-,root,wheel,-)
 %{_libdir}/httpd/modules/mod_WebObjects.so
-/etc/httpd/conf.d/webobjects.conf
+%config(noreplace) %{_sysconfdir}/httpd/conf.d/webobjects.conf
 
 %changelog
 * Mon Aug 29 2022 Suriel Puhl <github@xmit.xyz> - WO Adaptor URL Sanitization Fixes 
