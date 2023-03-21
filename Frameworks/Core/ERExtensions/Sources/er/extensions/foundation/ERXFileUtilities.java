@@ -641,12 +641,7 @@ public class ERXFileUtilities {
     	}
     	else {
     		NSBundle bundle = "app".equals(frameworkName) ? NSBundle.mainBundle() : NSBundle.bundleForName(frameworkName);
-    		if (bundle.isJar()) {
-    			url = bundle.pathURLForResourcePath(fileName);
-    		}
-    		else {
-    			url = bundle.pathURLForResourcePath(fileName);
-    		}
+    		url = bundle.pathURLForResourcePath(fileName);
     	}
         return url;
     }
