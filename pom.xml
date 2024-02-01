@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>wonder</groupId>
     <artifactId>wonder</artifactId>
-    <version>7.4.4-CX-SNAPSHOT</version>
+    <version>7.5.0-CX-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Project Wonder</name>
     <url>http://wiki.objectstyle.org/confluence/display/WONDER/Home</url>
