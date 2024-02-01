@@ -70,22 +70,20 @@ public class Main extends ERXComponent {
 	@SuppressWarnings("unused")
 	private void selectTutorial() {
 		// SelectQuery examples
-		SelectQuery select1 = new SelectQuery(Painting.class);
+		SelectQuery<Painting> select1 = new SelectQuery<>(Painting.class);
 		List<Painting> paintings1 = objContext.performQuery(select1);
 
 		Expression qualifier2 = ExpressionFactory.likeIgnoreCaseExp(
 				Painting.NAME_KEY, "gi%");
-		SelectQuery select2 = new SelectQuery(Painting.class, qualifier2);
+		SelectQuery<Painting> select2 = new SelectQuery<>(Painting.class, qualifier2);
 		List<Painting> paintings2 = objContext.performQuery(select2);
 
 		Calendar c = new GregorianCalendar();
 		c.set(c.get(Calendar.YEAR) - 100, 0, 1, 0, 0, 0);
 
-		Expression qualifier3 = Expression
-				.fromString("artist.dateOfBirth < $date");
-		qualifier3 = qualifier3.expWithParameters(Collections.singletonMap(
+		Expression qualifier3 = ExpressionFactory.exp("artist.dateOfBirth < $date").params(Collections.singletonMap(
 				"date", c.getTime()));
-		SelectQuery select3 = new SelectQuery(Painting.class, qualifier3);
+		SelectQuery<Painting> select3 = new SelectQuery<>(Painting.class, qualifier3);
 		List<Painting> paintings3 = objContext.performQuery(select3);
 	}
 
@@ -93,7 +91,7 @@ public class Main extends ERXComponent {
 		// Delete object examples
 		Expression qualifier = ExpressionFactory.matchExp(Artist.NAME_KEY,
 				"Pablo Picasso");
-		SelectQuery selectToDelete = new SelectQuery(Artist.class, qualifier);
+		SelectQuery<Artist> selectToDelete = new SelectQuery<>(Artist.class, qualifier);
 		Artist picasso = (Artist) Cayenne.objectForQuery(objContext,
 				selectToDelete);
 

@@ -26,6 +26,10 @@
             <!-- This Lucene version is ancient, more modern version require a refactoring -->
 			<version>2.9.3</version>
 		</dependency>
+        <dependency>
+            <groupId>wonder.core</groupId>
+            <artifactId>ERPrototypes</artifactId>
+        </dependency>
 	</dependencies>
 	<build>
 		<sourceDirectory>Sources</sourceDirectory>

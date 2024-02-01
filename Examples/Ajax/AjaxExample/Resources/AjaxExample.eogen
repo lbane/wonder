@@ -1,1 +1,10 @@
- -destination Sources -extension java -java -javaTemplate _WonderEntity.java -model Resources/AjaxExample.eomodeld -packagedirs -subclassDestination Sources -subclassJavaTemplate WonderEntity.java -verbose -loadModelGroup
+ -destination Sources \
+ -extension java \
+ -java \
+ -javaTemplate _WonderEntity.java \
+ -model Resources/AjaxExample.eomodeld \
+ -packagedirs \
+ -subclassDestination Sources \
+ -subclassJavaTemplate WonderEntity.java \
+ -verbose \
+ -loadModelGroup

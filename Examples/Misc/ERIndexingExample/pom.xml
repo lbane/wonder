@@ -28,6 +28,10 @@
 			<groupId>wonder.eof</groupId>
 			<artifactId>ERIndexing</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>wonder.core</groupId>
+            <artifactId>ERPrototypes</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>com.webobjects</groupId>
 			<artifactId>JavaWebObjects</artifactId>

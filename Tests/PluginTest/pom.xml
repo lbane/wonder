@@ -6,7 +6,6 @@
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>wonder.tests</groupId>
 	<artifactId>PluginTest</artifactId>
 	<name>PluginTest Application</name>
 	<packaging>woapplication</packaging>
@@ -19,6 +18,10 @@
 			<groupId>wonder.core</groupId>
 			<artifactId>ERExtensions</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>wonder.core</groupId>
+            <artifactId>ERPrototypes</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>com.webobjects</groupId>
 			<artifactId>JavaFoundation</artifactId>

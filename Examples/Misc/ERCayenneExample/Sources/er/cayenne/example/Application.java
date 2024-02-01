@@ -17,7 +17,9 @@ public class Application extends CayenneApplication {
 	
 	@Override
 	protected ServerRuntime createRuntime() {
-		return new ServerRuntime("cayenne-project.xml");
+	    return ServerRuntime.builder()
+	                        .addConfig("cayenne-project.xml")
+	                        .build();
 	}
 	
 }

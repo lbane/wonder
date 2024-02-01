@@ -1,9 +1,9 @@
 package er.cayenne.example;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.cayenne.query.Ordering;
+import org.apache.cayenne.query.Orderings;
 import org.apache.cayenne.query.SortOrder;
 
 /**
@@ -29,6 +29,7 @@ public class ChainableOrdering extends Ordering {
 	/**
 	 * Adds an ordering after this one.
 	 */
+	@Override
 	public ChainableOrderings then( Ordering nextSortOrdering ) {
 		ChainableOrderings sortOrderings = array();
 		sortOrderings.add( nextSortOrdering );
@@ -54,7 +55,7 @@ public class ChainableOrdering extends Ordering {
 	/**
 	 * Wraps a List of Orderings to support chaining.
 	 */
-	public static class ChainableOrderings extends ArrayList<Ordering> {
+	public static class ChainableOrderings extends Orderings {
 
 		/**
 		 * Constructs a new ChainableOrderings
@@ -89,6 +90,7 @@ public class ChainableOrdering extends Ordering {
 		/**
 		 * Adds an Ordering to the list and returns itself to be chained again.
 		 */
+		@Override
 		public ChainableOrderings then( Ordering nextOrdering ) {
 			add( nextOrdering );
 			return this;

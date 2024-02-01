@@ -28,6 +28,10 @@
 			<groupId>com.webobjects</groupId>
 			<artifactId>JavaEOControl</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>wonder.core</groupId>
+            <artifactId>ERPrototypes</artifactId>
+        </dependency>
 	</dependencies>
 
 	<build>
