@@ -3,7 +3,7 @@
     <parent>
         <groupId>wonder.frameworks</groupId>
         <artifactId>ajax</artifactId>
-    	<version>7.5.0-CX</version>
+    	<version>7.5.1-CX-SNAPSHOT</version>
     </parent>
 
     <groupId>wonder.ajax</groupId>
