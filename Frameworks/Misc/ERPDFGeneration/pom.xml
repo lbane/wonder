@@ -31,17 +31,10 @@
 		<dependency>
 			<groupId>org.xhtmlrenderer</groupId>
 			<artifactId>flying-saucer-core</artifactId>
-			<version>9.1.20</version>
 		</dependency>
-		<dependency>
-			<groupId>org.xhtmlrenderer</groupId>
-			<artifactId>flying-saucer-pdf-openpdf</artifactId>
-			<version>9.1.20</version>
-      	</dependency>
         <dependency>
           <groupId>org.xhtmlrenderer</groupId>
           <artifactId>flying-saucer-pdf</artifactId>
-          <version>9.1.20</version>
         </dependency>
 		<dependency>
 			<groupId>net.sf.ujac</groupId>

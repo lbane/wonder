@@ -552,8 +552,10 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty</artifactId>
-                <version>3.3.1.Final</version>
-                <!-- Even upgrading to 3.10.x is not possible without changing a lot in ERWOAdaptor -->
+                <version>3.9.9.Final</version>
+                <!-- Even upgrading to 3.10.x is not possible without changing a lot in ERWOAdaptor.
+                     Best version would be io.netty:netty-all:4.1.107 anyway. -->
+                
             </dependency>
             <dependency>
                 <groupId>commons-cli</groupId>
@@ -747,8 +749,13 @@
             <dependency>
                 <groupId>org.xhtmlrenderer</groupId>
                 <artifactId>flying-saucer-core</artifactId>
-                <version>9.5.1</version>
+                <version>9.5.2</version>
             </dependency>
+	        <dependency>
+	          <groupId>org.xhtmlrenderer</groupId>
+	          <artifactId>flying-saucer-pdf</artifactId>
+	          <version>9.5.2</version>
+	        </dependency>
             <dependency>
                 <groupId>net.sf.ujac</groupId>
                 <artifactId>ujac</artifactId>
