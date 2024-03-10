@@ -1,2 +1,6 @@
 eclipse.preferences.version=1
-encoding//Components=UTF-8
+encoding//src/test/resources=UTF-8
+encoding/<project>=UTF-8
+encoding/Components=UTF-8
+encoding/Sources=UTF-8
+encoding/Tests=UTF-8
