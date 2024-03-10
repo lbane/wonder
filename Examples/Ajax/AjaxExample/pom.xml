@@ -26,6 +26,10 @@
             <groupId>wonder.core</groupId>
             <artifactId>ERPrototypes</artifactId>
         </dependency>
+        <dependency>
+            <groupId>wonder.eoadaptors</groupId>
+            <artifactId>JavaMemoryAdaptor</artifactId>
+        </dependency>
 	</dependencies>
 	<build>
 		<sourceDirectory>Sources</sourceDirectory>

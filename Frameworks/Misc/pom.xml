@@ -27,5 +27,6 @@
 		<module>SnapshotExplorer</module>
 		<module>WOJRebel</module>
 		<module>WOLips</module>
+		<module>ERGoogleSignIn</module>
 	</modules>
 </project>

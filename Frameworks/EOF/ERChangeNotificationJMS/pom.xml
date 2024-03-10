@@ -32,10 +32,6 @@
 			<artifactId>jms-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>javax.naming</groupId>
-			<artifactId>jndi</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>openjms</groupId>
 			<artifactId>openjms-client</artifactId>
 			<scope>runtime</scope>

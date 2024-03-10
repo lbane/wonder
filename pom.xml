@@ -113,8 +113,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>21</source>
+                    <target>21</target>
 <!-- 
 					<compilerArgs>
 						<compilerArg>~~add-exports</compilerArg>
@@ -175,7 +175,7 @@
 			<configuration>
 			  <toolchains>
 				<jdk>
-				  <version>1.8</version>
+				  <version>21</version>
 				</jdk>
 			  </toolchains>
 			</configuration>
@@ -199,6 +199,12 @@
                 <groupId>com.webobjects</groupId>
                 <artifactId>JavaWebObjects</artifactId>
                 <version>${webobjects.version}</version>
+		   		<exclusions>
+	    			<exclusion>
+	    				<groupId>com.webobjects</groupId>
+	    				<artifactId>JavaXML</artifactId>
+	    			</exclusion>
+	    		</exclusions>
             </dependency>
             <dependency>
                 <groupId>com.webobjects</groupId>
@@ -400,6 +406,11 @@
                 <artifactId>ERJaxWS</artifactId>
                 <version>${project.version}</version>
             </dependency>
+		  <dependency>
+				<groupId>wonder.eoadaptors</groupId>
+				<artifactId>JavaERJDBCAdaptor</artifactId>
+				<version>${project.version}</version>
+		  </dependency>
             <dependency>
                 <groupId>wonder.eoadaptors</groupId>
                 <artifactId>JavaMemoryAdaptor</artifactId>
@@ -410,6 +421,11 @@
                 <artifactId>ERCoolComponents</artifactId>
                 <version>${project.version}</version>
             </dependency>
+			<dependency>
+				<groupId>wonder.eof</groupId>
+				<artifactId>ERAttributeExtension</artifactId>
+				<version>${project.version}</version>
+			</dependency>
             <dependency>
                 <groupId>wonder.misc</groupId>
                 <artifactId>ERCaptcha</artifactId>
@@ -430,6 +446,16 @@
                 <artifactId>GoogleChart</artifactId>
                 <version>${project.version}</version>
             </dependency>
+			<dependency>
+				<groupId>wonder.plugins</groupId>
+				<artifactId>MySQLPlugIn</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>wonder.plugins</groupId>
+				<artifactId>H2PlugIn</artifactId>
+				<version>${project.version}</version>
+			</dependency>
             <dependency>
                 <groupId>javax.activation</groupId>
                 <artifactId>activation</artifactId>
@@ -552,8 +578,8 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty</artifactId>
-                <version>3.9.9.Final</version>
-                <!-- Even upgrading to 3.10.x is not possible without changing a lot in ERWOAdaptor.
+                <version>3.7.1.Final</version>
+                <!-- Even upgrading to 3.8.x is not possible without changing a lot in ERWOAdaptor.
                      Best version would be io.netty:netty-all:4.1.107 anyway. -->
                 
             </dependency>
@@ -890,6 +916,21 @@
 				<artifactId>postgresql</artifactId>
 				<version>42.7.2</version>
 			</dependency>
+			<dependency>
+				<groupId>com.mysql</groupId>
+				<artifactId>mysql-connector-j</artifactId>
+				<version>8.3.0</version>
+			</dependency>
+	        <dependency>
+	        	<groupId>org.apache.axis</groupId>
+	        	<artifactId>axis</artifactId>
+	        	<version>1.4</version>
+	        </dependency>
+	        <dependency>
+	        	<groupId>javax.servlet</groupId>
+	        	<artifactId>javax.servlet-api</artifactId>
+	        	<version>4.0.1</version>
+	        </dependency>
         </dependencies>
     </dependencyManagement>
 

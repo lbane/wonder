@@ -5,7 +5,6 @@
     	<version>7.5.1-CX-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>wonder.applications</groupId>
     <artifactId>ERMailer</artifactId>
     <name>ERMailer Application</name>
     <packaging>woapplication</packaging>

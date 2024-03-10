@@ -219,7 +219,7 @@ public class ERXMailAppender extends AppenderSkeleton {
      * Gets the to addresses as an array.
      * @return the to addresses as an array.
      */
-    public NSArray toAddressesAsArray() {
+    public NSArray<String> toAddressesAsArray() {
         return toAddresses != null ? NSArray.componentsSeparatedByString(toAddresses, ",") : NSArray.EmptyArray;
     }
 
@@ -267,7 +267,7 @@ public class ERXMailAppender extends AppenderSkeleton {
      * Gets the bcc addresses as an array.
      * @return the bcc addresses as an array.
      */
-    public NSArray bccAddressesAsArray() {
+    public NSArray<String> bccAddressesAsArray() {
         return bccAddresses != null ? NSArray.componentsSeparatedByString(bccAddresses, ",") : NSArray.EmptyArray;
     }
 
@@ -446,11 +446,11 @@ public class ERXMailAppender extends AppenderSkeleton {
      * reasonLines - NSArray of strings that give the backtrace
      * @param event logging event
      */
-    public NSMutableDictionary composeExceptionPageDictionary(LoggingEvent event) {
-        NSMutableDictionary result = new NSMutableDictionary();
+    public NSMutableDictionary<String, Object> composeExceptionPageDictionary(LoggingEvent event) {
+        NSMutableDictionary<String, Object> result = new NSMutableDictionary<>();
 
         WOContext currentContext = ERXWOContext.currentContext();
-        NSDictionary extraInformation = null;
+        NSDictionary<String, Object> extraInformation = null;
         if (currentContext != null) {
             extraInformation = ERXApplication.erxApplication().extraInformationForExceptionInContext(null, currentContext);
             result.setObjectForKey(extraInformation, "extraInfo");
@@ -469,11 +469,11 @@ public class ERXMailAppender extends AppenderSkeleton {
         if (event.getThrowableInformation() != null && event.getThrowableInformation().getThrowable() != null) {
             result.setObjectForKey(event.getThrowableInformation().getThrowable(), "exception");
         } else {
-            NSArray parts = NSArray.componentsSeparatedByString(ERXUtilities.stackTrace(), "\n");
-            NSMutableArray subParts = new NSMutableArray();
+            NSArray<String> parts = NSArray.componentsSeparatedByString(ERXUtilities.stackTrace(), "\n");
+            NSMutableArray<String> subParts = new NSMutableArray<>();
             boolean first = true;
-            for (Enumeration e = parts.reverseObjectEnumerator(); e.hasMoreElements();) {
-                String element = (String)e.nextElement();
+            for (Enumeration<String> e = parts.reverseObjectEnumerator(); e.hasMoreElements();) {
+                String element = e.nextElement();
                 if (element.indexOf("org.apache.log4j") != -1)
                     break;
                 if (!first)

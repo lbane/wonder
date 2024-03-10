@@ -14,6 +14,7 @@
 		<module>Ajax</module>
 		<module>ERCoolComponents</module>
 		<module>ERJQuery</module>
+		<module>ERJQMobile</module>
 		<module>ERJQueryMobile</module>
 		<module>ERPrototaculous</module>
 		<module>GoogleChart</module>

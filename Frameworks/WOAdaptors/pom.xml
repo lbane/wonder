@@ -13,7 +13,7 @@
     <name>WOAdaptors Frameworks</name>
 
     <modules>
-        <!-- <module>ERIMAdaptor</module> -->
+        <!-- module>ERIMAdaptor</module -->
         <module>ERWOAdaptor</module>
     </modules>
 </project>

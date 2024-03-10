@@ -1,9 +1,7 @@
 package er.wolips;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-
-import org.apache.commons.lang3.CharEncoding;
+import java.nio.charset.StandardCharsets;
 
 import com.webobjects.appserver.WOContext;
 import com.webobjects.appserver.WOResponse;
@@ -34,12 +32,11 @@ public class WOLipsUtilities {
   }
 
   public static String wolipsUrl(String action, NSDictionary params) {
-    try {
       String host = System.getProperty("wolips.host", "localhost");
       int port = Integer.parseInt(System.getProperty("wolips.port", "9485"));
       String password = System.getProperty("wolips.password");
       if (password == null) {
-        throw new NullPointerException("You must set 'wolips.password' in your Properties file.");
+          throw new NullPointerException("You must set 'wolips.password' in your Properties file.");
       }
       StringBuilder urlBuffer = new StringBuilder();
       urlBuffer.append("http://");
@@ -49,20 +46,16 @@ public class WOLipsUtilities {
       urlBuffer.append('/');
       urlBuffer.append(action);
       urlBuffer.append("?pw=");
-      urlBuffer.append(URLEncoder.encode(password, CharEncoding.UTF_8));
+      urlBuffer.append(URLEncoder.encode(password, StandardCharsets.UTF_8));
       if (params != null && !params.isEmpty()) {
-        for (Object key : params.allKeys()) {
-          urlBuffer.append("&amp;");
-          urlBuffer.append(URLEncoder.encode(key.toString(), CharEncoding.UTF_8));
-          urlBuffer.append('=');
-          Object value = params.objectForKey(key);
-          urlBuffer.append(URLEncoder.encode(value.toString(), CharEncoding.UTF_8));
-        }
+          for (Object key : params.allKeys()) {
+              urlBuffer.append("&amp;");
+              urlBuffer.append(URLEncoder.encode(key.toString(), StandardCharsets.UTF_8));
+              urlBuffer.append('=');
+              Object value = params.objectForKey(key);
+              urlBuffer.append(URLEncoder.encode(value.toString(), StandardCharsets.UTF_8));
+          }
       }
       return urlBuffer.toString();
-    }
-    catch (UnsupportedEncodingException e) {
-      throw new RuntimeException("Unsupported character encoding.", e);
-    }
   }
 }
