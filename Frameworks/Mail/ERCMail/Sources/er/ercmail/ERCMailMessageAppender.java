@@ -61,10 +61,10 @@ public class ERCMailMessageAppender extends ERXMailAppender {
             try {
                 EOEnterpriseObject localActor = ERXEOControlUtilities.localInstanceOfObject(ec, actor);
                 try {
-                        if(actor instanceof ERCoreUserInterface) {
-                                NSArray prefs = ((ERCoreUserInterface)actor).preferences();
+                        if(actor instanceof ERCoreUserInterface coreUser) {
+                                NSArray<EOEnterpriseObject> prefs = coreUser.preferences();
                                 prefs = ERXEOControlUtilities.localInstancesOfObjects(ec, prefs);
-                                ((ERCoreUserInterface)localActor).setPreferences(prefs);
+                                coreUser.setPreferences(prefs);
                         }
                 } catch(RuntimeException ex) {
                         //log.error("Error while setting getting actor's preferences: " + ex, ex);
@@ -141,8 +141,8 @@ public class ERCMailMessageAppender extends ERXMailAppender {
      * @param event logging event
      */
     @Override
-    public NSMutableDictionary composeExceptionPageDictionary(LoggingEvent event) {
-        NSMutableDictionary result = super.composeExceptionPageDictionary(event);
+    public NSMutableDictionary<String, Object> composeExceptionPageDictionary(LoggingEvent event) {
+        NSMutableDictionary<String, Object> result = super.composeExceptionPageDictionary(event);
         result.setObjectForKey(actor(),"actor");
         return result;
     }

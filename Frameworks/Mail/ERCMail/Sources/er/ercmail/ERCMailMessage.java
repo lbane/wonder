@@ -59,10 +59,10 @@ public class ERCMailMessage extends _ERCMailMessage {
          * Gets an iterator for batching through un sent messages.
          * @return batch iterator for messages to be sent
          */
-        public ERXFetchSpecificationBatchIterator batchIteratorForUnsentMessages() {
+        public ERXFetchSpecificationBatchIterator<ERCMailMessage> batchIteratorForUnsentMessages() {
             EOFetchSpecification fetchSpec = EOFetchSpecification.fetchSpecificationNamed("messagesToBeSent",
                                                                                           "ERCMailMessage");
-            return new ERXFetchSpecificationBatchIterator(fetchSpec);
+            return new ERXFetchSpecificationBatchIterator<>(fetchSpec);
         }
     }
 
@@ -146,31 +146,31 @@ public class ERCMailMessage extends _ERCMailMessage {
         return ERXValueUtilities.booleanValue(isRead());
     }
 
-    public NSArray toAddressesAsArray() {
-        return toAddresses() != null ? NSArray.componentsSeparatedByString(toAddresses(), ",") : NSArray.EmptyArray;
+    public NSArray<String> toAddressesAsArray() {
+        return toAddresses() != null ? NSArray.componentsSeparatedByString(toAddresses(), ",") : NSArray.emptyArray();
     }
 
-    public void setToAddressesAsArray(NSArray toAddresses) {
+    public void setToAddressesAsArray(NSArray<String> toAddresses) {
         if (toAddresses != null && toAddresses.count() > 0) {
             setToAddresses(toAddresses.componentsJoinedByString(AddressSeparator));
         }
     }
 
-    public NSArray ccAddressesAsArray() {
-        return ccAddresses() != null ? NSArray.componentsSeparatedByString(ccAddresses(), ",") : NSArray.EmptyArray;
+    public NSArray<String> ccAddressesAsArray() {
+        return ccAddresses() != null ? NSArray.componentsSeparatedByString(ccAddresses(), ",") : NSArray.emptyArray();
     }
 
-    public void setCcAddressesAsArray(NSArray ccAddresses) {
+    public void setCcAddressesAsArray(NSArray<String> ccAddresses) {
         if (ccAddresses != null && ccAddresses.count() > 0) {
             setCcAddresses(ccAddresses.componentsJoinedByString(AddressSeparator));
         }
     }
 
-    public NSArray bccAddressesAsArray() {
-        return bccAddresses() != null ? NSArray.componentsSeparatedByString(bccAddresses(), ",") : NSArray.EmptyArray;
+    public NSArray<String> bccAddressesAsArray() {
+        return bccAddresses() != null ? NSArray.componentsSeparatedByString(bccAddresses(), ",") : NSArray.emptyArray();
     }
 
-    public void setBccAddressesAsArray(NSArray bccAddresses) {
+    public void setBccAddressesAsArray(NSArray<String> bccAddresses) {
         if (bccAddresses != null && bccAddresses.count() > 0) {
             setBccAddresses(bccAddresses.componentsJoinedByString(AddressSeparator));
         }

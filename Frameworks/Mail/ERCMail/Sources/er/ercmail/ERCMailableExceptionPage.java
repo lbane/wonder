@@ -27,10 +27,10 @@ public class ERCMailableExceptionPage extends WOComponent {
     public String errorMessage;
     public EOEnterpriseObject actor;
     public Throwable exception;
-    public NSArray _reasonLines;
+    public NSArray<String> _reasonLines;
     public String currentReasonLine;
     public String formattedMessage;
-    public NSDictionary extraInfo;
+    public NSDictionary<String, Object> extraInfo;
 
     public String currentUserInfoKey;
     public Object currentUserInfoValue;    
@@ -52,7 +52,7 @@ public class ERCMailableExceptionPage extends WOComponent {
         actor = value;
     }
 
-    public void setExtraInfo(NSDictionary value) {
+    public void setExtraInfo(NSDictionary<String, Object> value) {
         extraInfo = value;
     }
 
@@ -68,11 +68,11 @@ public class ERCMailableExceptionPage extends WOComponent {
         return exception != null ? exception.getClass().getName() : errorMessage;
     }
     
-    public void setReasonLines(NSArray reasonLines) {
+    public void setReasonLines(NSArray<String> reasonLines) {
         _reasonLines = reasonLines;
     }
     
-    public NSArray reasonLines() {
+    public NSArray<String> reasonLines() {
         if (_reasonLines==null && exception!=null) {
             _reasonLines = NSArray.componentsSeparatedByString(ERXUtilities.stackTrace(exception), "\n\t");
         }

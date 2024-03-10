@@ -10,7 +10,7 @@ import com.webobjects.eocontrol.EOEnterpriseObject;
 import com.webobjects.foundation.NSArray;
 
 public interface ERCoreUserInterface {
-    public NSArray preferences();
-    public void setPreferences(NSArray array);
+    public NSArray<EOEnterpriseObject> preferences();
+    public void setPreferences(NSArray<EOEnterpriseObject> array);
     public void newPreference(EOEnterpriseObject pref);
 }

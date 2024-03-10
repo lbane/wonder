@@ -68,11 +68,11 @@ public class ERCMailDelivery {
      * @param a array of email addresses
      * @return comma separated and cleaned up list of email addresses
      */
-    public static String commaSeparatedListFromArray(NSArray a) {
+    public static String commaSeparatedListFromArray(NSArray<String> a) {
         StringBuilder result = new StringBuilder();
         if (a!=null) {
-            for (Enumeration e=a.objectEnumerator(); e.hasMoreElements(); ) {
-                String address=(String)e.nextElement();
+            for (Enumeration<String> e=a.objectEnumerator(); e.hasMoreElements(); ) {
+                String address=e.nextElement();
                 if (address.indexOf("\"")!=-1) {
                     address=address.replace('\"', '\'');
                 }
@@ -117,9 +117,9 @@ public class ERCMailDelivery {
      * @return created mail message for the given parameters
      */
     public ERCMailMessage composeEmail(String from,
-                                       NSArray to,
-                                       NSArray cc,
-                                       NSArray bcc,
+                                       NSArray<String> to,
+                                       NSArray<String> cc,
+                                       NSArray<String> bcc,
                                        String title,
                                        String message,
                                        EOEditingContext ec) {
@@ -162,18 +162,18 @@ public class ERCMailDelivery {
      * @return created mail message for the given parameters
      */
     public ERCMailMessage composeEmailWithAttachments (String from,
-                                                       NSArray to,
-                                                       NSArray cc,
-                                                       NSArray bcc,
+                                                       NSArray<String> to,
+                                                       NSArray<String> cc,
+                                                       NSArray<String> bcc,
                                                        String title,
                                                        String message,
-                                                       NSArray filePaths,
+                                                       NSArray<String> filePaths,
                                                        EOEditingContext ec) {
         ERCMailMessage mailMessage = composeEmail(from, to, cc, bcc, title, message, ec);
 
-        for (Enumeration filePathEnumerator = filePaths.objectEnumerator();
+        for (Enumeration<String> filePathEnumerator = filePaths.objectEnumerator();
              filePathEnumerator.hasMoreElements();) {
-            String filePath = (String)filePathEnumerator.nextElement();
+            String filePath = filePathEnumerator.nextElement();
             ERCMessageAttachment attachment = ERCMessageAttachment.messageAttachmentClazz().createAndInsertObject(ec);
             attachment.setFilePath(filePath);
             mailMessage.addToBothSidesOfAttachments(attachment);
@@ -195,9 +195,9 @@ public class ERCMailDelivery {
      * @return created mail message for the given parameters
      */
     public ERCMailMessage composeComponentEmail (String from,
-                                                 NSArray to,
-                                                 NSArray cc,
-                                                 NSArray bcc,
+                                                 NSArray<String> to,
+                                                 NSArray<String> cc,
+                                                 NSArray<String> bcc,
                                                  String title,
                                                  WOComponent component,
                                                  EOEditingContext ec) {
@@ -228,12 +228,12 @@ public class ERCMailDelivery {
      * @return created mail message for the given parameters
      */
     public ERCMailMessage composeComponentEmail (String from,
-                                                 NSArray to,
-                                                 NSArray cc,
-                                                 NSArray bcc,
+                                                 NSArray<String> to,
+                                                 NSArray<String> cc,
+                                                 NSArray<String> bcc,
                                                  String title,
                                                  String componentName,
-                                                 NSDictionary bindings,
+                                                 NSDictionary<String, ?> bindings,
                                                  EOEditingContext ec) {
         WOComponent component = ERXApplication.instantiatePage(componentName);
         if (component == null) {
@@ -265,13 +265,13 @@ public class ERCMailDelivery {
      * @return created mail message for the given parameters
      */
     public ERCMailMessage composeComponentEmail (String from,
-                                                 NSArray to,
-                                                 NSArray cc,
-                                                 NSArray bcc,
+                                                 NSArray<String> to,
+                                                 NSArray<String> cc,
+                                                 NSArray<String> bcc,
                                                  String title,
                                                  String componentName,
                                                  String plainTextComponentName,
-                                                 NSDictionary bindings,
+                                                 NSDictionary<String, ?> bindings,
                                                  EOEditingContext ec) {
         ERCMailMessage result = composeComponentEmail(from, to , cc, bcc, title, componentName, bindings, ec);
         WOComponent plainTextComponent = ERXApplication.instantiatePage(plainTextComponentName);
@@ -304,9 +304,9 @@ public class ERCMailDelivery {
      * @return created mail message for the given parameters
      */
      public ERCMailMessage composeComponentEmail (String from,
-                                                 NSArray to,
-                                                 NSArray cc,
-                                                 NSArray bcc,
+                                                 NSArray<String> to,
+                                                 NSArray<String> cc,
+                                                 NSArray<String> bcc,
                                                  String title,
                                                  WOComponent component,
                                                  WOComponent plainTextComponent,
