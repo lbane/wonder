@@ -1,5 +1,7 @@
 package wowodc.eof;
 
+import java.util.Objects;
+
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,7 +23,7 @@ public class ResultItem extends _ResultItem {
 	// The next saved state is the completed all processing state while we are performing the factorial check
 	public static String WORKFLOW_PROCESSING_COMPLETE = "Factorial Checked";
 	
-	private static NSArray<String> WORKFLOW_STATES = new NSArray( new String[] {
+	private static NSArray<String> WORKFLOW_STATES = new NSArray<>( new String[] {
 			WORKFLOW_PRIME_CHECKED,
 			WORKFLOW_CHECKING_FACTORIAL,
 			WORKFLOW_PROCESSING_COMPLETE
@@ -49,7 +51,7 @@ public class ResultItem extends _ResultItem {
 	
 	
 	public String validateWorkflowState(Object aValue) throws NSValidation.ValidationException {
-		String strValue = ObjectUtils.toString(aValue, null);
+		String strValue = Objects.toString(aValue, null);
 		
 		if(StringUtils.isEmpty(strValue)) {
 			throw new ERXValidationFactory().createCustomException(this, KEY_WORKFLOW_STATE, strValue, ERXValidationException.NullPropertyException);

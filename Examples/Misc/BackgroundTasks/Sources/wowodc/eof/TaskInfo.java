@@ -23,7 +23,7 @@ public class TaskInfo extends _TaskInfo {
 	// The next saved state is the completed all processing state while we are performing the factorial check
 	public static String WORKFLOW_PROCESSING_COMPLETE = "Factorials Processed";
 	
-	private static NSArray<String> WORKFLOW_STATES = new NSArray( new String[] {
+	private static NSArray<String> WORKFLOW_STATES = new NSArray<>( new String[] {
 			WORKFLOW_PROCESSING_PRIMES,
 			WORKFLOW_PRIME_CHECKED,
 			WORKFLOW_CHECKING_FACTORIAL,
