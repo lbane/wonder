@@ -13,7 +13,6 @@ import com.webobjects.appserver._private.WODeclaration;
 import com.webobjects.appserver._private.WOShared;
 import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSDictionary;
-import com.webobjects.foundation.NSLog;
 import com.webobjects.foundation.NSMutableDictionary;
 import com.webobjects.foundation._NSStringUtilities;
 
@@ -21,7 +20,7 @@ public class WOHelperFunctionDeclarationParser {
 
 	private static final Logger log = LoggerFactory.getLogger(WOHelperFunctionDeclarationParser.class);
 
-	private NSMutableDictionary _quotedStrings;
+	private final NSMutableDictionary<String, String> _quotedStrings = new NSMutableDictionary<>();
 	private static final int STATE_OUTSIDE = 0;
 	private static final int STATE_INSIDE_COMMENT = 2;
 	private static final String ESCAPED_QUOTE_STRING = "_WO_ESCAPED_QUOTE_";
@@ -35,13 +34,12 @@ public class WOHelperFunctionDeclarationParser {
 	*/
 
 	public WOHelperFunctionDeclarationParser() {
-		_quotedStrings = new NSMutableDictionary();
+		// nothing to do
 	}
 
-	public static NSMutableDictionary declarationsWithString(String declarationStr) throws WOHelperFunctionDeclarationFormatException {
+	public static NSMutableDictionary<String, WODeclaration> declarationsWithString(String declarationStr) throws WOHelperFunctionDeclarationFormatException {
 		WOHelperFunctionDeclarationParser declarationParser = new WOHelperFunctionDeclarationParser();
-		NSMutableDictionary declarations = declarationParser.parseDeclarations(declarationStr);
-		return declarations;
+		return declarationParser.parseDeclarations(declarationStr);
 	}
 
 	@Override
@@ -49,14 +47,13 @@ public class WOHelperFunctionDeclarationParser {
 		return "<WOHelperFunctionDeclarationParser quotedStrings = " + _quotedStrings.toString() + ">";
 	}
 
-	public NSMutableDictionary parseDeclarations(String declarationStr) throws WOHelperFunctionDeclarationFormatException {
+	public NSMutableDictionary<String, WODeclaration> parseDeclarations(String declarationStr) throws WOHelperFunctionDeclarationFormatException {
 		String strWithoutComments = _removeOldStyleCommentsFromString(declarationStr);
 		strWithoutComments = _removeNewStyleCommentsAndQuotedStringsFromString(strWithoutComments);
-		NSMutableDictionary declarations = parseDeclarationsWithoutComments(strWithoutComments);
-		return declarations;
+		return parseDeclarationsWithoutComments(strWithoutComments);
 	}
 
-	private String _removeOldStyleCommentsFromString(String str) {
+	private static String _removeOldStyleCommentsFromString(String str) {
 		StringBuilder stringbuffer = new StringBuilder(100);
 		StringBuilder stringbuffer1 = new StringBuilder(100);
 		StringTokenizer tokenizer = new StringTokenizer(str, "/", true);
@@ -131,9 +128,7 @@ public class WOHelperFunctionDeclarationParser {
 						tokenizer.nextToken();
 					}
 					String quotedStringKey = WOHelperFunctionDeclarationParser.QUOTED_STRING_KEY + _quotedStrings.count();
-					if (NSLog.debugLoggingAllowedForLevelAndGroups(3, 0x0L)) {
-						NSLog.debug.appendln("Found a quoted string: " + quotedStringKey + "='" + token + "';");
-					}
+					log.debug("Found a quoted string: {}='{}';", quotedStringKey, token);
 					token = _NSStringUtilities.replaceAllInstancesOfString(token, WOHelperFunctionDeclarationParser.ESCAPED_QUOTE_STRING, "\"");
 					_quotedStrings.setObjectForKey(token, quotedStringKey);
 					declarationWithoutCommentsBuffer.append(quotedStringKey);
@@ -149,15 +144,15 @@ public class WOHelperFunctionDeclarationParser {
 		return declarationWithoutCommentsBuffer.toString();
 	}
 
-	private NSMutableDictionary parseDeclarationsWithoutComments(String declarationWithoutComment) throws WOHelperFunctionDeclarationFormatException {
-		NSMutableDictionary declarations = new NSMutableDictionary();
-		NSMutableDictionary rawDeclarations = _rawDeclarationsWithoutComment(declarationWithoutComment);
+	private NSMutableDictionary<String, WODeclaration> parseDeclarationsWithoutComments(String declarationWithoutComment) throws WOHelperFunctionDeclarationFormatException {
+		NSMutableDictionary<String, WODeclaration> declarations = new NSMutableDictionary<>();
+		NSMutableDictionary<String, String> rawDeclarations = _rawDeclarationsWithoutComment(declarationWithoutComment);
 		String tagName;
-		WODeclaration declaration;
-		Enumeration rawDeclarationHeaderEnum = rawDeclarations.keyEnumerator();
+		
+		Enumeration<String> rawDeclarationHeaderEnum = rawDeclarations.keyEnumerator();
 		while (rawDeclarationHeaderEnum.hasMoreElements()) {
-			String declarationHeader = (String) rawDeclarationHeaderEnum.nextElement();
-			String declarationBody = (String) rawDeclarations.objectForKey(declarationHeader);
+			String declarationHeader = rawDeclarationHeaderEnum.nextElement();
+			String declarationBody = rawDeclarations.objectForKey(declarationHeader);
 			int colonIndex = declarationHeader.indexOf(':');
 			if (colonIndex < 0) {
 				throw new WOHelperFunctionDeclarationFormatException("<WOHelperFunctionDeclarationParser> Missing ':' for declaration:\n" + declarationHeader + " " + declarationBody);
@@ -173,16 +168,16 @@ public class WOHelperFunctionDeclarationParser {
 			if (type.length() == 0) {
 				throw new WOHelperFunctionDeclarationFormatException("<WOHelperFunctionDeclarationParser> Missing element name for declaration:\n" + declarationHeader + " " + declarationBody);
 			}
-			NSMutableDictionary associations = _associationsForDictionaryString(declarationHeader, declarationBody);
-			declaration = WOHelperFunctionParser.createDeclaration(tagName, type, associations);
+			NSMutableDictionary<String, WOAssociation> associations = _associationsForDictionaryString(declarationHeader, declarationBody);
+			WODeclaration declaration = WOHelperFunctionParser.createDeclaration(tagName, type, associations);
 			declarations.setObjectForKey(declaration, tagName);
 		}
 
 		return declarations;
 	}
 
-	private NSMutableDictionary _associationsForDictionaryString(String declarationHeader, String declarationBody) throws WOHelperFunctionDeclarationFormatException {
-		NSMutableDictionary associations = new NSMutableDictionary();
+	private NSMutableDictionary<String, WOAssociation> _associationsForDictionaryString(String declarationHeader, String declarationBody) throws WOHelperFunctionDeclarationFormatException {
+		NSMutableDictionary<String, WOAssociation> associations = new NSMutableDictionary<>();
 		String trimmedDeclarationBody = declarationBody.trim();
 		if (!trimmedDeclarationBody.startsWith("{") && !trimmedDeclarationBody.endsWith("}")) {
 			throw new WOHelperFunctionDeclarationFormatException("<WOHelperFunctionDeclarationParser> Internal inconsistency : invalid dictionary for declaration:\n" + declarationHeader + " " + declarationBody);
@@ -192,13 +187,10 @@ public class WOHelperFunctionDeclarationParser {
 			return associations;
 		}
 		trimmedDeclarationBody = trimmedDeclarationBody.substring(1, declarationBodyLength - 1).trim();
-		NSArray bindings = NSArray.componentsSeparatedByString(trimmedDeclarationBody, ";");
-		Enumeration bindingsEnum = bindings.objectEnumerator();
-		do {
-			if (!bindingsEnum.hasMoreElements()) {
-				break;
-			}
-			String binding = ((String) bindingsEnum.nextElement()).trim();
+		NSArray<String> bindings = NSArray.componentsSeparatedByString(trimmedDeclarationBody, ";");
+		
+		for (String untrimmedBinding: bindings) {
+			String binding = untrimmedBinding.trim();
 			if (binding.length() != 0) {
 				int equalsIndex = binding.indexOf('=');
 				if (equalsIndex < 0) {
@@ -222,7 +214,6 @@ public class WOHelperFunctionDeclarationParser {
 				}
 			}
 		}
-		while (true);
 		// if (log.isDebugEnabled()) {
 		// log.debug("Parsed '" + s + "' declarations:\n" + nsmutabledictionary
 		// + "\n--------");
@@ -230,7 +221,7 @@ public class WOHelperFunctionDeclarationParser {
 		return associations;
 	}
 
-	public static WOAssociation _associationWithKey(String associationValue, NSDictionary quotedStrings) {
+	public static WOAssociation _associationWithKey(String associationValue, NSDictionary<String, String> quotedStrings) {
 		WOAssociation association = null;
 		if (associationValue != null && associationValue.startsWith("~")) {
 			int associationValueLength = associationValue.length();
@@ -244,12 +235,11 @@ public class WOHelperFunctionDeclarationParser {
 				for (; wodpValueEndIndex < associationValueLength && Character.isDigit(associationValue.charAt(wodpValueEndIndex)); wodpValueEndIndex++) {
 					// do nothing
 				}
-				String wodpKey = WOHelperFunctionDeclarationParser.QUOTED_STRING_KEY + associationValue.substring(wodpValueStartIndex, wodpValueEndIndex);
-				String quotedString = (String) quotedStrings.objectForKey(wodpKey);
+				final String wodpKey = WOHelperFunctionDeclarationParser.QUOTED_STRING_KEY + associationValue.substring(wodpValueStartIndex, wodpValueEndIndex);
+				final String quotedString = quotedStrings.objectForKey(wodpKey);
 				if (quotedString != null) {
-					quotedString = quotedString.replaceAll("\\\"", "\\\\\"");
 					ognlValue.append("\"");
-					ognlValue.append(quotedString);
+					ognlValue.append(quotedString.replace("\\\"", "\\\\\""));
 					ognlValue.append("\"");
 				}
 				lastIndex = wodpValueEndIndex;
@@ -259,7 +249,7 @@ public class WOHelperFunctionDeclarationParser {
 			association = WOHelperFunctionAssociation.associationWithValue(associationValue);
 		}
 		else {
-			String quotedString = (String) quotedStrings.objectForKey(associationValue);
+			String quotedString = quotedStrings.objectForKey(associationValue);
 			// MS: WO 5.4 converts \n to an actual newline. I don't know if WO 5.3 does, too, but let's go ahead and be compatible with them as long as nobody is yelling. 
 			if (quotedString != null) {
 				int backslashIndex = quotedString.indexOf('\\');
@@ -268,7 +258,7 @@ public class WOHelperFunctionDeclarationParser {
 					int length = sb.length();
 					for (int i = backslashIndex; i < length; i ++) {
 						char ch = sb.charAt(i);
-						if (ch == '\\' && i < length) {
+						if (ch == '\\' && i < length + 1) {
 							char nextCh = sb.charAt(i + 1);
 							if (nextCh == 'n') {
 								sb.replace(i, i + 2, "\n");
@@ -312,8 +302,8 @@ public class WOHelperFunctionDeclarationParser {
 		return association;
 	}
 
-	private NSMutableDictionary _rawDeclarationsWithoutComment(String declarationStr) {
-		NSMutableDictionary declarations = new NSMutableDictionary();
+	private static NSMutableDictionary<String, String> _rawDeclarationsWithoutComment(String declarationStr) {
+		NSMutableDictionary<String, String> declarations = new NSMutableDictionary<>();
 		StringBuilder declarationWithoutCommentBuffer = new StringBuilder(100);
 		StringTokenizer tokenizer = new StringTokenizer(declarationStr, "{", true);
 		try {

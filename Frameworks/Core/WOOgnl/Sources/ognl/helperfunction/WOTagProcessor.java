@@ -1,5 +1,6 @@
 package ognl.helperfunction;
 
+import com.webobjects.appserver.WOAssociation;
 import com.webobjects.appserver._private.WODeclaration;
 import com.webobjects.foundation.NSMutableDictionary;
 
@@ -11,10 +12,10 @@ import com.webobjects.foundation.NSMutableDictionary;
  * @author mschrag
  */
 public abstract class WOTagProcessor {
-	public WOTagProcessor() {
+	protected WOTagProcessor() {
 	}
 
-	public WODeclaration createDeclaration(String elementName, String elementType, NSMutableDictionary associations) {
+	public WODeclaration createDeclaration(String elementName, String elementType, NSMutableDictionary<String, WOAssociation> associations) {
 		return WOHelperFunctionParser.createDeclaration(elementName, elementType, associations);
 	}
 }

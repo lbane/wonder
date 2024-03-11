@@ -22,13 +22,13 @@ public class NSArrayPropertyAccessor extends NSObjectPropertyAccessor {
     public Object getProperty( Object target, Object name ) throws OgnlException {
         if ( name instanceof String )
             return super.getProperty(target, name);
-        NSArray array = (NSArray)target;
-        if ( name instanceof Number ) {
-            return array.objectAtIndex(((Number)name).intValue());
+        NSArray<Object> array = (NSArray)target;
+        if ( name instanceof Number aNumber) {
+            return array.objectAtIndex(aNumber.intValue());
         }
-        if ( name instanceof DynamicSubscript ) {
+        if ( name instanceof DynamicSubscript dynamicSubName) {
             int len = array.count();
-            switch (((DynamicSubscript)name).getFlag()) {
+            switch (dynamicSubName.getFlag()) {
                 case DynamicSubscript.FIRST:    return len > 0 ? array.objectAtIndex(0) : null;
                 case DynamicSubscript.MID:      return len > 0 ? array.objectAtIndex(len/2) : null;
                 case DynamicSubscript.LAST:     return len > 0 ? array.lastObject() : null;
@@ -44,21 +44,33 @@ public class NSArrayPropertyAccessor extends NSObjectPropertyAccessor {
             super.setProperty(target, name, value);
             return;
         }
-        NSMutableArray array = (NSMutableArray)target;
-        if (name instanceof Number ) {
-            array.replaceObjectAtIndex(value, ((Number)name).intValue());
+        NSMutableArray<Object> array = (NSMutableArray)target;
+        if (name instanceof Number aNumber) {
+            array.replaceObjectAtIndex(value, aNumber.intValue());
             return;
         }
-        if ( name instanceof DynamicSubscript ) {
+        if ( name instanceof DynamicSubscript dynamicSubName) {
             int len = array.count();
-            switch ( ((DynamicSubscript)name).getFlag() )
+            switch ( dynamicSubName.getFlag() )
             {
-                case DynamicSubscript.FIRST:    if ( len > 0 )
-                    array.replaceObjectAtIndex(value, 0); return;
-                case DynamicSubscript.MID:      if ( len > 0 )
-                    array.replaceObjectAtIndex(value, len/2); return;
-                case DynamicSubscript.LAST:     if ( len > 0 )
-                    array.replaceObjectAtIndex(value, len-1); return;
+                case DynamicSubscript.FIRST:
+                	if ( len > 0 ) {
+                		array.replaceObjectAtIndex(value, 0); 
+                	}
+                	return;
+                	
+                case DynamicSubscript.MID:
+                	if ( len > 0 ) {
+                		array.replaceObjectAtIndex(value, len/2);
+                	}
+                	return;
+                	
+                case DynamicSubscript.LAST:
+                	if ( len > 0 ) {
+                		array.replaceObjectAtIndex(value, len-1); 
+                	}
+                	return;
+                	
                 case DynamicSubscript.ALL:
                     array.setArray( NSPropertyListSerialization.arrayForString( (String) value ) );
                     return;

@@ -23,14 +23,17 @@ public class NSObjectPropertyAccessor implements PropertyAccessor {
         return getProperty(target, name);
     }
     
+    /**
+	 * @throws OgnlException Defined for use by derived classes 
+	 */
     public Object getProperty(Object target, Object name) throws OgnlException {
         return NSKeyValueCoding.Utility.valueForKey(target, (String)name);
     }
 
     public void setProperty(Object target, Object name, Object value ) throws OgnlException {
         try {
-            if (target instanceof NSValidation)
-                ((NSValidation)target).validateTakeValueForKeyPath(value, (String)name);
+            if (target instanceof NSValidation validationTarget)
+                validationTarget.validateTakeValueForKeyPath(value, (String)name);
             else
                 NSKeyValueCoding.Utility.takeValueForKey(target, value, (String)name);
         } catch (Exception e) {
@@ -48,8 +51,9 @@ public class NSObjectPropertyAccessor implements PropertyAccessor {
 	}
 
 	public String getSourceSetter(OgnlContext context, Object target, Object name) {
-		if (target instanceof NSValidation)
+		if (target instanceof NSValidation) {
 			return ".validateTakeValueForKeyPath($3," + name + ")";
+		}
 		context.put("_noRoot", "true");
 		return "com.webobjects.foundation.NSKeyValueCoding.Utility#takeValueForKey($2,$3," + name + ")";
 	}

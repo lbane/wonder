@@ -1,7 +1,8 @@
 package ognl.helperfunction;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.NoSuchElementException;
-import java.util.Stack;
 import java.util.StringTokenizer;
 
 import org.slf4j.Logger;
@@ -11,11 +12,11 @@ import com.webobjects.foundation.NSMutableDictionary;
 import com.webobjects.foundation._NSStringUtilities;
 
 public class WOHelperFunctionHTMLParser {
-	public static Logger log = LoggerFactory.getLogger(WOHelperFunctionHTMLParser.class);
+	private static Logger log = LoggerFactory.getLogger(WOHelperFunctionHTMLParser.class);
 
 	private WOHelperFunctionParser _parserDelegate;
 	private String _unparsedTemplate;
-	private StringBuffer _contentText;
+	private StringBuilder _contentText;
 	private static final int STATE_OUTSIDE = 0;
 	private static final int STATE_INSIDE_COMMENT = 3;
 	private static final String JS_START_TAG = "<script";
@@ -30,7 +31,7 @@ public class WOHelperFunctionHTMLParser {
 	private static final String XML_CDATA_START_TAG = "<![CDATA[";
 
 	private static boolean _parseStandardTags = false;
-	private NSMutableDictionary _stackDict;
+	private NSMutableDictionary<String, Deque<String>> _stackDict;
 
 	// FIXME: after introducing log level set support enable this somehow again
 	/*
@@ -42,7 +43,7 @@ public class WOHelperFunctionHTMLParser {
 	public WOHelperFunctionHTMLParser(WOHelperFunctionParser parserDelegate, String unparsedTemplate) {
 		_parserDelegate = parserDelegate;
 		_unparsedTemplate = unparsedTemplate;
-		_contentText = new StringBuffer(128);
+		_contentText = new StringBuilder(128);
 	}
 
 	public static void setParseStandardTags(boolean flag) {
@@ -50,7 +51,7 @@ public class WOHelperFunctionHTMLParser {
 	}
 
 	public void parseHTML() throws WOHelperFunctionHTMLFormatException, WOHelperFunctionDeclarationFormatException, ClassNotFoundException {
-		_stackDict = new NSMutableDictionary();
+		_stackDict = new NSMutableDictionary<>();
 		StringTokenizer templateTokenizer = new StringTokenizer(_unparsedTemplate, "<");
 		boolean flag = true;
 		int parserState = STATE_OUTSIDE;
@@ -187,7 +188,7 @@ public class WOHelperFunctionHTMLParser {
 			return token;
 		}
 		
-		String original = new String(token);
+		final String original = token;
 		try {
 			String[] tokenParts = token.split(" ");
 			String tokenPart = tokenParts[0].substring(1);
@@ -195,15 +196,14 @@ public class WOHelperFunctionHTMLParser {
 			if ((token.indexOf("\"$") != -1 || token.indexOf("\"~") != -1)  && token.startsWith("<")) {
 				// we assume a dynamic tag
 				token = token.replaceAll(tokenParts[0], "<wo:" + WO_REPLACEMENT_MARKER + tokenPart);
-				if (log.isDebugEnabled())
-					log.debug("Rewritten <" + tokenPart + " ...> tag to <wo:" + tokenPart + " ...>");
+				log.debug("Rewritten <{} ...> tag to <wo:{} ...>", tokenPart, tokenPart);
 
 				if (!token.endsWith("/")) {
 					// no need to keep information for self closing tags
-					Stack stack = (Stack) _stackDict.objectForKey(tokenPart);
+					Deque<String> stack = _stackDict.objectForKey(tokenPart);
 					if (stack == null) {
 						// create one and push a marker
-						stack = new Stack();
+						stack = new ArrayDeque<>();
 						stack.push(WO_REPLACEMENT_MARKER);
 						_stackDict.setObjectForKey(stack, tokenPart);
 					}
@@ -216,7 +216,7 @@ public class WOHelperFunctionHTMLParser {
 			}
 			else if (!token.startsWith("</") && _stackDict.containsKey(tokenPart)) {
 				// standard opening tag
-				Stack stack = (Stack) _stackDict.objectForKey(tokenPart);
+				Deque<String> stack = _stackDict.objectForKey(tokenPart);
 				if (stack != null) {
 					stack.push(tokenPart);
 					_stackDict.setObjectForKey(stack, tokenPart);
@@ -224,12 +224,12 @@ public class WOHelperFunctionHTMLParser {
 			}
 			else if (token.startsWith("</")) {
 				// closing tag
-				Stack stack = (Stack) _stackDict.objectForKey(tokenParts[0].substring(2));
-				if (stack != null && !stack.empty()) {
-					String stackContent = (String) stack.pop();
+				Deque<String> stack = _stackDict.objectForKey(tokenParts[0].substring(2));
+				if (stack != null && !stack.isEmpty()) {
+					String stackContent = stack.pop();
 					if (stackContent.equals(WO_REPLACEMENT_MARKER)) {
 						if (log.isDebugEnabled())
-							log.debug("Replaced end tag for '" + tokenParts[0].substring(2) + "' with 'wo' endtag");
+							log.debug("Replaced end tag for '{}' with 'wo' endtag", tokenParts[0].substring(2));
 						token = "</wo";
 					}
 				}
@@ -258,7 +258,7 @@ public class WOHelperFunctionHTMLParser {
 	private void didParseText() {
 		if (_contentText != null) {
 			if (log.isDebugEnabled()) {
-				log.debug("Parsed Text (" + _contentText.length() + ") : " + _contentText);
+				log.debug("Parsed Text ({}) : {}", Integer.valueOf(_contentText.length()), _contentText);
 			}
 			if (_contentText.length() > 0) {
 				_parserDelegate.didParseText(_NSStringUtilities.stringFromBuffer(_contentText), this);
@@ -270,7 +270,7 @@ public class WOHelperFunctionHTMLParser {
 	private void didParseOpeningWebObjectTag() throws WOHelperFunctionHTMLFormatException {
 		if (_contentText != null) {
 			if (log.isDebugEnabled()) {
-				log.debug("Parsed Opening WebObject (" + _contentText.length() + ") : " + _contentText);
+				log.debug("Parsed Opening WebObject ({}) : {}", Integer.valueOf(_contentText.length()),  _contentText);
 			}
 			if (_contentText.length() > 0) {
 				_parserDelegate.didParseOpeningWebObjectTag(_NSStringUtilities.stringFromBuffer(_contentText), this);
@@ -279,10 +279,10 @@ public class WOHelperFunctionHTMLParser {
 		}
 	}
 
-	private void didParseClosingWebObjectTag() throws WOHelperFunctionDeclarationFormatException, WOHelperFunctionHTMLFormatException, ClassNotFoundException, ClassNotFoundException {
+	private void didParseClosingWebObjectTag() throws WOHelperFunctionDeclarationFormatException, WOHelperFunctionHTMLFormatException, ClassNotFoundException {
 		if (_contentText != null) {
 			if (log.isDebugEnabled()) {
-				log.debug("Parsed Closing WebObject (" + _contentText.length() + ") : " + _contentText);
+				log.debug("Parsed Closing WebObject ({}) : {}", Integer.valueOf(_contentText.length()),  _contentText);
 			}
 			if (_contentText.length() > 0) {
 				_parserDelegate.didParseClosingWebObjectTag(_NSStringUtilities.stringFromBuffer(_contentText), this);
@@ -294,7 +294,7 @@ public class WOHelperFunctionHTMLParser {
 	private void didParseComment() {
 		if (_contentText != null) {
 			if (log.isDebugEnabled()) {
-				log.debug("Parsed Comment (" + _contentText.length() + ") : " + _contentText);
+				log.debug("Parsed Comment ({}) : {}", Integer.valueOf(_contentText.length()),  _contentText);
 			}
 			if (_contentText.length() > 0) {
 				_parserDelegate.didParseComment(_NSStringUtilities.stringFromBuffer(_contentText), this);

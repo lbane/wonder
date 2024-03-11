@@ -1,10 +1,12 @@
 package ognl.helperfunction;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.webobjects.appserver.WOComponent;
 import com.webobjects.appserver._private.WOBindingNameAssociation;
 import com.webobjects.eocontrol.EOEventCenter;
 import com.webobjects.foundation.NSArray;
-import com.webobjects.foundation.NSLog;
 import com.webobjects.foundation.NSMutableArray;
 
 /**
@@ -14,12 +16,14 @@ import com.webobjects.foundation.NSMutableArray;
  */
 public class WOHelperFunctionBindingNameAssociation extends WOBindingNameAssociation {
 	
+	private static final Logger logger = LoggerFactory.getLogger(WOHelperFunctionBindingNameAssociation.class);
+	
 	private String _keyPath;
 	
 	public WOHelperFunctionBindingNameAssociation(String keyPath) {
 		super(keyPath);
 		// Extract _keyPath for bug fix in setValue()
-		NSMutableArray aKeyArray = NSArray._mutableComponentsSeparatedByString(keyPath, ".");
+		NSMutableArray<String> aKeyArray = NSArray._mutableComponentsSeparatedByString(keyPath, ".");
 		if(aKeyArray.count() > 1) {
 			aKeyArray.removeObjectAtIndex(0);
 			_keyPath = aKeyArray.componentsJoinedByString(".");
@@ -38,31 +42,36 @@ public class WOHelperFunctionBindingNameAssociation extends WOBindingNameAssocia
 		}
 
 		com.webobjects.appserver.WOAssociation.Event anEvent = null;
-		if(_debugEnabled)
+		if(_debugEnabled) {
 			_logPushValue(aValue, aComponent);
+		}
 		if(_keyPath != null) {
 			com.webobjects.foundation.NSValidation.ValidationException aValidationException = null;
 			Object aCoercedValue = null;
 			Object aTarget = aComponent.valueForBinding(_parentBindingName);
 			anEvent = _markStartOfEventIfNeeded("takeValueForKeyPath", _keyPath, aComponent);
-			if(aTarget != null)
+			if(aTarget != null) {
 				try {
 					aCoercedValue = com.webobjects.foundation.NSValidation.Utility.validateTakeValueForKeyPath(aTarget, aValue, _keyPath);
 				}
-			catch(com.webobjects.foundation.NSValidation.ValidationException exception) {
-				NSLog._conditionallyLogPrivateException(exception);
-				aValidationException = exception;
+				catch(com.webobjects.foundation.NSValidation.ValidationException exception) {
+					logger.debug("Validation exception", exception);
+					aValidationException = exception;
+				}
 			}
-			if(anEvent != null)
+			if(anEvent != null) {
 				EOEventCenter.markEndOfEvent(anEvent);
-			if(_debugEnabled)
-				if(aTarget instanceof WOComponent)
-					_logPushValue(aCoercedValue, (WOComponent)aTarget);
-				else
+			}
+			if(_debugEnabled) {
+				if(aTarget instanceof WOComponent compTarget) {
+					_logPushValue(aCoercedValue, compTarget);
+				} else {
 					_logPushValue(aCoercedValue, null);
+				}
+			}
 			if(aValidationException != null) {
-			         if (aTarget instanceof WOComponent) {
-			        	 ((WOComponent)aTarget).validationFailedWithException(aValidationException, aValue, _keyPath);
+			         if (aTarget instanceof WOComponent compTarget) {
+			        	 compTarget.validationFailedWithException(aValidationException, aValue, _keyPath);
 					 }
 			         // Bug Fix as of WO 5.4.3: validation exceptions are swallowed by WOBindingNameAssociation 
 			         // when key paths are used that don't start with a WOComponent, e.g. ^eo.attribute

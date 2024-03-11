@@ -75,7 +75,7 @@ public class WOOgnlAssociation extends WOKeyValueAssociation {
 		}
 	}
 
-	private boolean shouldThrowException() {
+	private static boolean shouldThrowException() {
 		return NSPropertyListSerialization.booleanForString(NSProperties.getProperty("ognl.webobjects.WOAssociation.shouldThrowExceptions"));
 	}
 }

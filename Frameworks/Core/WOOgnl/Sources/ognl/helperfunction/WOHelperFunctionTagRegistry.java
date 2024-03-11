@@ -1,32 +1,27 @@
 package ognl.helperfunction;
 
-//import org.apache.log4j.Level;
-import org.slf4j.LoggerFactory;
-
-import com.webobjects.foundation.NSDictionary;
-import com.webobjects.foundation.NSMutableDictionary;
+import java.util.HashMap;
+import java.util.Map;
 
 public class WOHelperFunctionTagRegistry {
-	public static org.slf4j.Logger log = LoggerFactory.getLogger(WOHelperFunctionTagRegistry.class);
-
-	private static NSMutableDictionary _tagShortcutMap = new NSMutableDictionary();
-	private static NSMutableDictionary _tagProcessorMap = new NSMutableDictionary();
+	private static Map<String, String> _tagShortcutMap = new HashMap<>();
+	private static Map<String, WOTagProcessor> _tagProcessorMap = new HashMap<>();
 	private static boolean _allowInlineBindings = false;
 
-	public static NSDictionary tagShortcutMap() {
+	public static Map<String, String> tagShortcutMap() {
 		return _tagShortcutMap;
 	}
 	
-	public static NSDictionary tagProcessorMap() {
+	public static Map<String, WOTagProcessor> tagProcessorMap() {
 		return _tagProcessorMap;
 	}
 	
 	public static void registerTagShortcut(String fullElementType, String shortcutElementType) {
-		_tagShortcutMap.setObjectForKey(fullElementType, shortcutElementType);
+		_tagShortcutMap.put(shortcutElementType, fullElementType);
 	}
 
 	public static void registerTagProcessorForElementType(WOTagProcessor tagProcessor, String elementType) {
-		_tagProcessorMap.setObjectForKey(tagProcessor, elementType);
+		_tagProcessorMap.put(elementType, tagProcessor);
 	}
 
 	public static void setAllowInlineBindings(boolean allowInlineBindings) {

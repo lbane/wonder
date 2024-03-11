@@ -4,6 +4,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.webobjects.foundation.NSKeyValueCoding;
 import com.webobjects.foundation.NSKeyValueCoding.ValueAccessor;
 import com.webobjects.foundation.NSKeyValueCoding._BooleanFieldBinding;
@@ -14,7 +17,6 @@ import com.webobjects.foundation.NSKeyValueCoding._MethodBinding;
 import com.webobjects.foundation.NSKeyValueCoding._NumberFieldBinding;
 import com.webobjects.foundation.NSKeyValueCoding._NumberMethodBinding;
 import com.webobjects.foundation.NSKeyValueCoding._ReflectionKeyBindingCreation.Callback;
-import com.webobjects.foundation.NSLog;
 import com.webobjects.foundation.NSMutableDictionary;
 import com.webobjects.foundation.NSMutableSet;
 import com.webobjects.foundation._NSReflectionUtilities;
@@ -31,21 +33,29 @@ import com.webobjects.foundation._NSUtilities;
  * @author mschrag
  */
 public class WOHelperFunctionClassKeyValueCoding {
+	
+	private static final Logger logger = LoggerFactory.getLogger(WOHelperFunctionClassKeyValueCoding.class);
+	
 	public static class _ReflectionKeyBindingCreation {
-		public static _KeyBinding _NotAvailableIndicator = new _KeyBinding(null, null);
-		private static final _NSThreadsafeMutableDictionary _bindingStorageMapTable = new _NSThreadsafeMutableDictionary(new NSMutableDictionary(256));
-		public static final int _ValueForKeyLookupOrder[] = { 0, 1, 3, 2, 4 };
-		public static final int _StoredValueForKeyLookupOrder[] = { 1, 3, 2, 4, 0 };
-
+		public static final _KeyBinding _NotAvailableIndicator = new _KeyBinding(null, null);
+		private static final _NSThreadsafeMutableDictionary<_KeyBinding, _BindingStorage> _bindingStorageMapTable = new _NSThreadsafeMutableDictionary<>(new NSMutableDictionary<>(256));
+		private static final int[] _ValueForKeyLookupOrder = { 0, 1, 3, 2, 4 };
+		private static final int[] _StoredValueForKeyLookupOrder = { 1, 3, 2, 4, 0 };
+		
 		private static class _BindingStorage {
-			_KeyBinding _keyGetBindings[];
-			_KeyBinding _keySetBindings[];
+			_KeyBinding[] _keyGetBindings;
+			_KeyBinding[] _keySetBindings;
 
 			public _BindingStorage() {
 
 				_keyGetBindings = new _KeyBinding[4];
 				_keySetBindings = new _KeyBinding[4];
 			}
+		}
+		
+		private _ReflectionKeyBindingCreation()
+		{
+			throw new IllegalStateException("Cannot instantiate an instance of class " + getClass().getName());
 		}
 
 		public static _KeyBinding _fieldKeyBinding(Class objectClass, String key, String fieldName) {
@@ -65,21 +75,21 @@ public class WOHelperFunctionClassKeyValueCoding {
 			return null;
 		}
 
-		  private static final Class _noArgumentTypes[] = new Class[0];
+		  private static final Class[] _noArgumentTypes = new Class[0];
 
 		  // MS: slurped in from _NSReflectionUtilities because the original won't return a typed keypath for an abstract method, which
 		  // means you don't get type information when you bind a helper function to an interface method
-		  public static Method _methodForClass(Class objectClass, String methodName, Class argumentTypes[], boolean publicMethodOnly) {
+		  public static Method _methodForClass(Class objectClass, String methodName, Class[] argumentTypes, boolean publicMethodOnly) {
 			  Method method = null;
 			  if (publicMethodOnly) {
 				  try {
 					  method = objectClass.getMethod(methodName, argumentTypes == null ? _noArgumentTypes : argumentTypes);
 				  }
 				  catch (NoSuchMethodException exception) {
-					  NSLog._conditionallyLogPrivateException(exception);
+					  logger.debug("No method found", exception);
 				  }
 				  catch (SecurityException exception) {
-					  NSLog._conditionallyLogPrivateException(exception);
+					  logger.debug("Security violation", exception);
 					  method = null;
 				  }
 		    }
@@ -92,10 +102,10 @@ public class WOHelperFunctionClassKeyValueCoding {
 		    			method = objectClass.getDeclaredMethod(methodName, argumentTypes == null ? _noArgumentTypes : argumentTypes);
 		    		}
 		    		catch (NoSuchMethodException exception) {
-		    			NSLog._conditionallyLogPrivateException(exception);
+		    			logger.debug("No method found", exception);
 		    		}
 		    		catch (SecurityException exception) {
-		    			NSLog._conditionallyLogPrivateException(exception);
+		    			logger.debug("Security violation", exception);
 		    			method = null;
 		    		}
 		    		if (method == null) {
@@ -146,7 +156,7 @@ public class WOHelperFunctionClassKeyValueCoding {
 			return null;
 		}
 
-		private static _KeyBinding _createKeyBindingForKey(Class objectClass, String key, int lookupOrder[], boolean trueForSetAndFalseForGet) {
+		private static _KeyBinding _createKeyBindingForKey(Class objectClass, String key, int[] lookupOrder, boolean trueForSetAndFalseForGet) {
 			if (key == null || key.length() == 0) {
 				return null;
 			}
@@ -160,9 +170,9 @@ public class WOHelperFunctionClassKeyValueCoding {
 			}
 			// MS: We just can't support callbacks without the original object
 			// ... I think this is PROBABLY OK for our purposes.
-			Callback keyBindingCreationCallbackObject = null;
+			final Callback keyBindingCreationCallbackObject = null;
 			// (object instanceof Callback) ? (Callback) object : null;
-			_KeyBinding keyBindings[] = trueForSetAndFalseForGet ? bindingStorage._keySetBindings : bindingStorage._keyGetBindings;
+			_KeyBinding[] keyBindings = trueForSetAndFalseForGet ? bindingStorage._keySetBindings : bindingStorage._keyGetBindings;
 			for (int i = 0; i < lookupOrder.length; i++) {
 				int lookup = lookupOrder[i];
 				_KeyBinding keyBinding = lookup < 0 || lookup > 3 ? null : keyBindings[lookup];
@@ -296,18 +306,18 @@ public class WOHelperFunctionClassKeyValueCoding {
 			return null;
 		}
 
-		public static _KeyBinding _createKeyGetBindingForKey(Class objectClass, String key, int lookupOrder[]) {
+		public static _KeyBinding _createKeyGetBindingForKey(Class objectClass, String key, int[] lookupOrder) {
 			return _createKeyBindingForKey(objectClass, key, lookupOrder, false);
 		}
 
-		public static _KeyBinding _createKeySetBindingForKey(Class objectClass, String key, int lookupOrder[]) {
+		public static _KeyBinding _createKeySetBindingForKey(Class objectClass, String key, int[] lookupOrder) {
 			return _createKeyBindingForKey(objectClass, key, lookupOrder, true);
 		}
 	}
 
 	public static class DefaultImplementation {
-		private static final _NSThreadsafeMutableSet _keyGetBindings = new _NSThreadsafeMutableSet(new NSMutableSet(256));
-		private static final _NSThreadsafeMutableSet _keySetBindings = new _NSThreadsafeMutableSet(new NSMutableSet(256));
+		private static final _NSThreadsafeMutableSet<_KeyBinding> _keyGetBindings = new _NSThreadsafeMutableSet<>(new NSMutableSet<>(256));
+		private static final _NSThreadsafeMutableSet<_KeyBinding> _keySetBindings = new _NSThreadsafeMutableSet<>(new NSMutableSet<>(256));
 
 		public static void _flushCaches() {
 			_keyGetBindings.removeAllObjects();
@@ -315,7 +325,7 @@ public class WOHelperFunctionClassKeyValueCoding {
 		}
 
 		public static _KeyBinding _keyGetBindingForKey(Class objectClass, String key) {
-			_KeyBinding keyBinding = (_KeyBinding) _keyGetBindings.member(new _KeyBinding(objectClass, key));
+			_KeyBinding keyBinding = (_KeyBinding)_keyGetBindings.member(new _KeyBinding(objectClass, key));
 			if (keyBinding == null) {
 				//keyBinding = (object instanceof _KeyBindingCreation) ? ((_KeyBindingCreation) object)._createKeyGetBindingForKey(key) : _createKeyGetBindingForKey(objectClass, key);
 				keyBinding = _createKeyGetBindingForKey(objectClass, key);
@@ -341,8 +351,7 @@ public class WOHelperFunctionClassKeyValueCoding {
 		}
 
 		public static _KeyBinding _createKeyGetBindingForKey(Class objectClass, String key) {
-			_KeyBinding keyBinding = _ReflectionKeyBindingCreation._createKeyGetBindingForKey(objectClass, key, _ReflectionKeyBindingCreation._ValueForKeyLookupOrder);
-			return keyBinding;
+			return _ReflectionKeyBindingCreation._createKeyGetBindingForKey(objectClass, key, _ReflectionKeyBindingCreation._ValueForKeyLookupOrder);
 		}
 
 		public static _KeyBinding _createKeySetBindingForKey(Class objectClass, String key) {

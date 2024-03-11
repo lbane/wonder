@@ -15,11 +15,11 @@ import ognl.ElementsAccessor;
 import com.webobjects.foundation.NSSelector;
 
 public class NSFoundationElementsAccessor implements ElementsAccessor {
-    private static NSSelector sel = new NSSelector( "objectEnumerator" );
+    private static NSSelector<Enumeration> sel = new NSSelector<>( "objectEnumerator" );
 
     public Enumeration getElements(Object target) {
         try {
-            return (Enumeration) sel.invoke( target );    
+            return sel.invoke( target );    
         } catch( Exception e ) {
             throw new RuntimeException("NSFoundationElementsAccessor being used with a non-foundation class: " + target.getClass().getName());
         }

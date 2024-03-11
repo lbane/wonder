@@ -1,5 +1,6 @@
 package ognl.helperfunction;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,10 +24,10 @@ public class WOHelperFunctionRegistry {
 	public static final String APP_FRAMEWORK_NAME = "app";
 
 	private static WOHelperFunctionRegistry _instance;
-	private Map _applicationHelperInstanceCache;
+	private Map<String, Map<Object, Object>> _applicationHelperInstanceCache;
 		
 	private WOHelperFunctionRegistry() {
-		_applicationHelperInstanceCache = new HashMap();
+		_applicationHelperInstanceCache = new HashMap<>();
 	}
 
 	public static synchronized WOHelperFunctionRegistry registry() {
@@ -66,11 +67,7 @@ public class WOHelperFunctionRegistry {
 		if (frameworkName == null) {
 			frameworkName = WOHelperFunctionRegistry.APP_FRAMEWORK_NAME;
 		}
-		Map frameworkHelperInstanceCache = (Map) _applicationHelperInstanceCache.get(frameworkName);
-		if (frameworkHelperInstanceCache == null) {
-			frameworkHelperInstanceCache = new HashMap();
-			_applicationHelperInstanceCache.put(frameworkName, frameworkHelperInstanceCache);
-		}
+		Map<Object, Object> frameworkHelperInstanceCache = _applicationHelperInstanceCache.computeIfAbsent(frameworkName, s -> new HashMap<>());
 		frameworkHelperInstanceCache.put(targetObjectClass, helperInstance);
 		
 		if (helperFunction != null) {
@@ -88,14 +85,14 @@ public class WOHelperFunctionRegistry {
 	
 	protected synchronized Object __cachedHelperInstanceForFrameworkNamed(Object key, String frameworkName)	{
 		Object helperInstance = null;
-		Map frameworkHelperInstanceCache = (Map) _applicationHelperInstanceCache.get(frameworkName);
+		Map<Object, Object> frameworkHelperInstanceCache = _applicationHelperInstanceCache.get(frameworkName);
 		if (frameworkHelperInstanceCache != null) {
 			helperInstance = frameworkHelperInstanceCache.get(key);
 		}
 		return helperInstance;
 	}
 	
-	public synchronized Object _helperInstanceForFrameworkNamed(Object targetObject, String helperFunction, String keyPath, String frameworkName) throws SecurityException, IllegalArgumentException, InstantiationException, IllegalAccessException {
+	public synchronized Object _helperInstanceForFrameworkNamed(Object targetObject, String helperFunction, String keyPath, String frameworkName) throws SecurityException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
 		if (frameworkName == null) {
 			frameworkName = WOHelperFunctionRegistry.APP_FRAMEWORK_NAME;
 		}
@@ -148,7 +145,7 @@ public class WOHelperFunctionRegistry {
 			if (targetHelperClass == null) {
 				throw new NoSuchElementException("Could not find a helper class for '" + helpedClass.getName() + " implementing " + helperFunction + "'.");
 			}
-			helperInstance = targetHelperClass.newInstance();
+			helperInstance = targetHelperClass.getDeclaredConstructor().newInstance();
 			setHelperInstanceForClassInFrameworkNamed(helperInstance, helperFunction, helpedClass, frameworkName);
 		}
 
@@ -162,7 +159,7 @@ public class WOHelperFunctionRegistry {
 	 * process over with the superclass if that fails.
 	 * @param helpedClass
 	 * @param helperFunction
-	 * @return
+	 * @return a helper class
 	 */
 	protected Class helperClassForClass(Class helpedClass, String helperFunction) {
 		String targetClassName = helpedClass.getName();

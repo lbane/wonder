@@ -9,6 +9,11 @@ import com.webobjects.appserver._private.WOReadOnlyKeyValueAssociation;
  * @author mschrag
  */
 public class WOHelperFunctionAssociation {
+	private WOHelperFunctionAssociation()
+	{
+		// no need to instanciate
+	}
+	
 	private static boolean _keyPathIsReadOnly(String keyPath) {
 		return keyPath.startsWith("@") || keyPath.indexOf(".@") > 0;
 	}

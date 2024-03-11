@@ -9,8 +9,9 @@
 package ognl.webobjects;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -84,13 +85,13 @@ public class WOOgnl {
 		}
 	}
 
-	private static Map<String, Class> associationMappings = new Hashtable<>();
+	private static Map<String, Class> associationMappings = Collections.synchronizedMap(new HashMap<>());
 
 	public static void setAssociationClassForPrefix(Class clazz, String prefix) {
 		associationMappings.put(prefix, clazz);
 	}
 
-	private WOAssociation createAssociationForClass(Class clazz, String value, boolean isConstant) {
+	private static WOAssociation createAssociationForClass(Class clazz, String value, boolean isConstant) {
 		return (WOAssociation) _NSUtilities.instantiateObject(clazz, new Class[] { Object.class, boolean.class }, new Object[] { value, Boolean.valueOf(isConstant) }, true, false);
 	}
 
@@ -125,8 +126,7 @@ public class WOOgnl {
 
 	public OgnlContext newDefaultContext() {
 		// allow access to everything that is not declared private
-		OgnlContext context = new OgnlContext(classResolver(), null, new DefaultMemberAccess(false, true, true));
-		return context;
+		return new OgnlContext(classResolver(), null, new DefaultMemberAccess(false, true, true));
 	}
 
 	public void configureWOForOgnl() {
@@ -156,21 +156,20 @@ public class WOOgnl {
 		}
 	}
 	
-	private boolean hasProperty(String prop, String def) {
+	private static boolean hasProperty(String prop, String def) {
 		String property = System.getProperty(prop, def).trim();
 		return "true".equalsIgnoreCase(property) || "yes".equalsIgnoreCase(property);
 	}
 
-	public void convertOgnlConstantAssociations(NSMutableDictionary associations) {
+	public void convertOgnlConstantAssociations(NSMutableDictionary<String, WOAssociation> associations) {
 		// RS: create a clone of the keys array before iterating over it, because this method may modify the associations dictionary, 
 		// and the iteration over the modified dictionary is undefined thereafter
-		for (Enumeration e = associations.allKeys().immutableClone().objectEnumerator(); e.hasMoreElements();) {
-			String name = (String) e.nextElement();
-			WOAssociation association = (WOAssociation) associations.objectForKey(name);
+		for (Enumeration<String> e = associations.allKeys().immutableClone().objectEnumerator(); e.hasMoreElements();) {
+			String name = e.nextElement();
+			WOAssociation association = associations.objectForKey(name);
 			boolean isConstant = false;
 			String keyPath = null;
-			if (association instanceof WOConstantValueAssociation) {
-				WOConstantValueAssociation constantAssociation = (WOConstantValueAssociation) association;
+			if (association instanceof WOConstantValueAssociation constantAssociation) {
 				// AK: this sucks, but there is no API to get at the value
 				Object value = constantAssociation.valueInComponent(null);
 				keyPath = value != null ? value.toString() : null;
@@ -179,8 +178,7 @@ public class WOOgnl {
 			else if (association instanceof WOKeyValueAssociation) {
 				keyPath = association.keyPath();
 			}
-			else if (association instanceof WOBindingNameAssociation) {
-				WOBindingNameAssociation b = (WOBindingNameAssociation) association;
+			else if (association instanceof WOBindingNameAssociation b) {
 				// AK: strictly speaking, this is not correct, as we only get the first part of 
 				// the path. But take a look at WOBindingNameAssociation for a bit of fun...
 				keyPath = "^" + b._parentBindingName;
@@ -205,7 +203,7 @@ public class WOOgnl {
 					String ognlExpression = keyPath.substring(ognlBindingFlag().length(), keyPath.length());
 					if (ognlExpression.length() > 0) {
 						WOAssociation newAssociation = new WOOgnlAssociation(ognlExpression);
-						NSArray keys = associations.allKeysForObject(association);
+						NSArray<String> keys = associations.allKeysForObject(association);
 						//if (log.isDebugEnabled())
 						//    log.debug("Constructing Ognl association for binding key(s): "
 						//              + (keys.count() == 1 ? keys.lastObject() : keys) + " expression: " + ognlExpression);
@@ -213,7 +211,7 @@ public class WOOgnl {
 							associations.setObjectForKey(newAssociation, keys.lastObject());
 						}
 						else {
-							for (Enumeration ee = keys.objectEnumerator(); ee.hasMoreElements();) {
+							for (Enumeration<String> ee = keys.objectEnumerator(); ee.hasMoreElements();) {
 								associations.setObjectForKey(newAssociation, e.nextElement());
 							}
 						}

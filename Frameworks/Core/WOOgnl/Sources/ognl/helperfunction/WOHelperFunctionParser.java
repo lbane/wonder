@@ -5,8 +5,6 @@ import java.util.Enumeration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ognl.webobjects.WOOgnl;
-
 import com.webobjects.appserver.WOAssociation;
 import com.webobjects.appserver.WOElement;
 import com.webobjects.appserver._private.WOConstantValueAssociation;
@@ -18,6 +16,8 @@ import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSDictionary;
 import com.webobjects.foundation.NSMutableDictionary;
 
+import ognl.webobjects.WOOgnl;
+
 public class WOHelperFunctionParser {
 	private static final Logger log = LoggerFactory.getLogger(WOHelperFunctionParser.class);
 
@@ -26,12 +26,12 @@ public class WOHelperFunctionParser {
 	private static String WO_REPLACEMENT_MARKER = "__REPL__";
 
 	private WOHTMLWebObjectTag _currentWebObjectTag;
-	private NSMutableDictionary _declarations;
+	private NSMutableDictionary<String, WODeclaration> _declarations;
 	private int _inlineBindingCount;
 
 	private String _declarationString;
 	private String _HTMLString;
-	private NSArray _languages;
+	private NSArray<String> _languages;
 
 	public WOHelperFunctionParser(String htmlString, String declarationString, NSArray languages) {
 		_HTMLString = htmlString;
@@ -43,12 +43,11 @@ public class WOHelperFunctionParser {
 
 	public WOElement parse() throws WOHelperFunctionDeclarationFormatException, WOHelperFunctionHTMLFormatException, ClassNotFoundException {
 		parseDeclarations();
-		for (Enumeration e = declarations().objectEnumerator(); e.hasMoreElements();) {
-			WODeclaration declaration = (WODeclaration) e.nextElement();
+		for (Enumeration<WODeclaration> e = declarations().objectEnumerator(); e.hasMoreElements();) {
+			WODeclaration declaration = e.nextElement();
 			processDeclaration(declaration);
 		}
-		WOElement woelement = parseHTML();
-		return woelement;
+		return parseHTML();
 	}
 
 	public void didParseOpeningWebObjectTag(String s, WOHelperFunctionHTMLParser htmlParser) throws WOHelperFunctionHTMLFormatException {
@@ -81,7 +80,10 @@ public class WOHelperFunctionParser {
 			_currentWebObjectTag.addChildElement(element);
 		}
 		catch (RuntimeException e) {
-			throw new RuntimeException("Unable to load the component named '" + componentName(_currentWebObjectTag) + "' with the declaration " + prettyDeclaration((WODeclaration) _declarations.objectForKey(_currentWebObjectTag.name())) + ". Make sure the .wo folder is where it's supposed to be and the name is spelled correctly.", e);
+			throw new RuntimeException("Unable to load the component named '" + 
+									   componentName(_currentWebObjectTag) + 
+									   "' with the declaration " + prettyDeclaration(_declarations.objectForKey(_currentWebObjectTag.name())) + 
+									   ". Make sure the .wo folder is where it's supposed to be and the name is spelled correctly.", e);
 		}
 	}
 
@@ -95,11 +97,11 @@ public class WOHelperFunctionParser {
 	}
 
 	protected WODeclaration parseInlineBindings(String tag, int colonIndex) throws WOHelperFunctionHTMLFormatException {
-		StringBuffer keyBuffer = new StringBuffer();
-		StringBuffer valueBuffer = new StringBuffer();
-		StringBuffer elementTypeBuffer = new StringBuffer();
-		NSMutableDictionary associations = new NSMutableDictionary();
-		StringBuffer currentBuffer = elementTypeBuffer;
+		StringBuilder keyBuffer = new StringBuilder();
+		StringBuilder valueBuffer = new StringBuilder();
+		StringBuilder elementTypeBuffer = new StringBuilder();
+		NSMutableDictionary<String, WOAssociation> associations = new NSMutableDictionary<>();
+		StringBuilder currentBuffer = elementTypeBuffer;
 		boolean changeBuffers = false;
 		boolean inQuote = false;
 		int length = tag.length();
@@ -167,7 +169,7 @@ public class WOHelperFunctionParser {
 			}
 		}
 		String elementType = elementTypeBuffer.toString();
-		String shortcutType = (String) WOHelperFunctionTagRegistry.tagShortcutMap().objectForKey(elementType);
+		String shortcutType = WOHelperFunctionTagRegistry.tagShortcutMap().get(elementType);
 		if (shortcutType != null) {
 			elementType = shortcutType;
 		}
@@ -184,7 +186,7 @@ public class WOHelperFunctionParser {
 			elementName = "_" + elementType + "_" + _inlineBindingCount;
 			_inlineBindingCount++;
 		}
-		WOTagProcessor tagProcessor = (WOTagProcessor) WOHelperFunctionTagRegistry.tagProcessorMap().objectForKey(elementType);
+		WOTagProcessor tagProcessor = WOHelperFunctionTagRegistry.tagProcessorMap().get(elementType);
 		WODeclaration declaration;
 		if (tagProcessor == null) {
 			declaration = WOHelperFunctionParser.createDeclaration(elementName, elementType, associations);
@@ -197,10 +199,10 @@ public class WOHelperFunctionParser {
 		return declaration;
 	}
 
-	protected void parseInlineAssociation(StringBuffer keyBuffer, StringBuffer valueBuffer, NSMutableDictionary bindings) throws WOHelperFunctionHTMLFormatException {
+	protected void parseInlineAssociation(StringBuilder keyBuffer, StringBuilder valueBuffer, NSMutableDictionary<String, WOAssociation> bindings) throws WOHelperFunctionHTMLFormatException {
 		String key = keyBuffer.toString().trim();
 		String value = valueBuffer.toString().trim();
-		NSDictionary quotedStrings;
+		NSDictionary<String, String> quotedStrings;
 		if (value.startsWith("\"")) {
 			value = value.substring(1);
 			if (value.endsWith("\"")) {
@@ -214,27 +216,30 @@ public class WOHelperFunctionParser {
 				if (value.endsWith("VALID")) {
 					value = value.replaceFirst("\\s*//\\s*VALID", "");
 				}
-				quotedStrings = new NSDictionary();
+				quotedStrings = new NSDictionary<>();
 			}
 			else {
-				value = value.replaceAll("\\\\\\$", "\\$");
-				value = value.replaceAll("\\\"", "\"");
-				quotedStrings = new NSDictionary(value, "_WODP_0");
+				value = value.replace("\\\\\\$", "\\$");
+				value = value.replace("\\\"", "\"");
+				quotedStrings = new NSDictionary<>(value, "_WODP_0");
 				value = "_WODP_0";
 			}
 		}
 		else {
-			quotedStrings = new NSDictionary();
+			quotedStrings = new NSDictionary<>();
 		}
 		WOAssociation association = WOHelperFunctionDeclarationParser._associationWithKey(value, quotedStrings);
 		bindings.setObjectForKey(association, key);
 	}
 
 	protected void processDeclaration(WODeclaration declaration) {
-		NSMutableDictionary associations = (NSMutableDictionary) declaration.associations();
-		Enumeration bindingNameEnum = associations.keyEnumerator();
+		NSMutableDictionary<String, WOAssociation> associations = (NSMutableDictionary)declaration.associations();
+		
+		// The modification of a dicationary while enumerating is dangerous, but may work here,  because we only 
+		// change the associated object.
+		final Enumeration<String> bindingNameEnum = associations.keyEnumerator();
 		while (bindingNameEnum.hasMoreElements()) {
-			String bindingName = (String) bindingNameEnum.nextElement();
+			String bindingName = bindingNameEnum.nextElement();
 			WOAssociation association = (WOAssociation) associations.valueForKey(bindingName);
 			WOAssociation helperAssociation = parserHelperAssociation(association);
 			if (helperAssociation != association) {
@@ -249,8 +254,7 @@ public class WOHelperFunctionParser {
 	protected WOAssociation parserHelperAssociation(WOAssociation originalAssociation) {
 		WOAssociation association = originalAssociation;
 		String originalKeyPath = null;
-		if (association instanceof WOKeyValueAssociation) {
-			WOKeyValueAssociation kvAssociation = (WOKeyValueAssociation) association;
+		if (association instanceof WOKeyValueAssociation kvAssociation) {
 			originalKeyPath = kvAssociation.keyPath();
 		}
 		// else if (association instanceof WOConstantValueAssociation) {
@@ -282,7 +286,7 @@ public class WOHelperFunctionParser {
 				}
 				StringBuilder ognlKeyPath = new StringBuilder();
 				ognlKeyPath.append('~');
-				ognlKeyPath.append("@" + WOHelperFunctionRegistry.class.getName() + "@registry()._helperInstanceForFrameworkNamed(#this, \"");
+				ognlKeyPath.append("@").append(WOHelperFunctionRegistry.class.getName()).append("@registry()._helperInstanceForFrameworkNamed(#this, \"");
 				ognlKeyPath.append(helperFunctionName);
 				ognlKeyPath.append("\", \"");
 				ognlKeyPath.append(targetKeyPath);
@@ -310,20 +314,20 @@ public class WOHelperFunctionParser {
 			declarationStr.append("[none]");
 		}
 		else {
-			declarationStr.append("Component Type = " + declaration.type());
+			declarationStr.append("Component Type = ").append(declaration.type());
 			declarationStr.append(", Bindings = { ");
-			Enumeration keyEnum = declaration.associations().keyEnumerator();
+			Enumeration<String> keyEnum = declaration.associations().keyEnumerator();
 			while (keyEnum.hasMoreElements()) {
-				String key = (String) keyEnum.nextElement();
+				String key = keyEnum.nextElement();
 				Object assoc = declaration.associations().objectForKey(key);
-				if (assoc instanceof WOKeyValueAssociation) {
-					declarationStr.append(key + "=" + ((WOKeyValueAssociation) assoc).keyPath());
+				if (assoc instanceof WOKeyValueAssociation kvAssoc) {
+					declarationStr.append(key).append("=").append(kvAssoc.keyPath());
 				}
-				else if (assoc instanceof WOConstantValueAssociation) {
-					declarationStr.append(key + "='" + ((WOConstantValueAssociation) assoc).valueInComponent(null) + "'");
+				else if (assoc instanceof WOConstantValueAssociation constAssoc) {
+					declarationStr.append(key).append("='").append(constAssoc.valueInComponent(null)).append("'");
 				}
 				else {
-					declarationStr.append(key + "=" + assoc);
+					declarationStr.append(key).append("=").append(assoc);
 				}
 				if (keyEnum.hasMoreElements()) {
 					declarationStr.append(", ");
@@ -390,15 +394,15 @@ public class WOHelperFunctionParser {
 		}
 	}
 
-	public static WODeclaration createDeclaration(String declarationName, String declarationType, NSMutableDictionary associations) {
+	public static WODeclaration createDeclaration(String declarationName, String declarationType, NSMutableDictionary<String, WOAssociation> associations) {
 		WODeclaration declaration = new WODeclaration(declarationName, declarationType, associations);
 
 		if (WOHelperFunctionParser._debugSupport && associations != null && associations.objectForKey(WOHTMLAttribute.Debug) == null) {
 			//associations.setObjectForKey(new WOConstantValueAssociation(Boolean.TRUE), WOHTMLAttribute.Debug);
-			Enumeration associationsEnum = associations.keyEnumerator();
+			Enumeration<String> associationsEnum = associations.keyEnumerator();
 			while (associationsEnum.hasMoreElements()) {
-				String bindingName = (String) associationsEnum.nextElement();
-				WOAssociation association = (WOAssociation) associations.objectForKey(bindingName);
+				String bindingName = associationsEnum.nextElement();
+				WOAssociation association = associations.objectForKey(bindingName);
 				association.setDebugEnabledForBinding(bindingName, declarationName, declarationType);
 				association._setDebuggingEnabled(false);
 			}

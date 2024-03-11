@@ -3,7 +3,11 @@ package ognl.helperfunction;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.webobjects.appserver.WOApplication;
+import com.webobjects.appserver.WOAssociation;
 import com.webobjects.appserver.WOElement;
 import com.webobjects.appserver._private.WOBundle;
 import com.webobjects.appserver._private.WOComponentDefinition;
@@ -14,14 +18,16 @@ import com.webobjects.appserver._private.WOGenerationSupport;
 import com.webobjects.appserver._private.WOHTMLBareString;
 import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSDictionary;
-import com.webobjects.foundation.NSLog;
 import com.webobjects.foundation.NSMutableArray;
 import com.webobjects.foundation._NSUtilities;
 
 public class WOHTMLWebObjectTag {
+	
+	private static final Logger logger = LoggerFactory.getLogger(WOHTMLWebObjectTag.class);
+	
 	private String _name;
 	private WOHTMLWebObjectTag _parent;
-	private NSMutableArray _children;
+	private NSMutableArray<Object> _children;
 
 	private void extractName(String s) throws WOHelperFunctionHTMLFormatException {
 
@@ -68,18 +74,18 @@ public class WOHTMLWebObjectTag {
 	}
 
 	public WOElement template() {
-		NSMutableArray nsmutablearray = null;
+		NSMutableArray<WOElement> nsmutablearray = null;
 		if (_children == null) {
 			return null;
 		}
-		Enumeration enumeration = _children.objectEnumerator();
+		Enumeration<Object> enumeration = _children.objectEnumerator();
 		if (enumeration != null) {
-			nsmutablearray = new NSMutableArray(_children.count());
+			nsmutablearray = new NSMutableArray<>(_children.count());
 			StringBuilder stringbuffer = new StringBuilder(128);
 			while (enumeration.hasMoreElements()) {
 				Object obj1 = enumeration.nextElement();
-				if (obj1 instanceof String) {
-					stringbuffer.append((String) obj1);
+				if (obj1 instanceof String s) {
+					stringbuffer.append(s);
 				}
 				else {
 					if (stringbuffer.length() > 0) {
@@ -98,12 +104,12 @@ public class WOHTMLWebObjectTag {
 		}
 		WOElement obj = null;
 		if (nsmutablearray != null && nsmutablearray.count() == 1) {
-			Object obj2 = nsmutablearray.objectAtIndex(0);
+			WOElement obj2 = nsmutablearray.objectAtIndex(0);
 			if (obj2 instanceof WOComponentReference) {
-				obj = new WODynamicGroup(_name, null, (WOElement) obj2);
+				obj = new WODynamicGroup(_name, null, obj2);
 			}
 			else {
-				obj = (WOElement) obj2;
+				obj = obj2;
 			}
 		}
 		else {
@@ -114,23 +120,23 @@ public class WOHTMLWebObjectTag {
 
 	public void addChildElement(Object obj) {
 		if (_children == null) {
-			_children = new NSMutableArray();
+			_children = new NSMutableArray<>();
 		}
 		_children.addObject(obj);
 	}
 
-	public WOElement dynamicElement(NSDictionary nsdictionary, NSArray nsarray) throws WOHelperFunctionDeclarationFormatException, ClassNotFoundException {
+	public WOElement dynamicElement(NSDictionary<String, WODeclaration> declarations, NSArray<String> languages) throws WOHelperFunctionDeclarationFormatException, ClassNotFoundException {
 		String s = name();
 		WOElement woelement = template();
-		WODeclaration wodeclaration = (WODeclaration) nsdictionary.objectForKey(s);
-		return _elementWithDeclaration(wodeclaration, s, woelement, nsarray);
+		WODeclaration wodeclaration = declarations.objectForKey(s);
+		return _elementWithDeclaration(wodeclaration, s, woelement, languages);
 	}
 
-	private static WOElement _componentReferenceWithClassNameDeclarationAndTemplate(String s, WODeclaration wodeclaration, WOElement woelement, NSArray nsarray) throws ClassNotFoundException {
+	private static WOElement _componentReferenceWithClassNameDeclarationAndTemplate(String s, WODeclaration wodeclaration, WOElement woelement, NSArray<String> languages) throws ClassNotFoundException {
 		WOComponentReference wocomponentreference = null;
-		WOComponentDefinition wocomponentdefinition = WOApplication.application()._componentDefinition(s, nsarray);
+		WOComponentDefinition wocomponentdefinition = WOApplication.application()._componentDefinition(s, languages);
 		if (wocomponentdefinition != null) {
-			NSDictionary nsdictionary = wodeclaration.associations();
+			NSDictionary<String, WOAssociation> nsdictionary = wodeclaration.associations();
 			wocomponentreference = wocomponentdefinition.componentReferenceWithAssociations(nsdictionary, woelement);
 		}
 		else {
@@ -141,57 +147,43 @@ public class WOHTMLWebObjectTag {
 
 	private static WOElement _elementWithClass(Class class1, WODeclaration wodeclaration, WOElement woelement) {
 		WOElement woelement1 = WOApplication.application().dynamicElementWithName(class1.getName(), wodeclaration.associations(), woelement, null);
-		if (NSLog.debugLoggingAllowedForLevelAndGroups(3, 8388608L)) {
-			NSLog.debug.appendln("<WOHTMLWebObjectTag> Created Dynamic Element with name :" + class1.getName());
-			NSLog.debug.appendln("Declaration : " + wodeclaration);
-			NSLog.debug.appendln("Element : " + woelement1.toString());
+		if (logger.isDebugEnabled()) {
+			logger.debug("<WOHTMLWebObjectTag> Created Dynamic Element with name : {}\nDeclaration : {}\nElement : {}", class1.getName(), wodeclaration, woelement1);
 		}
 		return woelement1;
 	}
 
-	private static WOElement _elementWithDeclaration(WODeclaration wodeclaration, String s, WOElement woelement, NSArray nsarray) throws ClassNotFoundException, WOHelperFunctionDeclarationFormatException {
+	private static WOElement _elementWithDeclaration(WODeclaration wodeclaration, String s, WOElement woelement, NSArray<String> languages) throws ClassNotFoundException, WOHelperFunctionDeclarationFormatException {
 		WOElement woelement1 = null;
 		if (wodeclaration != null) {
 			String s1 = wodeclaration.type();
 			if (s1 != null) {
-				if (NSLog.debugLoggingAllowedForLevelAndGroups(3, 8388608L)) {
-					NSLog.debug.appendln("<WOHTMLWebObjectTag> will look for " + s1 + " in the java runtime.");
-				}
+				logger.debug("<WOHTMLWebObjectTag> will look for {} in the java runtime.", s1);
 				Class class1 = _NSUtilities.classWithName(s1);
 				if (class1 == null) {
-					if (NSLog.debugLoggingAllowedForLevelAndGroups(3, 8388608L)) {
-						NSLog.debug.appendln("<WOHTMLWebObjectTag> will look for com.webobjects.appserver._private." + s1 + " .");
-					}
+					logger.debug("<WOHTMLWebObjectTag> will look for com.webobjects.appserver._private.{} .", s1);
 					class1 = WOBundle.lookForClassInAllBundles(s1);
 					if (class1 == null) {
-						NSLog.err.appendln("WOBundle.lookForClassInAllBundles(" + s1 + ") failed!");
+						logger.error("WOBundle.lookForClassInAllBundles({}) failed!", s1);
 					}
-					else
-
-					if (!(com.webobjects.appserver.WODynamicElement.class).isAssignableFrom(class1)) {
+					else if (!(com.webobjects.appserver.WODynamicElement.class).isAssignableFrom(class1)) {
 						class1 = null;
 					}
 				}
 
 				if (class1 != null) {
-					if (NSLog.debugLoggingAllowedForLevelAndGroups(3, 8388608L)) {
-						NSLog.debug.appendln("<WOHTMLWebObjectTag> Will initialize object of class " + s1);
-					}
+					logger.debug("<WOHTMLWebObjectTag> Will initialize object of class {}", s1);
 					if ((com.webobjects.appserver.WOComponent.class).isAssignableFrom(class1)) {
-						if (NSLog.debugLoggingAllowedForLevelAndGroups(3, 8388608L)) {
-							NSLog.debug.appendln("<WOHTMLWebObjectTag> will look for " + s1 + " in the Compiled Components.");
-						}
-						woelement1 = _componentReferenceWithClassNameDeclarationAndTemplate(s1, wodeclaration, woelement, nsarray);
+						logger.debug("<WOHTMLWebObjectTag> will look for {} in the Compiled Components.", s1);
+						woelement1 = _componentReferenceWithClassNameDeclarationAndTemplate(s1, wodeclaration, woelement, languages);
 					}
 					else {
 						woelement1 = _elementWithClass(class1, wodeclaration, woelement);
 					}
 				}
 				else {
-					if (NSLog.debugLoggingAllowedForLevelAndGroups(3, 8388608L)) {
-						NSLog.debug.appendln("<WOHTMLWebObjectTag> will look for " + s1 + " in the Frameworks.");
-					}
-					woelement1 = _componentReferenceWithClassNameDeclarationAndTemplate(s1, wodeclaration, woelement, nsarray);
+					logger.debug("<WOHTMLWebObjectTag> will look for {} in the Frameworks.", s1);
+					woelement1 = _componentReferenceWithClassNameDeclarationAndTemplate(s1, wodeclaration, woelement, languages);
 				}
 			}
 			else {
