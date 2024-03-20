@@ -144,7 +144,7 @@ public class ERAutoIndex extends ERIndex {
             // For each property in indexModel, create configuration attributes
             for (Enumeration<String> names = properties.keyEnumerator(); names.hasMoreElements();) {
                 String propertyName = names.nextElement();
-                NSDictionary<String, String> propertyDefinition = (NSDictionary<String, String>) properties.objectForKey(propertyName);
+                NSDictionary<String, Object> propertyDefinition = (NSDictionary<String, Object>)properties.objectForKey(propertyName);
                 createAttribute(propertyName, propertyDefinition);
             }
         }

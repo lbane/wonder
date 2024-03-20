@@ -4,47 +4,54 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.nio.file.Path;
 import java.text.Format;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.DateTools.Resolution;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.DocumentStoredFieldVisitor;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.Field.TermVector;
-import org.apache.lucene.document.NumberTools;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexWriterConfig.OpenMode;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.IndexableFieldType;
+import org.apache.lucene.index.StoredFieldVisitor;
+import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermEnum;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.index.TermVectors;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.Hit;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.PrefixTermEnum;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Parameter;
 import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,7 +109,15 @@ public class ERIndex {
 
         @Override
         public void takeValueForKey(Object value, String key) {
-            _document.getField(key).setValue(key);
+            IndexableField ifield = _document.getField(key); 
+            switch (value) {
+                case Double dv -> ifield.storedValue().setDoubleValue(dv);
+                case Float v -> ifield.storedValue().setFloatValue(v);
+                case Long lv -> ifield.storedValue().setLongValue(lv);
+                case Integer v -> ifield.storedValue().setIntValue(v);
+                case String v -> ifield.storedValue().setStringValue(v);
+                default -> ifield.storedValue().setStringValue(String.valueOf(value)); 
+            }
         }
 
         @Override
@@ -133,17 +148,9 @@ public class ERIndex {
 
     protected class IndexAttribute {
         String _name;
-
-        TermVector _termVector;
-
-        Store _store;
-
-        Index _index;
-
+        IndexableFieldType _fieldType;
         Analyzer _analyzer;
-
         Format _format;
-
         ERIndex _model;
 
         /**
@@ -153,25 +160,25 @@ public class ERIndex {
          * @param name the property name (a key or keypath)
          * @param dict the property definition form indexModel
          */
-        IndexAttribute(ERIndex index, String name, NSDictionary<String, String> dict) {
+        IndexAttribute(ERIndex index, String name, NSDictionary<String, Object> dict) {
             _name = name;
-            _termVector = (TermVector) classValue(dict, "termVector", TermVector.class, "YES");
-            _store = (Store) classValue(dict, "store", Store.class, "NO");
-            _index = (Index) classValue(dict, "index", Index.class, "ANALYZED");
-            String analyzerClass = dict.objectForKey("analyzer");
+            
+            // FIXME: die Definitionen werden aus einem Index-Model gewonnen. Das Modell enthält die Infos in einem
+            // Textformat, ggf. in Dictionaries.
+            // wir müssen hier die richtige "Übersetzung" von Text auf FieldType-Aufrufe machen
+            // in der alten Doku (2.9.3) sind die Werte für Field.Index, Field.Store und Field.TermVector definiert.
+            _fieldType = (IndexableFieldType)dict.objectForKey("fieldType");
+            String analyzerClass = (String)dict.objectForKey("analyzer");
             if (analyzerClass == null) {
                 analyzerClass = StandardAnalyzer.class.getName();
             }
             _analyzer = (Analyzer) create(analyzerClass);
-            if (_analyzer == null && name.matches("\\w+_(\\w+)")) {
-                // String locale = name.substring(name.lastIndexOf('_') + 1);
-            }
-            _format = (Format) create(dict.objectForKey("format"));
-            String numberFormat = dict.objectForKey("numberformat");
+            _format = (Format) create((String)dict.objectForKey("format"));
+            String numberFormat = (String)dict.objectForKey("numberformat");
             if (numberFormat != null) {
                 _format = new NSNumberFormatter(numberFormat);
             }
-            String dateformat = dict.objectForKey("dateformat");
+            String dateformat = (String)dict.objectForKey("dateformat");
             if (dateformat != null) {
                 _format = new NSTimestampFormatter(dateformat);
             }
@@ -189,24 +196,9 @@ public class ERIndex {
             return null;
         }
 
-        private Object classValue(NSDictionary<String, String> dict, String key, Class<?> c, String defaultValue) {
-            String code = dict.objectForKey(key);
-            if (code == null) {
-                code = defaultValue;
-            }
-            return ERXKeyValueCodingUtilities.classValueForKey(c, code);
-        }
-
-        public TermVector termVector() {
-            return _termVector;
-        }
-
-        public Index index() {
-            return _index;
-        }
-
-        public Store store() {
-            return _store;
+        public IndexableFieldType fieldType()
+        {
+            return _fieldType;
         }
 
         public String name() {
@@ -222,7 +214,7 @@ public class ERIndex {
                 return _format.format(value);
             }
             if (value instanceof Number numberValue) {
-                return NumberTools.longToString(numberValue.longValue());
+                return String.valueOf(numberValue.longValue());
             }
             if (value instanceof Date dateValue) {
                 return DateTools.dateToString(dateValue, Resolution.MILLISECOND);
@@ -234,21 +226,9 @@ public class ERIndex {
         }
     }
 
-    protected static class Command extends Parameter {
-    	/**
-    	 * Do I need to update serialVersionUID?
-    	 * See section 5.6 <cite>Type Changes Affecting Serialization</cite> on page 51 of the 
-    	 * <a href="http://java.sun.com/j2se/1.4/pdf/serial-spec.pdf">Java Object Serialization Spec</a>
-    	 */
-    	private static final long serialVersionUID = 1L;
-
-        protected Command(String name) {
-            super(name);
-        }
-
-        protected static Command ADD = new Command("ADD");
-
-        protected static Command DELETE = new Command("DELETE");
+    protected static enum Command {
+        ADD,
+        DELETE;
     }
 
     protected class Job {
@@ -374,28 +354,33 @@ public class ERIndex {
                 }
                 long start = System.currentTimeMillis();
                 log.info("Running {}", transaction);
-                if (!create && !indexDirectory().fileExists("segments.gen")) {
+                if (!create && !Arrays.asList(indexDirectory().listAll()).contains("segments.gen")) {
                     log.error("segments did not exist but create wasn't called");
                     create = true;
                 }
-                IndexWriter writer = new IndexWriter(indexDirectory(), analyzer(), create, IndexWriter.MaxFieldLength.UNLIMITED);
-                for (Job job : transaction.jobs()) {
-                    log.info("Indexing: {} {}", job.command(), job.objects().count());
-                    if (job.command() == Command.DELETE) {
-                        for (Enumeration<?> iter = job.objects().objectEnumerator(); iter.hasMoreElements();) {
-                            Term term = (Term)iter.nextElement();
-                            writer.deleteDocuments(term);
+                
+                try (
+                    final IndexWriter writer = new IndexWriter(indexDirectory(), 
+                                                     new IndexWriterConfig(analyzer())
+                                                         .setOpenMode(create ? OpenMode.CREATE : OpenMode.CREATE_OR_APPEND)
+                                                         .setCommitOnClose(true))
+                ) {
+                    for (Job job : transaction.jobs()) {
+                        log.info("Indexing: {} {}", job.command(), job.objects().count());
+                        if (job.command() == Command.DELETE) {
+                            for (Enumeration<?> iter = job.objects().objectEnumerator(); iter.hasMoreElements();) {
+                                Term term = (Term)iter.nextElement();
+                                writer.deleteDocuments(term);
+                            }
+                        } else if (job.command() == Command.ADD) {
+                            for (Enumeration<?> iter = job.objects().objectEnumerator(); iter.hasMoreElements();) {
+                                Document document = (Document)iter.nextElement();
+                                writer.addDocument(document);
+                            }
                         }
-                    } else if (job.command() == Command.ADD) {
-                        for (Enumeration<?> iter = job.objects().objectEnumerator(); iter.hasMoreElements();) {
-                            Document document = (Document)iter.nextElement();
-                            writer.addDocument(document, analyzer());
-                        }
+                        log.info("Done: {} {}", job.command(), job.objects().count());
                     }
-                    log.info("Done: {} {}", job.command(), job.objects().count());
                 }
-                writer.flush();
-                writer.close();
                 NSNotificationCenter.defaultCenter().postNotification(IndexingEndedNotification, transaction);
                 log.info("Finished in {}s: {}", (System.currentTimeMillis() - start) / 1000, transaction);
             } catch (IOException e) {
@@ -448,14 +433,15 @@ public class ERIndex {
     }
     
     protected Analyzer analyzer() {
-        PerFieldAnalyzerWrapper wrapper = new PerFieldAnalyzerWrapper(new StandardAnalyzer(Version.LUCENE_24));
+        Map<String, Analyzer> fieldAnalyzer = HashMap.newHashMap(attributes().size());
         for (IndexAttribute attribute : attributes()) {
-            wrapper.addAnalyzer(attribute.name(), attribute.analyzer());
+            fieldAnalyzer.put(attribute.name(), attribute.analyzer());
         }
-        return wrapper;
+        
+        return new PerFieldAnalyzerWrapper(new StandardAnalyzer(), fieldAnalyzer);
     }
     
-    public void addAttribute(String propertyName, NSDictionary<String, String> propertyDefinition) {
+    public void addAttribute(String propertyName, NSDictionary<String, Object> propertyDefinition) {
         createAttribute(propertyName, propertyDefinition);
     }
 
@@ -466,7 +452,7 @@ public class ERIndex {
      * @param propertyDefinition
      * @return the new {@link IndexAttribute}
      */
-    protected IndexAttribute createAttribute(String propertyName, NSDictionary<String, String> propertyDefinition) {
+    protected IndexAttribute createAttribute(String propertyName, NSDictionary<String, Object> propertyDefinition) {
         IndexAttribute attribute = new IndexAttribute(this, propertyName, propertyDefinition);
         NSMutableDictionary<String, IndexAttribute> attributes = _attributes.mutableClone();
         attributes.setObjectForKey(attribute, propertyName);
@@ -478,7 +464,7 @@ public class ERIndex {
         if(_indexDirectory == null) {
             try {
                 if (_store.startsWith("file://")) {
-                    File indexDirectory = new File(URI.create(_store));
+                    Path indexDirectory = Path.of(URI.create(_store)); 
                     _indexDirectory = FSDirectory.open(indexDirectory);
                 } else {
                     EOEditingContext ec = ERXEC.newEditingContext();
@@ -498,24 +484,26 @@ public class ERIndex {
         return _indexDirectory;
     }
 
-    private IndexReader _reader;
+    private DirectoryReader _reader;
     private IndexSearcher _searcher;
     
     private IndexReader indexReader() throws IOException {
         if (_reader == null) {
-            _reader = IndexReader.open(indexDirectory(), true);
+            _reader = DirectoryReader.open(indexDirectory());
             //											  ^^^ readOnly
             _searcher = new IndexSearcher(_reader);
         }
         if (!_reader.isCurrent()) {
-            _reader = _reader.reopen();
+            DirectoryReader newReader = DirectoryReader.openIfChanged(_reader);
+            _reader.close();
+            _reader = newReader;
             _searcher = new IndexSearcher(_reader);
         }
         return _reader;
     }
     
     public IndexSearcher indexSearcher() throws IOException {
-        IndexReader indexReader = indexReader();
+        indexReader();
         return _searcher;
     }
 
@@ -572,7 +560,8 @@ public class ERIndex {
 
             String stringValue = info.formatValue(value);
             if (stringValue != null) {
-                Field field = new Field(key, stringValue, info.store(), info.index(), info.termVector());
+                Field field = new StringField(key, stringValue, info.fieldType().stored() ? Store.YES : Store.NO); 
+                //new Field(key, stringValue, info.store(), info.index(), info.termVector());
                 document.document().add(field);
             }
         }
@@ -613,7 +602,7 @@ public class ERIndex {
 
     private Query queryForString(String fieldName, String queryString) throws ParseException {
         Analyzer analyzer = attributeNamed(fieldName).analyzer();
-        QueryParser parser = new QueryParser(Version.LUCENE_29, fieldName, analyzer);
+        QueryParser parser = new QueryParser(fieldName, analyzer);
         return parser.parse(queryString);
     }
 
@@ -622,22 +611,28 @@ public class ERIndex {
         return null;
     }
 
-	public NSArray<? extends EOEnterpriseObject> findObjects(EOEditingContext ec, Query query, Filter filter, Sort sort, int start, int end) {
-		 return ERXEOControlUtilities.faultsForGlobalIDs(ec, findGlobalIDs(query, filter, sort, start, end));
+    // Filter parameter removed, not available anymore in newer Lucene versions.
+	public NSArray<? extends EOEnterpriseObject> findObjects(EOEditingContext ec, Query query, Sort sort, int start, int end) {
+		 return ERXEOControlUtilities.faultsForGlobalIDs(ec, findGlobalIDs(query, sort, start, end));
 	}
 
-	private NSArray<EOKeyGlobalID> findGlobalIDs(Query query, Filter filter, Sort sort, int start, int end) {
+	private NSArray<EOKeyGlobalID> findGlobalIDs(Query query, Sort sort, int start, int end) {
 		NSMutableArray<EOKeyGlobalID> result = new NSMutableArray<>();
 		try {
-			Searcher searcher = indexSearcher();
+			IndexSearcher searcher = indexSearcher();
 			long startTime = System.currentTimeMillis();
 			sort = sort == null ? new Sort() : sort;
-			TopFieldDocs topFielsDocs = searcher.search(query, filter, end, sort);
+			TopFieldDocs topFielsDocs = searcher.search(query, end, sort);
 			log.info("Searched for: {} in  {} ms", query, (System.currentTimeMillis() - startTime));
+			
+			StoredFields storedFields = searcher.storedFields();
+			final Set<String> gidFieldSet = Set.of(GID);
+			
 			for (int i = start; i < topFielsDocs.scoreDocs.length; i++) {
-				String gidString = searcher.doc(topFielsDocs.scoreDocs[i].doc).getField(GID).stringValue();
-				EOKeyGlobalID gid = ERXKeyGlobalID.fromString(gidString).globalID();
-				result.addObject(gid);
+			    Document doc = storedFields.document(topFielsDocs.scoreDocs[i].doc, gidFieldSet);
+			    String gidString = doc.getField(GID).stringValue();
+			    EOKeyGlobalID gid = ERXKeyGlobalID.fromString(gidString).globalID();
+			    result.addObject(gid);
 			}
 			log.info("Returning {} after {} ms", result.count(), System.currentTimeMillis() - startTime);
 			return result;
@@ -650,12 +645,14 @@ public class ERIndex {
         NSMutableArray<EOKeyGlobalID> result = new NSMutableArray<>();
         long start = System.currentTimeMillis();
         try {
-            Searcher searcher = indexSearcher();
-            Hits hits = searcher.search(query);
+            IndexSearcher searcher = indexSearcher();
+            TopDocs hits = searcher.search(query, Integer.MAX_VALUE);
             log.info("Searched for: {} in  {} ms", query, (System.currentTimeMillis() - start));
-            for (Iterator<Hit> iter = hits.iterator(); iter.hasNext();) {
-                Hit hit = iter.next();
-                String gidString = hit.getDocument().getField(GID).stringValue();
+            StoredFields storedFields = searcher.storedFields();
+            final Set<String> gidFieldSet = Set.of(GID);
+            for (ScoreDoc hit: hits.scoreDocs) {
+                Document doc = storedFields.document(hit.doc, gidFieldSet);
+                String gidString = doc.getField(GID).stringValue();
                 EOKeyGlobalID gid = ERXKeyGlobalID.fromString(gidString).globalID();
                 result.addObject(gid);
             }
