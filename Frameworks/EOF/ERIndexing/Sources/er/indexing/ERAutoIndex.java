@@ -14,6 +14,7 @@ import com.webobjects.eocontrol.EOEnterpriseObject;
 import com.webobjects.eocontrol.EOFetchSpecification;
 import com.webobjects.eocontrol.EOKeyGlobalID;
 import com.webobjects.eocontrol.EOKeyValueQualifier;
+import com.webobjects.eocontrol.EOObjectStore;
 import com.webobjects.eocontrol.EOQualifier;
 import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSDictionary;
@@ -85,9 +86,9 @@ public class ERAutoIndex extends ERIndex {
 
         public boolean active = false;
 
-        public NSMutableArray<String> keys = new NSMutableArray();
+        public NSMutableArray<String> keys = new NSMutableArray<>();
 
-        public NSMutableArray<String> notificationKeys = new NSMutableArray();
+        public NSMutableArray<String> notificationKeys = new NSMutableArray<>();
 
         @Override
         public String toString() {
@@ -109,7 +110,7 @@ public class ERAutoIndex extends ERIndex {
     	// Each entity has an entry where the key is the entity name and the object is a ConfigurationEntry for that entity
         private final NSMutableDictionary<String, ConfigurationEntry> configuration = new NSMutableDictionary<>();
 
-        protected void initFromDictionary(NSDictionary indexDef) {
+        protected void initFromDictionary(NSDictionary<String, Object> indexDef) {
             String store = (String) indexDef.objectForKey("store");
             
             // Set the index storage location
@@ -119,7 +120,7 @@ public class ERAutoIndex extends ERIndex {
             configuration.clear();
             
             // Get the list of entities specififed in the indexModel definition
-            NSArray<String> entities = (NSArray) indexDef.objectForKey("entities");
+            NSArray<String> entities = (NSArray<String>)indexDef.objectForKey("entities");
             
             // Creates IndexAttributes, one for each entry in indexModel.properties
             createAttributes(indexDef);
@@ -136,14 +137,14 @@ public class ERAutoIndex extends ERIndex {
          * in the indexModel defintion. Each property is a key or keypath.
          * @param indexDef
          */
-        protected void createAttributes(NSDictionary indexDef) {
+        protected void createAttributes(NSDictionary<String, Object> indexDef) {
         	// Get the properties dictionary which is one element of the indexModel dictionary
-            NSDictionary properties = (NSDictionary) indexDef.objectForKey("properties");
+            NSDictionary<String, Object> properties = (NSDictionary<String, Object>) indexDef.objectForKey("properties");
             
             // For each property in indexModel, create configuration attributes
-            for (Enumeration names = properties.keyEnumerator(); names.hasMoreElements();) {
-                String propertyName = (String) names.nextElement();
-                NSDictionary propertyDefinition = (NSDictionary) properties.objectForKey(propertyName);
+            for (Enumeration<String> names = properties.keyEnumerator(); names.hasMoreElements();) {
+                String propertyName = names.nextElement();
+                NSDictionary<String, String> propertyDefinition = (NSDictionary<String, String>) properties.objectForKey(propertyName);
                 createAttribute(propertyName, propertyDefinition);
             }
         }
@@ -152,7 +153,7 @@ public class ERAutoIndex extends ERIndex {
          * @param entityName entity to be indexed
          * @param keys attributes (keys or keypaths) to be indexed
          */
-        protected ConfigurationEntry configureEntity(String entityName, NSArray keys) {
+        protected ConfigurationEntry configureEntity(String entityName, NSArray<String> keys) {
 
             // Get ConfigurationEntry for the entity if it already exists
             ConfigurationEntry config = configuration.objectForKey(entityName);
@@ -164,8 +165,8 @@ public class ERAutoIndex extends ERIndex {
             }
 
             EOEntity source = ERXEOAccessUtilities.entityNamed(null, entityName);
-            for (Enumeration e = keys.objectEnumerator(); e.hasMoreElements();) {
-                String keyPath = (String) e.nextElement();
+            for (Enumeration<String> e = keys.objectEnumerator(); e.hasMoreElements();) {
+                String keyPath = e.nextElement();
                 configureKeyPath(config, keyPath, source);
             }
             return config;
@@ -177,16 +178,15 @@ public class ERAutoIndex extends ERIndex {
             EORelationship rel = source._relationshipForPath(key);
             if (rel != null) {
                 if (rel.isFlattened()) {
-                    ConfigurationEntry c = configureKeyPath(config, rel.definition() + (rest != null ? "." + rest : ""), source);
-                    return c;
+                    return configureKeyPath(config, rel.definition() + (rest != null ? "." + rest : ""), source);
                 }
                 EOEntity destinationEntity = rel.destinationEntity();
 
                 ConfigurationEntry destinationConfiguration;
                 if (rest != null) {
-                    destinationConfiguration = configureEntity(destinationEntity.name(), new NSArray(rest));
+                    destinationConfiguration = configureEntity(destinationEntity.name(), new NSArray<>(rest));
                 } else {
-                    destinationConfiguration = configureEntity(destinationEntity.name(), new NSArray());
+                    destinationConfiguration = configureEntity(destinationEntity.name(), NSArray.emptyArray());
                 }
                 String inverseName = rel.anyInverseRelationship().name();
                 destinationConfiguration.notificationKeys.addObject(inverseName);
@@ -213,26 +213,22 @@ public class ERAutoIndex extends ERIndex {
     protected class AutoTransactionHandler extends TransactionHandler {
 
         @Override
-		public void submit(Transaction transaction) {
-            if(false) {
-                _queue.enqueue(transaction);
-            } else {
-                index(transaction);
-            }
+        public void submit(Transaction transaction) {
+            index(transaction);
         }
 
         @Override
-		public void _handleChanges(NSNotification n) {
+        public void _handleChanges(NSNotification n) {
             EOEditingContext ec = (EOEditingContext) n.object();
             if (ec.parentObjectStore() == ec.rootObjectStore()) {
 
                 String notificationName = n.name();
                 if (notificationName.equals(ERXEC.EditingContextWillSaveChangesNotification)) {
                     ec.processRecentChanges();
-                    NSArray inserted = ec.insertedObjects();
-                    NSArray updated = ec.updatedObjects();
+                    NSArray<EOEnterpriseObject> inserted = ec.insertedObjects();
+                    NSArray<EOEnterpriseObject> updated = ec.updatedObjects();
                     updated = ERXArrayUtilities.arrayMinusArray(updated, inserted);
-                    NSArray deleted = ec.deletedObjects();
+                    NSArray<EOEnterpriseObject> deleted = ec.deletedObjects();
 
                     Transaction transaction = new Transaction(ec);
 
@@ -256,15 +252,15 @@ public class ERAutoIndex extends ERIndex {
                     addedHandledObjects.addObjectsFromArray(directObjects);
 
                     NSArray<EOEnterpriseObject> indirectObjects;
-                    indirectObjects = indexableObjectsForObjects(EOEditingContext.UpdatedKey, updated);
+                    indirectObjects = indexableObjectsForObjects(EOObjectStore.UpdatedKey, updated);
                     deletedHandledObjects.addObjectsFromArray(indirectObjects);
                     addedHandledObjects.addObjectsFromArray(indirectObjects);
 
-                    indirectObjects = indexableObjectsForObjects(EOEditingContext.InsertedKey, inserted);
+                    indirectObjects = indexableObjectsForObjects(EOObjectStore.InsertedKey, inserted);
                     deletedHandledObjects.addObjectsFromArray(indirectObjects);
                     addedHandledObjects.addObjectsFromArray(indirectObjects);
 
-                    indirectObjects = indexableObjectsForObjects(EOEditingContext.DeletedKey, deleted);
+                    indirectObjects = indexableObjectsForObjects(EOObjectStore.DeletedKey, deleted);
                     deletedHandledObjects.addObjectsFromArray(indirectObjects);
                     addedHandledObjects.addObjectsFromArray(indirectObjects);
 
@@ -273,7 +269,7 @@ public class ERAutoIndex extends ERIndex {
 
                     activeChanges.put(ec, transaction);
 
-                } else if (notificationName.equals(ERXEC.EditingContextDidSaveChangesNotification)) {
+                } else if (notificationName.equals(EOEditingContext.EditingContextDidSaveChangesNotification)) {
                     Transaction transaction = activeChanges.get(ec);
                     if (transaction != null) {
                         activeChanges.remove(ec);
@@ -296,30 +292,30 @@ public class ERAutoIndex extends ERIndex {
             return result;
         }
 
-        protected NSArray indexableObjectsForObjects(String type, NSArray<EOEnterpriseObject> objects) {
-            NSMutableSet<EOEnterpriseObject> result = new NSMutableSet();
+        protected NSArray<EOEnterpriseObject> indexableObjectsForObjects(String type, NSArray<EOEnterpriseObject> objects) {
+            NSMutableSet<EOEnterpriseObject> result = new NSMutableSet<>();
             for (EOEnterpriseObject eo : objects) {
-                NSArray targetObjects = indexableObjectsForObject(type, eo);
+                NSArray<EOEnterpriseObject> targetObjects = indexableObjectsForObject(type, eo);
                 result.addObjectsFromArray(targetObjects);
             }
             return result.allObjects();
         }
 
-        private final NSMutableSet<String> _warned = new NSMutableSet();
+        private final NSMutableSet<String> _warned = new NSMutableSet<>();
 
-        protected NSArray indexableObjectsForObject(String type, EOEnterpriseObject object) {
+        protected NSArray<EOEnterpriseObject> indexableObjectsForObject(String type, EOEnterpriseObject object) {
             ERXGenericRecord eo = (ERXGenericRecord) object;
             EOEditingContext ec = eo.editingContext();
-            NSMutableSet<EOEnterpriseObject> result = new NSMutableSet();
+            NSMutableSet<EOEnterpriseObject> result = new NSMutableSet<>();
             String entityName = eo.entityName();
             ConfigurationEntry config = _configuration.entryForKey(entityName);
             if (config != null) {
                 if (!config.active) {
-                    for (Enumeration e1 = config.notificationKeys.objectEnumerator(); e1.hasMoreElements();) {
-                        String key = (String) e1.nextElement();
+                    for (Enumeration<String> e1 = config.notificationKeys.objectEnumerator(); e1.hasMoreElements();) {
+                        String key = e1.nextElement();
                         Object value = null;
 
-                        if (type.equals(EOEditingContext.DeletedKey)) {
+                        if (type.equals(EOObjectStore.DeletedKey)) {
                             value = ec.committedSnapshotForObject(eo);
                         }
 
@@ -330,7 +326,7 @@ public class ERAutoIndex extends ERIndex {
                         } else {
                             if (eo.isNewObject()) {
                                 if (!_warned.containsObject(entityName)) {
-                                    log.error("We currently don't support unsaved related objects for this entity: " + entityName);
+                                    log.error("We currently don't support unsaved related objects for this entity: {}", entityName);
                                     _warned.addObject(entityName);
                                 }
                             } else {
@@ -343,10 +339,10 @@ public class ERAutoIndex extends ERIndex {
                                 // ec.arrayFaultWithSourceGlobalID(sourceGlobalID,
                                 // rel.name(), ec);
                                 EOFetchSpecification fs = new EOFetchSpecification(rel.destinationEntity().name(), null, null);
-                                NSMutableArray<EOQualifier> qualifiers = new NSMutableArray(rel.joins().count());
-                                NSDictionary pk = source.primaryKeyForGlobalID(sourceGlobalID);
-                                for (Iterator iterator = rel.joins().iterator(); iterator.hasNext();) {
-                                    EOJoin join = (EOJoin) iterator.next();
+                                NSMutableArray<EOQualifier> qualifiers = new NSMutableArray<>(rel.joins().count());
+                                NSDictionary<String, Object> pk = source.primaryKeyForGlobalID(sourceGlobalID);
+                                for (Iterator<EOJoin> iterator = rel.joins().iterator(); iterator.hasNext();) {
+                                    EOJoin join = iterator.next();
                                     Object pkValue = pk.objectForKey(join.sourceAttribute().name());
                                     EOKeyValueQualifier qualifier = new EOKeyValueQualifier(join.destinationAttribute().name(), EOQualifier.QualifierOperatorEqual, pkValue);
                                     qualifiers.addObject(qualifier);
@@ -356,14 +352,14 @@ public class ERAutoIndex extends ERIndex {
                             }
                         }
                         if (value != null) {
-                            NSArray<EOEnterpriseObject> eos = (value instanceof EOEnterpriseObject ? new NSArray(value) : (NSArray) value);
+                            NSArray<EOEnterpriseObject> eos = ((value instanceof EOEnterpriseObject eoValue) ? new NSArray<EOEnterpriseObject>(eoValue) : (NSArray<EOEnterpriseObject>) value);
                             for (EOEnterpriseObject target : eos) {
-                                NSArray targetObjects = indexableObjectsForObject(EOEditingContext.UpdatedKey, target);
+                                NSArray<EOEnterpriseObject> targetObjects = indexableObjectsForObject(EOObjectStore.UpdatedKey, target);
                                 result.addObjectsFromArray(targetObjects);
                             }
                         }
                         if (!result.isEmpty() && log.isDebugEnabled()) {
-                            log.debug("re-index: " + eo + "->" + result);
+                            log.debug("re-index: {}->{}", eo, result);
                         }
                     }
                 } else {
@@ -381,7 +377,7 @@ public class ERAutoIndex extends ERIndex {
 
     private final Configuration _configuration = new Configuration();
 
-    public ERAutoIndex(String name, NSDictionary indexDef) {
+    public ERAutoIndex(String name, NSDictionary<String, Object> indexDef) {
         super(name);
         
         // Ensures that the first instance of ERAutoIndex creates the singleton thread
@@ -391,43 +387,43 @@ public class ERAutoIndex extends ERIndex {
                 _queue = new ERXAsyncQueue<Transaction>() {
 
                     @Override
-					public void process(Transaction transaction) {
+                    public void process(Transaction transaction) {
                         transaction.handler().index(transaction);
                     }
                 };
-                
+
                 // Set the name of the thread
                 _queue.setName(KEY);
-                
+
                 // Start the thread
                 _queue.start();
             }
         }
-        
-        _entities = new NSMutableSet();
+
+        _entities = new NSMutableSet<>();
         
          _configuration.initFromDictionary(indexDef);
         setTransactionHandler(new AutoTransactionHandler());
     }
 
-    protected NSSet entities() {
+    protected NSSet<String> entities() {
         return _entities;
     }
 
     public void reindexAllObjects() {
         clear();
-        for (Enumeration names = entities().objectEnumerator(); names.hasMoreElements();) {
-            String entityName = (String) names.nextElement();
+        for (Enumeration<String> names = entities().objectEnumerator(); names.hasMoreElements();) {
+            String entityName = names.nextElement();
             long start = System.currentTimeMillis();
             int treshhold = 10;
             EOEditingContext ec = ERXEC.newEditingContext();
             ec.lock();
             try {
                 EOFetchSpecification fs = new EOFetchSpecification(entityName, null, null);
-                ERXFetchSpecificationBatchIterator iterator = new ERXFetchSpecificationBatchIterator(fs);
+                ERXFetchSpecificationBatchIterator<EOEnterpriseObject> iterator = new ERXFetchSpecificationBatchIterator<>(fs);
                 iterator.setEditingContext(ec);
                 while (iterator.hasNextBatch()) {
-                    NSArray objects = iterator.nextBatch();
+                    NSArray<EOEnterpriseObject> objects = iterator.nextBatch();
                     if (iterator.currentBatchIndex() % treshhold == 0) {
                         ec.unlock();
                         // ec.dispose();
@@ -442,10 +438,11 @@ public class ERAutoIndex extends ERIndex {
             } finally {
                 ec.unlock();
             }
-            log.info("Indexing " + entityName + " took: " + (System.currentTimeMillis() - start) + " ms");
+            log.info("Indexing {} took: {} ms", entityName, (System.currentTimeMillis() - start));
         }
     }
 
+    @Override
     protected boolean handlesEntity(String name) {
         ConfigurationEntry config = _configuration.entryForKey(name);
         return config != null && config.active;

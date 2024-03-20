@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 
 import com.webobjects.eocontrol.EOEditingContext;
+import com.webobjects.eocontrol.EOEnterpriseObject;
 import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSForwardException;
 import com.webobjects.foundation.NSNotification;
@@ -23,16 +24,16 @@ public class ERAttributeIndex extends ERIndex {
                 String notificationName = n.name();
                 if (notificationName.equals(ERXEC.EditingContextWillSaveChangesNotification)) {
                     ec.processRecentChanges();
-                    NSArray inserted = ec.insertedObjects();
-                    NSArray updated = ec.updatedObjects();
+                    final NSArray<EOEnterpriseObject> inserted = ec.insertedObjects();
+                    NSArray<EOEnterpriseObject> updated = ec.updatedObjects();
                     updated = ERXArrayUtilities.arrayMinusArray(updated, inserted);
-                    NSArray deleted = ec.deletedObjects();
+                    final NSArray<EOEnterpriseObject> deleted = ec.deletedObjects();
 
                     Transaction transaction = new Transaction(ec);
 
                     activeChanges.put(ec, transaction);
 
-                } else if (notificationName.equals(ERXEC.EditingContextDidSaveChangesNotification)) {
+                } else if (notificationName.equals(EOEditingContext.EditingContextDidSaveChangesNotification)) {
                     Transaction transaction = activeChanges.get(ec);
                     if (transaction != null) {
                         activeChanges.remove(ec);

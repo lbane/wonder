@@ -21,6 +21,7 @@ public class ERIFile extends _ERIFile {
 	 */
 	private static final long serialVersionUID = 1L;
 
+    @SuppressWarnings("hiding")
     private static final Logger log = LoggerFactory.getLogger(ERIFile.class);
 
     public static final ERIFileClazz clazz = new ERIFileClazz();

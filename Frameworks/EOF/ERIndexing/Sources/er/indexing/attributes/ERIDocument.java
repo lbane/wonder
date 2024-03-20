@@ -33,12 +33,14 @@ public class ERIDocument implements NSKeyValueCoding {
         return null;
     }
 
+    @Override
     public void takeValueForKey(Object value, String key) {
         willRead();
         String stringValue = attributeForName(key).formatValue(value);
         document().takeValueForKey(stringValue, key);
     }
 
+    @Override
     public Object valueForKey(String key) {
         willRead();
         if(isRead()) {

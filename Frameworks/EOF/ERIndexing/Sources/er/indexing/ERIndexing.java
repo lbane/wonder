@@ -32,80 +32,80 @@ import er.extensions.foundation.ERXSelectorUtilities;
 import er.extensions.foundation.ERXStringUtilities;
 
 public class ERIndexing extends ERXFrameworkPrincipal {
-	private static final Logger log = LoggerFactory.getLogger(ERIndexing.class);
+    @SuppressWarnings("hiding")
+    private static final Logger log = LoggerFactory.getLogger(ERIndexing.class);
 
-	// Master dictionary of indices
-	NSMutableDictionary indices = ERXMutableDictionary.synchronizedDictionary();
-	
-    public final static Class REQUIRES[] = new Class[] {ERXExtensions.class};
+    // Master dictionary of indices
+    NSMutableDictionary<String, ERIndex> indices = ERXMutableDictionary.synchronizedDictionary();
+
+    @SuppressWarnings("rawtypes")
+    public static final Class[] REQUIRES = new Class[] {ERXExtensions.class};
 
     static {
         setUpFrameworkPrincipalClass (ERIndexing.class);
     }
 
-	private File _indexRoot;
-	
-	private File indexRoot() {
-		if(_indexRoot == null) {
-			String name = ERXProperties.stringForKeyWithDefault("er.indexing.ERIndexModel.rootDirectory", "/tmp");
-			_indexRoot = new File(name);
-		}
-		return _indexRoot;
-	}
+    private File _indexRoot;
 
-	/**
-	 * Searches all bundles for *.indexModel resources files and dserializes the index definitions and adds
-	 * the index definitions to the master dictionary of application indices
-	 */
-	public void loadIndexDefinitions() {
-		// Check every bundle (app and frameworks)
-	    for (Enumeration bundles = NSBundle._allBundlesReally().objectEnumerator(); bundles.hasMoreElements();) {
-	        NSBundle bundle = (NSBundle) bundles.nextElement();
-	        
-	        // Get list of all files with extension indexModel
-	        NSArray<String> files = bundle.resourcePathsForResources("indexModel", null);
-	        for (String file : files) {
-	            URL url = bundle.pathURLForResourcePath(file);
-	            
-	            // Get the name of the indexModel file withut the directory path and without the file extension
-	            String name = url.toString().replaceAll(".*?/(\\w+)\\.indexModel$", "$1");
-	            if(url != null) {
-	            	
-	            	// If in development mode, observe the indexModel file for changes
-	            	// so that the index can be recreated
-	                if(ERXApplication.isDevelopmentModeSafe()) {
-	                    NSSelector selector = ERXSelectorUtilities.notificationSelector("fileDidChange");
-	                    ERXFileNotificationCenter.defaultCenter().addObserver(this, selector, url.getFile());
-	                }
-	                
-	                // Get contents of indexModel file
-	                String string = ERXStringUtilities.stringFromResource(name, "indexModel", bundle);
-	                
-	                // Convert file contents into nested NSDictionary
-	                NSDictionary dict = (NSDictionary)NSPropertyListSerialization.propertyListFromString(string);
-	                
-	                // Create the lucene index with name and dictionary definition
-	                addIndex(name, dict);
-	                log.info("Added index: {}", name);
-	            }
-			}
-		}
-	}
+    private File indexRoot() {
+        if(_indexRoot == null) {
+            String name = ERXProperties.stringForKeyWithDefault("er.indexing.ERIndexModel.rootDirectory", "/tmp");
+            _indexRoot = new File(name);
+        }
+        return _indexRoot;
+    }
 
-	public void fileDidChange(NSNotification n) throws MalformedURLException {
-		File file = (File) n.object();
-		loadModel(file.toURI().toURL());
-	}
+    /**
+     * Searches all bundles for *.indexModel resources files and dserializes the index definitions and adds
+     * the index definitions to the master dictionary of application indices
+     */
+    public void loadIndexDefinitions() {
+        // Check every bundle (app and frameworks)
+        for (Enumeration<NSBundle> bundles = NSBundle._allBundlesReally().objectEnumerator(); bundles.hasMoreElements();) {
+            NSBundle bundle = bundles.nextElement();
 
-	private void loadModel(URL url) {
-		NSDictionary def = (NSDictionary) NSPropertyListSerialization.propertyListWithPathURL(url);
-		for (Enumeration keys = def.allKeys().objectEnumerator(); keys.hasMoreElements();) {
-			String key = (String) keys.nextElement();
-			NSDictionary indexDef = (NSDictionary) def.objectForKey(key);
-			addIndex(key, indexDef);
-		}
-	}
-	
+            // Get list of all files with extension indexModel
+            NSArray<String> files = bundle.resourcePathsForResources("indexModel", null);
+            for (String file : files) {
+                URL url = bundle.pathURLForResourcePath(file);
+
+                // Get the name of the indexModel file withut the directory path and without the file extension
+                String name = url.toString().replaceAll(".*?/(\\w+)\\.indexModel$", "$1");
+
+                // If in development mode, observe the indexModel file for changes
+                // so that the index can be recreated
+                if(ERXApplication.isDevelopmentModeSafe()) {
+                    NSSelector<?> selector = ERXSelectorUtilities.notificationSelector("fileDidChange");
+                    ERXFileNotificationCenter.defaultCenter().addObserver(this, selector, url.getFile());
+                }
+
+                // Get contents of indexModel file
+                String string = ERXStringUtilities.stringFromResource(name, "indexModel", bundle);
+
+                // Convert file contents into nested NSDictionary
+                NSDictionary<String, Object> dict = (NSDictionary<String, Object>)NSPropertyListSerialization.propertyListFromString(string);
+
+                // Create the lucene index with name and dictionary definition
+                addIndex(name, dict);
+                log.info("Added index: {}", name);
+            }
+        }
+    }
+
+    public void fileDidChange(NSNotification n) throws MalformedURLException {
+        File file = (File) n.object();
+        loadModel(file.toURI().toURL());
+    }
+
+    private void loadModel(URL url) {
+        NSDictionary<String, NSDictionary<String, Object>> def = (NSDictionary<String, NSDictionary<String, Object>>) NSPropertyListSerialization.propertyListWithPathURL(url);
+        for (Enumeration<String> keys = def.allKeys().objectEnumerator(); keys.hasMoreElements();) {
+            String key = keys.nextElement();
+            NSDictionary<String, Object> indexDef = def.objectForKey(key);
+            addIndex(key, indexDef);
+        }
+    }
+
     /**
      * @param key the name of the index
      * @param index the indexer instance having the name of the index and the index definition from the indexModel file
@@ -113,41 +113,41 @@ public class ERIndexing extends ERXFrameworkPrincipal {
     protected void addIndex(String key, ERIndex index) {
         indices.setObjectForKey(index, key);
     }
-    
-	/**
-	 * @param key the name of the index
-	 * @param indexDef the dictionary containing the index definition (usually deserialized from the indexModel file)
-	 */
-	private void addIndex(String key, NSDictionary indexDef) {
-		// Classname for the class that will create the lucene index
-		String className = (String) indexDef.objectForKey("index");
-		NSMutableDictionary dict = indexDef.mutableClone();
-		
-		// If index store not defined, default to index named the dsame as the indexModel file in the indexRoot directory
-		if(!dict.containsKey("store")) {
-			try {
-				dict.setObjectForKey(new File(indexRoot(), key).toURI().toURL().toString(), "store");
-			} catch (MalformedURLException e) {
-				throw NSForwardException._runtimeExceptionForThrowable(e);
-			}
-		}
-		
-		// Create the class that will create the index. Defaults to ERAutoIndex
-		ERIndex index;
-		if (className != null) {
-            Class c = ERXPatcher.classForName(className);
+
+    /**
+     * @param key the name of the index
+     * @param indexDef the dictionary containing the index definition (usually deserialized from the indexModel file)
+     */
+    private void addIndex(String key, NSDictionary<String, Object> indexDef) {
+        // Classname for the class that will create the lucene index
+        String className = (String) indexDef.objectForKey("index");
+        NSMutableDictionary<String, Object> dict = indexDef.mutableClone();
+
+        // If index store not defined, default to index named the dsame as the indexModel file in the indexRoot directory
+        if(!dict.containsKey("store")) {
+            try {
+                dict.setObjectForKey(new File(indexRoot(), key).toURI().toURL().toString(), "store");
+            } catch (MalformedURLException e) {
+                throw NSForwardException._runtimeExceptionForThrowable(e);
+            }
+        }
+
+        // Create the class that will create the index. Defaults to ERAutoIndex
+        ERIndex index;
+        if (className != null) {
+            Class<ERIndex> c = ERXPatcher.classForName(className);
             index = (ERIndex) _NSUtilities.instantiateObject(c, new Class[] { String.class, NSDictionary.class }, new Object[] { key, dict }, true, false);
         } else {
             index = new ERAutoIndex(key, dict);
         }
-		
-		// Add the index
-		addIndex(key, index);
+
+        // Add the index
+        addIndex(key, index);
     }
 
     @Override
     public void finishInitialization() {
-    	// load index definition files into indices
+        // load index definition files into indices
         loadIndexDefinitions();
     }
 

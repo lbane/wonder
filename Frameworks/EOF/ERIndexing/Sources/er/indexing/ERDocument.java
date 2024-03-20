@@ -32,12 +32,12 @@ public class ERDocument implements NSKeyValueCoding {
 	
 	public EOKeyGlobalID eoKeyGlobalId() {
 		String gidString = _doc.get(GID);
-		EOKeyGlobalID gid = ERXKeyGlobalID.fromString(gidString).globalID();
-		return gid;
+		return ERXKeyGlobalID.fromString(gidString).globalID();
 	}
 	
 	// KVC
 	
+	@Override
 	public Object valueForKey(String key) {
 		Object result =  _doc.get(key);
 		if (result == null) {
@@ -46,6 +46,7 @@ public class ERDocument implements NSKeyValueCoding {
 		return result;
 	}
 	
+	@Override
 	public void takeValueForKey(Object obj, String key) {
 		// do nuttin'
 	}

@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.webobjects.eocontrol.EOEditingContext;
-import com.webobjects.foundation.NSArray;
 import com.webobjects.foundation.NSMutableDictionary;
 
 import er.extensions.eof.ERXEOControlUtilities;
@@ -24,7 +23,8 @@ public class ERIDirectory extends _ERIDirectory {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private static final Logger log = LoggerFactory.getLogger(ERIDirectory.class);
+	@SuppressWarnings("hiding")
+        private static final Logger log = LoggerFactory.getLogger(ERIDirectory.class);
 
 	public static final ERIDirectoryClazz clazz = new ERIDirectoryClazz();
 
@@ -97,7 +97,8 @@ public class ERIDirectory extends _ERIDirectory {
 			}
 		}
 
-		@Override
+		@Deprecated
+                @Override
 		public String[] list() throws IOException {
 			editingContext().lock();
 			try {
@@ -117,7 +118,8 @@ public class ERIDirectory extends _ERIDirectory {
 			}
 		}
 
-		@Override
+		@Deprecated
+                @Override
 		public void renameFile(String from, String to) throws IOException {
 			editingContext().lock();
 			try {
@@ -186,7 +188,7 @@ public class ERIDirectory extends _ERIDirectory {
 				}
 			}
 
-			private NSMutableDictionary<String, EOFLock> locks = new NSMutableDictionary();
+			private NSMutableDictionary<String, EOFLock> locks = new NSMutableDictionary<>();
 
 			@Override
 			public void clearLock(String s) throws IOException {
@@ -223,7 +225,7 @@ public class ERIDirectory extends _ERIDirectory {
 			if (file == null) {
 				file = createFile(s);
 			}
-			return fileForName(s).createOutput();
+			return file.createOutput();
 		}
 
 		public ERIFile createFile(String s) {
@@ -261,9 +263,10 @@ public class ERIDirectory extends _ERIDirectory {
 			return fileForName(s).timestamp();
 		}
 
-		@Override
+		@Deprecated
+                @Override
 		public String[] list() throws IOException {
-			return ((NSArray<String>) files().valueForKeyPath(ERIFile.Key.NAME)).toArray(new String[0]);
+		    return files().stream().map(_ERIFile::name).toArray(String[]::new);
 		}
 
 		@Override
@@ -281,7 +284,8 @@ public class ERIDirectory extends _ERIDirectory {
 			}
 		}
 
-		@Override
+		@Deprecated
+                @Override
 		public void renameFile(String s, String s1) throws IOException {
 			fileForName(s).setName(s1);
 			editingContext().saveChanges();

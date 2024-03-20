@@ -2,7 +2,8 @@ package er.indexing;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.text.Format;
 import java.util.Date;
 import java.util.Enumeration;
@@ -21,7 +22,6 @@ import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.Field.TermVector;
 import org.apache.lucene.document.NumberTools;
-import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
@@ -80,11 +80,11 @@ public class ERIndex {
 
     protected Logger log;
 
-    public static String IndexingStartedNotification = "ERIndexingStartedNotification";
+    public static final String IndexingStartedNotification = "ERIndexingStartedNotification";
 
-    public static String IndexingEndedNotification = "ERIndexingEndedNotification";
+    public static final String IndexingEndedNotification = "ERIndexingEndedNotification";
 
-    public static String IndexingFailedNotification = "ERIndexingFailedNotification";
+    public static final String IndexingFailedNotification = "ERIndexingFailedNotification";
 
     private static final String GID = "EOGlobalID";
 
@@ -96,16 +96,16 @@ public class ERIndex {
 
         private final Document _document;
 
-        private final NSMutableDictionary<String, String> _values = new NSMutableDictionary<>();
-
         public IndexDocument(Document document) {
             _document = document;
         }
 
+        @Override
         public void takeValueForKey(Object value, String key) {
             _document.getField(key).setValue(key);
         }
 
+        @Override
         public Object valueForKey(String key) {
             return _document.get(key);
         }
@@ -153,12 +153,12 @@ public class ERIndex {
          * @param name the property name (a key or keypath)
          * @param dict the property definition form indexModel
          */
-        IndexAttribute(ERIndex index, String name, NSDictionary dict) {
+        IndexAttribute(ERIndex index, String name, NSDictionary<String, String> dict) {
             _name = name;
             _termVector = (TermVector) classValue(dict, "termVector", TermVector.class, "YES");
             _store = (Store) classValue(dict, "store", Store.class, "NO");
             _index = (Index) classValue(dict, "index", Index.class, "ANALYZED");
-            String analyzerClass = (String) dict.objectForKey("analyzer");
+            String analyzerClass = dict.objectForKey("analyzer");
             if (analyzerClass == null) {
                 analyzerClass = StandardAnalyzer.class.getName();
             }
@@ -166,12 +166,12 @@ public class ERIndex {
             if (_analyzer == null && name.matches("\\w+_(\\w+)")) {
                 // String locale = name.substring(name.lastIndexOf('_') + 1);
             }
-            _format = (Format) create((String) dict.objectForKey("format"));
-            String numberFormat = (String) dict.objectForKey("numberformat");
+            _format = (Format) create(dict.objectForKey("format"));
+            String numberFormat = dict.objectForKey("numberformat");
             if (numberFormat != null) {
                 _format = new NSNumberFormatter(numberFormat);
             }
-            String dateformat = (String) dict.objectForKey("dateformat");
+            String dateformat = dict.objectForKey("dateformat");
             if (dateformat != null) {
                 _format = new NSTimestampFormatter(dateformat);
             }
@@ -180,25 +180,21 @@ public class ERIndex {
         private Object create(String className) {
             if (className != null) {
                 try {
-                    Class c = ERXPatcher.classForName(className);
-                    return c.newInstance();
-                } catch (InstantiationException e) {
+                    Class<?> c = ERXPatcher.classForName(className);
+                    return c.getDeclaredConstructor().newInstance();
+                } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                     throw NSForwardException._runtimeExceptionForThrowable(e);
-                } catch (IllegalAccessException e) {
-                    throw NSForwardException._runtimeExceptionForThrowable(e);
-                }
+                } 
             }
             return null;
         }
 
-        private Object classValue(NSDictionary dict, String key, Class c, String defaultValue) {
-            Object result;
-            String code = (String) dict.objectForKey(key);
+        private Object classValue(NSDictionary<String, String> dict, String key, Class<?> c, String defaultValue) {
+            String code = dict.objectForKey(key);
             if (code == null) {
                 code = defaultValue;
             }
-            result = ERXKeyValueCodingUtilities.classValueForKey(c, code);
-            return result;
+            return ERXKeyValueCodingUtilities.classValueForKey(c, code);
         }
 
         public TermVector termVector() {
@@ -225,14 +221,14 @@ public class ERIndex {
             if (_format != null) {
                 return _format.format(value);
             }
-            if (value instanceof Number) {
-                return NumberTools.longToString(((Number) value).longValue());
+            if (value instanceof Number numberValue) {
+                return NumberTools.longToString(numberValue.longValue());
             }
-            if (value instanceof Date) {
-                return DateTools.dateToString((Date) value, Resolution.MILLISECOND);
+            if (value instanceof Date dateValue) {
+                return DateTools.dateToString(dateValue, Resolution.MILLISECOND);
             }
-            if (value instanceof NSArray) {
-                return ((NSArray) value).componentsJoinedByString(" ");
+            if (value instanceof NSArray<?> arrayValue) {
+                return arrayValue.componentsJoinedByString(" ");
             }
             return (value != null ? value.toString() : null);
         }
@@ -259,14 +255,14 @@ public class ERIndex {
 
         private final Command _command;
 
-        private final NSArray _objects;
+        private final NSArray<? extends Object> _objects;
 
-        public Job(Command command, NSArray objects) {
+        public Job(Command command, NSArray<? extends Object> objects) {
             _command = command;
             _objects = objects;
         }
 
-        public NSArray objects() {
+        public NSArray<? extends Object> objects() {
             return _objects;
         }
 
@@ -293,7 +289,7 @@ public class ERIndex {
             _clear = true;
         }
 
-        public void addJob(Command command, NSArray objects) {
+        public void addJob(Command command, NSArray<? extends Object> objects) {
             if (objects.count() > 0) {
                 _objectCount += objects.count();
                 _jobs.addObject(new Job(command, objects));
@@ -309,11 +305,13 @@ public class ERIndex {
         }
 
         @Override
-		public String toString() {
+        public String toString() {
             if (hasClear()) {
                 return "Transaction@" + hashCode() + " clear";
             }
-            return "Transaction@" + (editingContext() != null ? editingContext().hashCode() : null) + "@" + hashCode() + " jobs: " + jobs().count() + " objects: " + _objectCount;
+            return "Transaction@" + (editingContext() != null ? editingContext().hashCode() : null) + "@" + hashCode() + 
+                    " jobs: " + jobs().count() + 
+                    " objects: " + _objectCount;
         }
 
         public boolean hasClear() {
@@ -345,18 +343,18 @@ public class ERIndex {
 
         protected void registerNotifications() {
             registerNotification(ERXEC.EditingContextWillSaveChangesNotification, "_handleChanges");
-            registerNotification(ERXEC.EditingContextDidSaveChangesNotification, "_handleChanges");
+            registerNotification(EOEditingContext.EditingContextDidSaveChangesNotification, "_handleChanges");
             registerNotification(ERXEC.EditingContextDidRevertChanges, "_handleChanges");
             registerNotification(ERXEC.EditingContextFailedToSaveChanges, "_handleChanges");
         }
 
-        protected void addObjectsToIndex(Transaction transaction, NSArray<? extends EOEnterpriseObject> objects) {
-            NSArray added = addedDocumentsForObjects(objects);
+        protected void addObjectsToIndex(Transaction transaction, NSArray<EOEnterpriseObject> objects) {
+            NSArray<Document> added = addedDocumentsForObjects(objects);
             transaction.addJob(Command.ADD, added);
         }
 
         protected void deleteObjectsFromIndex(Transaction transaction, NSArray<? extends EOEnterpriseObject> objects) {
-            NSArray deleted = deletedTermsForObjects(objects);
+            NSArray<Term> deleted = deletedTermsForObjects(objects);
             transaction.addJob(Command.DELETE, deleted);
         }
 
@@ -375,31 +373,31 @@ public class ERIndex {
                     return;
                 }
                 long start = System.currentTimeMillis();
-                log.info("Running " + transaction);
+                log.info("Running {}", transaction);
                 if (!create && !indexDirectory().fileExists("segments.gen")) {
                     log.error("segments did not exist but create wasn't called");
                     create = true;
                 }
                 IndexWriter writer = new IndexWriter(indexDirectory(), analyzer(), create, IndexWriter.MaxFieldLength.UNLIMITED);
                 for (Job job : transaction.jobs()) {
-                    log.info("Indexing: " + job.command() + " " + job.objects().count());
+                    log.info("Indexing: {} {}", job.command(), job.objects().count());
                     if (job.command() == Command.DELETE) {
-                        for (Enumeration iter = job.objects().objectEnumerator(); iter.hasMoreElements();) {
-                            Term term = (Term) iter.nextElement();
+                        for (Enumeration<?> iter = job.objects().objectEnumerator(); iter.hasMoreElements();) {
+                            Term term = (Term)iter.nextElement();
                             writer.deleteDocuments(term);
                         }
                     } else if (job.command() == Command.ADD) {
-                        for (Enumeration iter = job.objects().objectEnumerator(); iter.hasMoreElements();) {
-                            Document document = (Document) iter.nextElement();
+                        for (Enumeration<?> iter = job.objects().objectEnumerator(); iter.hasMoreElements();) {
+                            Document document = (Document)iter.nextElement();
                             writer.addDocument(document, analyzer());
                         }
                     }
-                    log.info("Done: " + job.command() + " " + job.objects().count());
+                    log.info("Done: {} {}", job.command(), job.objects().count());
                 }
                 writer.flush();
                 writer.close();
                 NSNotificationCenter.defaultCenter().postNotification(IndexingEndedNotification, transaction);
-                log.info("Finished in " + (System.currentTimeMillis() - start) / 1000 + "s: " + transaction);
+                log.info("Finished in {}s: {}", (System.currentTimeMillis() - start) / 1000, transaction);
             } catch (IOException e) {
                 NSNotificationCenter.defaultCenter().postNotification(IndexingFailedNotification, transaction);
                 throw NSForwardException._runtimeExceptionForThrowable(e);
@@ -425,7 +423,7 @@ public class ERIndex {
         indices.setObjectForKey(this, name);
     }
    
-    public void addObjectsToIndex(EOEditingContext ec, NSArray<? extends EOEnterpriseObject> objects) {
+    public void addObjectsToIndex(EOEditingContext ec, NSArray<EOEnterpriseObject> objects) {
         Transaction transaction = new Transaction(ec);
         _handler.addObjectsToIndex(transaction, objects);
         _handler.submit(transaction);
@@ -457,7 +455,7 @@ public class ERIndex {
         return wrapper;
     }
     
-    public void addAttribute(String propertyName, NSDictionary propertyDefinition) {
+    public void addAttribute(String propertyName, NSDictionary<String, String> propertyDefinition) {
         createAttribute(propertyName, propertyDefinition);
     }
 
@@ -468,9 +466,9 @@ public class ERIndex {
      * @param propertyDefinition
      * @return the new {@link IndexAttribute}
      */
-    protected IndexAttribute createAttribute(String propertyName, NSDictionary propertyDefinition) {
+    protected IndexAttribute createAttribute(String propertyName, NSDictionary<String, String> propertyDefinition) {
         IndexAttribute attribute = new IndexAttribute(this, propertyName, propertyDefinition);
-        NSMutableDictionary attributes = _attributes.mutableClone();
+        NSMutableDictionary<String, IndexAttribute> attributes = _attributes.mutableClone();
         attributes.setObjectForKey(attribute, propertyName);
         _attributes = attributes.immutableClone();
         return attribute;
@@ -480,7 +478,7 @@ public class ERIndex {
         if(_indexDirectory == null) {
             try {
                 if (_store.startsWith("file://")) {
-                    File indexDirectory = new File(new URL(_store).getFile());
+                    File indexDirectory = new File(URI.create(_store));
                     _indexDirectory = FSDirectory.open(indexDirectory);
                 } else {
                     EOEditingContext ec = ERXEC.newEditingContext();
@@ -503,7 +501,7 @@ public class ERIndex {
     private IndexReader _reader;
     private IndexSearcher _searcher;
     
-    private IndexReader indexReader() throws CorruptIndexException, IOException {
+    private IndexReader indexReader() throws IOException {
         if (_reader == null) {
             _reader = IndexReader.open(indexDirectory(), true);
             //											  ^^^ readOnly
@@ -516,7 +514,7 @@ public class ERIndex {
         return _reader;
     }
     
-    public IndexSearcher indexSearcher() throws CorruptIndexException, IOException {
+    public IndexSearcher indexSearcher() throws IOException {
         IndexReader indexReader = indexReader();
         return _searcher;
     }
@@ -545,11 +543,11 @@ public class ERIndex {
         return true;
     }
     
-    protected NSArray<Document> addedDocumentsForObjects(NSArray<? extends EOEnterpriseObject> objects) {
-        NSMutableArray documents = new NSMutableArray();
+    protected NSArray<Document> addedDocumentsForObjects(NSArray<EOEnterpriseObject> objects) {
+        NSMutableArray<Document> documents = new NSMutableArray<>();
 
-        for (Enumeration e = objects.objectEnumerator(); e.hasMoreElements();) {
-            EOEnterpriseObject eo = (EOEnterpriseObject) e.nextElement();
+        for (Enumeration<EOEnterpriseObject> e = objects.objectEnumerator(); e.hasMoreElements();) {
+            EOEnterpriseObject eo = e.nextElement();
             if (handlesObject(eo)) {
                 Document doc = createDocumentForObject(eo);
                 if (doc != null) {
@@ -569,7 +567,7 @@ public class ERIndex {
             Object value = eo.valueForKeyPath(key);
 
             if (log.isDebugEnabled()) {
-                log.info(key + "->" + value);
+                log.info("{}->{}", key, value);
             }
 
             String stringValue = info.formatValue(value);
@@ -582,10 +580,10 @@ public class ERIndex {
     }
 
     protected NSArray<Term> deletedTermsForObjects(NSArray<? extends EOEnterpriseObject> objects) {
-        NSMutableArray terms = new NSMutableArray();
+        NSMutableArray<Term> terms = new NSMutableArray<>();
         Term term;
-        for (Enumeration e = objects.objectEnumerator(); e.hasMoreElements();) {
-            EOEnterpriseObject eo = (EOEnterpriseObject) e.nextElement();
+        for (Enumeration<? extends EOEnterpriseObject> e = objects.objectEnumerator(); e.hasMoreElements();) {
+            EOEnterpriseObject eo = e.nextElement();
             if (handlesObject(eo)) {
                 term = createTerm(eo);
                 if (term != null) {
@@ -603,15 +601,9 @@ public class ERIndex {
         return term;
     }
 
-    private String gidStringForObject(EOEnterpriseObject eo) {
+    private static String gidStringForObject(EOEnterpriseObject eo) {
         EOKeyGlobalID gid = ((ERXGenericRecord) eo).permanentGlobalID();
-        String pk = ERXKeyGlobalID.globalIDForGID(gid).asString();
-        return pk;
-    }
-
-    private EOEnterpriseObject objectForGidString(EOEditingContext ec, String gidString) {
-        EOKeyGlobalID gid = ERXKeyGlobalID.fromString(gidString).globalID();
-        return ec.faultForGlobalID(gid, ec);
+        return ERXKeyGlobalID.globalIDForGID(gid).asString();
     }
 
     private Query queryForQualifier(EOQualifier qualifier) throws ParseException {
@@ -622,12 +614,10 @@ public class ERIndex {
     private Query queryForString(String fieldName, String queryString) throws ParseException {
         Analyzer analyzer = attributeNamed(fieldName).analyzer();
         QueryParser parser = new QueryParser(Version.LUCENE_29, fieldName, analyzer);
-        Query query = parser.parse(queryString);
-
-        return query;
+        return parser.parse(queryString);
     }
 
-    private Query queryForString(String queryString) throws ParseException {
+    private Query queryForString(String queryString) {
         //TODO
         return null;
     }
@@ -643,13 +633,13 @@ public class ERIndex {
 			long startTime = System.currentTimeMillis();
 			sort = sort == null ? new Sort() : sort;
 			TopFieldDocs topFielsDocs = searcher.search(query, filter, end, sort);
-			log.info("Searched for: " + query + " in  " + (System.currentTimeMillis() - startTime) + " ms");
+			log.info("Searched for: {} in  {} ms", query, (System.currentTimeMillis() - startTime));
 			for (int i = start; i < topFielsDocs.scoreDocs.length; i++) {
 				String gidString = searcher.doc(topFielsDocs.scoreDocs[i].doc).getField(GID).stringValue();
 				EOKeyGlobalID gid = ERXKeyGlobalID.fromString(gidString).globalID();
 				result.addObject(gid);
 			}
-            log.info("Returning " + result.count() + " after " + (System.currentTimeMillis() - startTime) + " ms");
+			log.info("Returning {} after {} ms", result.count(), System.currentTimeMillis() - startTime);
 			return result;
 		} catch (IOException e) {
 			throw NSForwardException._runtimeExceptionForThrowable(e);
@@ -657,19 +647,19 @@ public class ERIndex {
 	}
 
     private NSArray<EOKeyGlobalID> findGlobalIDs(Query query) {
-        NSMutableArray<EOKeyGlobalID> result = new NSMutableArray();
+        NSMutableArray<EOKeyGlobalID> result = new NSMutableArray<>();
         long start = System.currentTimeMillis();
         try {
             Searcher searcher = indexSearcher();
             Hits hits = searcher.search(query);
-            log.info("Searched for: " + query + " in  " + (System.currentTimeMillis() - start) + " ms");
-            for (Iterator iter = hits.iterator(); iter.hasNext();) {
-                Hit hit = (Hit) iter.next();
+            log.info("Searched for: {} in  {} ms", query, (System.currentTimeMillis() - start));
+            for (Iterator<Hit> iter = hits.iterator(); iter.hasNext();) {
+                Hit hit = iter.next();
                 String gidString = hit.getDocument().getField(GID).stringValue();
                 EOKeyGlobalID gid = ERXKeyGlobalID.fromString(gidString).globalID();
                 result.addObject(gid);
             }
-            log.info("Returning " + result.count() + " after " + (System.currentTimeMillis() - start) + " ms");
+            log.info("Returning {} after {} ms", result.count(), System.currentTimeMillis() - start);
             return result;
         } catch (IOException e) {
             throw NSForwardException._runtimeExceptionForThrowable(e);
@@ -681,12 +671,8 @@ public class ERIndex {
     }
 
     public NSArray<EOKeyGlobalID> findGlobalIDs(String queryString) {
-        try {
-            Query query = queryForString(queryString);
-            return findGlobalIDs(query);
-        } catch (ParseException e) {
-            throw NSForwardException._runtimeExceptionForThrowable(e);
-        }
+        Query query = queryForString(queryString);
+        return findGlobalIDs(query);
     }
 
     public NSArray<EOKeyGlobalID> findGlobalIDs(EOQualifier qualifier) {
@@ -699,19 +685,19 @@ public class ERIndex {
     }
     
     public ScoreDoc[] findScoreDocs(Query query, int hitsPerPage) {
-    	ScoreDoc[] hits = null;
-    	long start = System.currentTimeMillis();
+        ScoreDoc[] hits = null;
+        long start = System.currentTimeMillis();
         try {
-        	
-        	Searcher searcher = indexSearcher();
-        	TopScoreDocCollector collector = TopScoreDocCollector.create(hitsPerPage, true);
-        	searcher.search(query, collector);
-        	hits = collector.topDocs().scoreDocs;
-        	
-            log.debug("Returning " + hits.length + " after " + (System.currentTimeMillis() - start) + " ms");
+
+            Searcher searcher = indexSearcher();
+            TopScoreDocCollector collector = TopScoreDocCollector.create(hitsPerPage, true);
+            searcher.search(query, collector);
+            hits = collector.topDocs().scoreDocs;
+
+            log.debug("Returning {} after {} ms", hits.length, System.currentTimeMillis() - start);
             return hits;
         } catch (IOException e) {
-        	throw NSForwardException._runtimeExceptionForThrowable(e);
+            throw NSForwardException._runtimeExceptionForThrowable(e);
         }
     }
     
@@ -733,7 +719,7 @@ public class ERIndex {
     }
 
     public IndexDocument findDocument(EOKeyGlobalID globalID) {
-        NSMutableArray<Document> result = new NSMutableArray();
+        NSMutableArray<Document> result = new NSMutableArray<>();
         long start = System.currentTimeMillis();
         try {
             Searcher searcher = indexSearcher();
@@ -742,12 +728,14 @@ public class ERIndex {
             query.add(new TermQuery(new Term(GID, pk)), Occur.MUST);
             Hits hits = searcher.search(query);
 
-            log.info("Searched for: " + query.toString(GID) + " in  " + (System.currentTimeMillis() - start) + " ms");
-            for (Iterator iter = hits.iterator(); iter.hasNext();) {
-                Hit hit = (Hit) iter.next();
+            if (log.isInfoEnabled()) {
+                log.info("Searched for: {} in  {} ms", query.toString(GID), System.currentTimeMillis() - start);
+            }
+            for (Iterator<Hit> iter = hits.iterator(); iter.hasNext();) {
+                Hit hit = iter.next();
                 result.addObject(hit.getDocument());
             }
-            log.info("Returning " + result.count() + " after " + (System.currentTimeMillis() - start) + " ms");
+            log.info("Returning {} after {} ms", result.count(), System.currentTimeMillis() - start);
         } catch (IOException e) {
             throw NSForwardException._runtimeExceptionForThrowable(e);
         }
@@ -774,18 +762,14 @@ public class ERIndex {
         }
     }
 
-    public NSArray<? extends EOEnterpriseObject> findObjects(EOEditingContext ec, String queryString) {
-        try {
-            Query query = queryForString(queryString);
-            NSArray<EOKeyGlobalID> gids = findGlobalIDs(query);
-            return ERXEOControlUtilities.faultsForGlobalIDs(ec, gids);
-        } catch (ParseException e) {
-            throw NSForwardException._runtimeExceptionForThrowable(e);
-        }
+    public NSArray<EOEnterpriseObject> findObjects(EOEditingContext ec, String queryString) {
+        Query query = queryForString(queryString);
+        NSArray<EOKeyGlobalID> gids = findGlobalIDs(query);
+        return ERXEOControlUtilities.faultsForGlobalIDs(ec, gids);
     }
 
     public NSArray<String> terms(String fieldName) {
-        NSMutableSet<String> result = new NSMutableSet();
+        NSMutableSet<String> result = new NSMutableSet<>();
         TermEnum terms = null;
         try {
             IndexReader reader = indexReader();
@@ -803,7 +787,7 @@ public class ERIndex {
                 try {
                     terms.close();
                 } catch (IOException e) {
-                    throw NSForwardException._runtimeExceptionForThrowable(e);
+                    log.error("Could not close terms", e);
                 }
             }
         }
@@ -824,5 +808,10 @@ public class ERIndex {
 
     public static ERIndex indexNamed(String key) {
         return indices.objectForKey(key);
+    }
+
+    protected boolean handlesEntity(String entityName)
+    {
+        return true;
     }
 }

@@ -47,7 +47,7 @@ public class ERIAttributeGroup extends _ERIAttributeGroup {
     public NSArray<ERIAttribute> allAttributes() {
         NSMutableArray<ERIAttribute> result = new NSMutableArray<>();
         for (ERIAttributeGroup group : groups()) {
-            result.addObjectsFromArray(attributes());
+            result.addObjectsFromArray(group.attributes());
         }
         return result;
     }
@@ -62,12 +62,10 @@ public class ERIAttributeGroup extends _ERIAttributeGroup {
     }
 
     public ERIDocument documentForGlobalID(EOEditingContext editingContext, EOKeyGlobalID permanentGlobalID) {
-        ERIDocument document = new ERIDocument(this, permanentGlobalID);
-        return document;
+        return new ERIDocument(this, permanentGlobalID);
     }
 
     public synchronized ERIndex index() {
-        ERAttributeIndex index = ERAttributeIndex.indexNamed(name());
-        return index;
+        return ERAttributeIndex.indexNamed(name());
     }
 }
