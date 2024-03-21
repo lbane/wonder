@@ -1,15 +1,13 @@
-import com.sun.tools.doclets.Taglet;
-import com.sun.javadoc.*;
-import java.util.Map;
+import jdk.javadoc.doclet.Taglet;
+import com.sun.source.doctree.DocTree;
 
 /**
  * Abstract Taglet class for our binding and D2W keys.
  *
  * @author ak
  */
+
 public abstract class AbstractTaglet implements Taglet {
-    public abstract String getName();  
-  
     public abstract String getHeader();    
 
     public boolean inField() {
@@ -48,11 +46,11 @@ public abstract class AbstractTaglet implements Taglet {
      *            the <code>Tag</code> representation of this custom tag
      * @return string representation of the <code>Tag</code>
      */
-    public String toString(Tag tag) {
-        return toString(new Tag[] {tag});
+    public String toString(DocTree tag) {
+        return toString(new DocTree[] {tag});
     }
     
-    private String bindingName(Tag tag) {
+    private String bindingName(DocTree tag) {
         String result = tag.text();
         if (result != null) {
             int space = result.indexOf(" ");
@@ -63,7 +61,7 @@ public abstract class AbstractTaglet implements Taglet {
         return result;
     }
     
-    private String bindingDescription(Tag tag) {
+    private String bindingDescription(DocTree tag) {
         String result = tag.text();
         if (result != null) {
             int space = result.indexOf(" ");
@@ -79,10 +77,10 @@ public abstract class AbstractTaglet implements Taglet {
      * tag, return its string representation.
      * 
      * @param tags
-     *            the array of <code>Tag</code>s representing of this custom tag
+     *            the array of <code>DocTree</code>s representing of this custom tag
      * @return string representation of the <code>Tag</code>s
      */
-    public String toString(Tag[] tags) {
+    public String toString(DocTree[] tags) {
         if (tags.length == 0) {
             return null;
         }

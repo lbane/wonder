@@ -5,6 +5,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import javax.lang.model.element.TypeElement;
+
 import java.util.Set;
 
 import java.io.File;
@@ -12,11 +15,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.LineNumberReader;
 
-import com.sun.javadoc.FieldDoc;
-import com.sun.javadoc.MethodDoc;
-import com.sun.javadoc.ClassDoc;
-import com.sun.javadoc.RootDoc;
-import com.sun.javadoc.DocErrorReporter;
+import jdk.javadoc.doclet.Doclet;
+import jdk.javadoc.doclet.DocletEnvironment;
+import jdk.javadoc.doclet.Reporter;
 
 import org.jdom.Attribute;
 import org.jdom.Document;
@@ -35,7 +36,7 @@ import org.jdom.input.SAXBuilder;
  * 
  * @author kiddyr
  */
-public class ComponentDoclet extends com.sun.javadoc.Doclet {
+public class ComponentDoclet implements Doclet {
     private static ArrayList<String> srcDirs;
     private static ArrayList<String> compDirs;
 
@@ -53,10 +54,10 @@ public class ComponentDoclet extends com.sun.javadoc.Doclet {
      * @return <code>true</code> on success
      */
     @SuppressWarnings("unchecked")
-    public static boolean start(RootDoc root) {
+    public boolean run(DocletEnvironment root) {
         // test();
 
-        ClassDoc[] classes = root.classes();
+        TypeElement[] classes = root.classes();
 
         comps = PageGenerator.findSubClassesFromAvailable(classes, "com.webobjects.appserver.WOElement");
         //System.out.println("comps(01): "+comps);
@@ -77,46 +78,7 @@ public class ComponentDoclet extends com.sun.javadoc.Doclet {
         PageGenerator.findClassDocURLs(comps);
 
         PageGenerator.findTagComments(comps, "@binding");
-//
-//        gatherBindingsFromApi(comps);
-//
-//        // Check the condition of the bindings documentation.
-//        //
-//        Iterator<String> keys = comps.keySet().iterator();
-//        while (keys.hasNext()) {
-//            String key = keys.next().toString();
-//
-//            HashMap<String,Object> map = comps.get(key);
-//
-//            if (!map.containsKey("apiBindings") && !map.containsKey("comments")) { comps.get(key).put("Ok", "YES"); }
-//
-//            if (map.containsKey("apiBindings") && !map.containsKey("comments")) { comps.get(key).put("Ok", "NO"); }
-//            if (!map.containsKey("apiBindings") && map.containsKey("comments")) { comps.get(key).put("Ok", "NO"); }
-//
-//            if (map.containsKey("apiBindings") && map.containsKey("comments")) {
-//
-//                ArrayList<String> apiBindings = (ArrayList<String>)comps.get(key).get("apiBindings");
-//                java.util.Set jdBindings = ((HashMap<String,String>)comps.get(key).get("comments")).keySet();
-//
-//                if (apiBindings == null && jdBindings == null) comps.get(key).put("Ok", "YES");
-//
-//                if (apiBindings == null && jdBindings != null) comps.get(key).put("Ok", "NO");
-//                if (apiBindings != null && jdBindings == null) comps.get(key).put("Ok", "NO");
-//
-//                if (apiBindings != null && jdBindings != null) {
-//
-//                    if (apiBindings.size() == 0 && jdBindings.size() == 0) { comps.get(key).put("Ok", "YES"); }
-//
-//                    if (apiBindings.size() != jdBindings.size()) { comps.get(key).put("Ok", "NO"); }
-//
-//                    if (apiBindings.size() != 0 && apiBindings.size() == jdBindings.size()) {
-//                        java.util.HashSet apiSet = new java.util.HashSet(apiBindings);
-//                        comps.get(key).put("Ok", (jdBindings.equals(apiSet)) ? "YES" : "NO");
-//                    }
-//                }
-//            }
-//        }
-//
+
         TreeMap<String,ArrayList<String>> packageInfo = new TreeMap<String,ArrayList<String>>();
 
         Iterator<String> keys = comps.keySet().iterator();
@@ -148,34 +110,6 @@ public class ComponentDoclet extends com.sun.javadoc.Doclet {
             out.write("<li><a href=\"#ComponentDetails\">Component Details</a></li>\n");
             out.write("</ul>\n");
 
-//            Iterator<String> prefxs = classNamePrefixes.keySet().iterator();
-//
-//            out.write("<a name=\"ListedByPrefix\"/>\n");
-
-//            while (prefxs.hasNext()) {
-//                String prefix = prefxs.next();
-//
-//                out.write(PageGenerator.TABLE_TOP_START);
-//                out.write("<b>Prefix: "+prefix+"</b></font></th>\n");
-//                out.write(PageGenerator.TABLE_TOP_END);
-//
-//                StringBuffer str = new StringBuffer();
-//                Iterator<String> namesForPrefix = classNamePrefixes.get(prefix).iterator();
-//                while (namesForPrefix.hasNext()) {
-//                    String current = namesForPrefix.next();
-//                    String[] parts = current.split("\\.");
-//                    String lastName = parts[parts.length-1];
-//
-//                    str.append("<a href=\"#"+current+"\">"+lastName+"</a>, ");
-//                }
-//
-//                String str2 = str.toString().substring(0,str.length()-2);
-//                out.write("<tr bgcolor=\"white\" CLASS=\"TableRowColor\">\n");
-//
-//                out.write("<td>"+str2+"</td></tr>\n");
-//                out.write("</table>\n&nbsp;<p>\n");
-//            }
-
             keys = packageInfo.keySet().iterator();
 
             out.write("<a name=\"ListedByPackage\"/>\n");
@@ -189,7 +123,7 @@ public class ComponentDoclet extends com.sun.javadoc.Doclet {
                 out.write("<b>Package: "+key+"</b></font></th>\n");
                 out.write(PageGenerator.TABLE_TOP_END);
 
-                Iterator<String> compKeys = (new TreeSet(packageInfo.get(key))).iterator();
+                Iterator<String> compKeys = (new TreeSet<>(packageInfo.get(key))).iterator();
                 while (compKeys.hasNext()) {
                     String compKey = compKeys.next();
 
@@ -690,7 +624,7 @@ public class ComponentDoclet extends com.sun.javadoc.Doclet {
         }
     }
 
-    public static boolean validOptions(String[][] options, DocErrorReporter reporter) {
+    public static boolean validOptions(String[][] options, Reporter reporter) {
         srcDirs = new ArrayList<String>();
 
         // System.out.println("options:");
