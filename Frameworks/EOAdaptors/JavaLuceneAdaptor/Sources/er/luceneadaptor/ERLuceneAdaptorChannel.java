@@ -18,7 +18,9 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.Field.TermVector;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexableFieldType;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermVectors;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.DisjunctionMaxQuery;
@@ -100,19 +102,20 @@ public class ERLuceneAdaptorChannel extends EOAdaptorChannel {
 		@Override
 		protected boolean traverseAndQualifier(EOAndQualifier q) {
 			NSArray<Query> queries = queriesForCurrent(q.qualifiers().count());
-			BooleanQuery query = new BooleanQuery();
+			BooleanQuery.Builder query = new BooleanQuery.Builder();
 			for (Query current : queries) {
 				query.add(current, BooleanClause.Occur.MUST);
 			}
-			_queries.addObject(query);
+			_queries.addObject(query.build());
 			return true;
 		}
 
 		@Override
 		protected boolean traverseNotQualifier(EONotQualifier q) {
 			NSArray<Query> queries = queriesForCurrent(1);
-			BooleanQuery query = new BooleanQuery();
-			query.add(queries.lastObject(), BooleanClause.Occur.MUST_NOT);
+			BooleanQuery query = new BooleanQuery.Builder()
+					.add(queries.lastObject(), BooleanClause.Occur.MUST_NOT)
+					.build();
 			_queries.addObject(query);
 			return true;
 		}
@@ -135,19 +138,18 @@ public class ERLuceneAdaptorChannel extends EOAdaptorChannel {
 			Query query = null;
 			String key = _entity.attributeNamed(q.key()).columnName();
 			IndexAttribute attr = new IndexAttribute(_entity.attributeNamed(key));
-			if (q instanceof ERXBetweenQualifier) {
-				ERXBetweenQualifier between = (ERXBetweenQualifier) q;
+			if (q instanceof ERXBetweenQualifier between) {
 				Object min = between.minimumValue();
 				Object max = between.maximumValue();
-				query = new TermRangeQuery(key, attr.asLuceneValue(min), attr.asLuceneValue(max), false, false);
+				query = TermRangeQuery.newStringRange(key, attr.asLuceneValue(min), attr.asLuceneValue(max), false, false);
 			} else if(q.selector().equals(EOQualifier.QualifierOperatorGreaterThan)) {
-				query = new TermRangeQuery(key, attr.asLuceneValue(q.value()), null, false, false);
+				query = TermRangeQuery.newStringRange(key, attr.asLuceneValue(q.value()), null, false, false);
 			} else if(q.selector().equals(EOQualifier.QualifierOperatorGreaterThanOrEqualTo)) {
-				query = new TermRangeQuery(key, attr.asLuceneValue(q.value()), null, true, false);
+				query = TermRangeQuery.newStringRange(key, attr.asLuceneValue(q.value()), null, true, false);
 			} else if(q.selector().equals(EOQualifier.QualifierOperatorLessThan)) {
-				query = new TermRangeQuery(key, null, attr.asLuceneValue(q.value()), false, false);
+				query = TermRangeQuery.newStringRange(key, null, attr.asLuceneValue(q.value()), false, false);
 			} else if(q.selector().equals(EOQualifier.QualifierOperatorLessThanOrEqualTo)) {
-				query = new TermRangeQuery(key, null, attr.asLuceneValue(q.value()), false, true);
+				query = TermRangeQuery.newStringRange(key, null, attr.asLuceneValue(q.value()), false, true);
 			} else if(q.selector().equals(EOQualifier.QualifierOperatorCaseInsensitiveLike) || q.selector().equals(EOQualifier.QualifierOperatorLike)) {
 				String value = q.value().toString();
 				if(q.selector().equals(EOQualifier.QualifierOperatorLike)) {
@@ -161,13 +163,13 @@ public class ERLuceneAdaptorChannel extends EOAdaptorChannel {
 						query = new PrefixQuery(new Term(key, value.substring(0, star)));
 					}
 				} else if(value.contains(" ")) {
-					MultiPhraseQuery multi = new MultiPhraseQuery();
-					query = multi;
-					String parts[] = value.split(" +");
+					MultiPhraseQuery.Builder multi = new MultiPhraseQuery.Builder();
+					String[] parts = value.split(" +");
 					for (int i = 0; i < parts.length; i++) {
 						String part = parts[i];
 						multi.add(new Term(key, part));
 					}
+					query = multi.build();
 				} else {
 					query = new TermQuery(new Term(key, value));
 				}
@@ -190,10 +192,10 @@ public class ERLuceneAdaptorChannel extends EOAdaptorChannel {
 		}
 
 		public Query query() {
-			BooleanQuery q = new BooleanQuery();
+			BooleanQuery.Builder q = new BooleanQuery.Builder();
 			q.add(new TermQuery(new Term(EXTERNAL_NAME_KEY, _entity.externalName())), BooleanClause.Occur.MUST);
 			q.add((Query) _queries.lastObject(), BooleanClause.Occur.MUST);
-			return q;
+			return q.build();
 		}
 	}
 
@@ -210,12 +212,9 @@ public class ERLuceneAdaptorChannel extends EOAdaptorChannel {
 
 		private String _columnName;
 
-		private TermVector _termVector;
-
-		private Store _store;
-
-		private Index _index;
-
+		
+		private IndexableFieldType _index;
+		
 		private Analyzer _analyzer;
 
 		private Format _format;
@@ -230,9 +229,9 @@ public class ERLuceneAdaptorChannel extends EOAdaptorChannel {
 			boolean isClassProperty = _attribute.entity().classPropertyNames().contains(_attribute.name());
 			boolean isDataProperty = _attribute.className().endsWith("NSData");
 			boolean isStringProperty = _attribute.className().endsWith("String");
-			_termVector = (TermVector) classValue(dict, "termVector", TermVector.class, isClassProperty && !isDataProperty && isStringProperty ? "YES" : "NO");
-			_store = (Store) classValue(dict, "store", Store.class, "YES");
-			_index = (Index) classValue(dict, "index", Index.class, isClassProperty && !isDataProperty && isStringProperty ? "ANALYZED" : "NOT_ANALYZED");
+			//_termVector = (TermVector) classValue(dict, "termVector", TermVector.class, isClassProperty && !isDataProperty && isStringProperty ? "YES" : "NO");
+			//_store = (Store) classValue(dict, "store", Store.class, "YES");
+			//_index = (Index) classValue(dict, "index", Index.class, isClassProperty && !isDataProperty && isStringProperty ? "ANALYZED" : "NOT_ANALYZED");
 			String analyzerClass = (String) dict.objectForKey("analyzer");
 			if (analyzerClass == null && _columnName.matches("\\w+_(\\w+)")) {
 				String locale = _columnName.substring(_columnName.lastIndexOf('_') + 1).toLowerCase();
@@ -282,16 +281,8 @@ public class ERLuceneAdaptorChannel extends EOAdaptorChannel {
 			return result;
 		}
 
-		public TermVector termVector() {
-			return _termVector;
-		}
-
-		public Index index() {
+		public IndexableFieldType index() {
 			return _index;
-		}
-
-		public Store store() {
-			return _store;
 		}
 
 		public String columnName() {

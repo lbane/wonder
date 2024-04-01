@@ -1,20 +1,22 @@
 package er.indexing;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.text.Format;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
+import java.util.stream.Stream;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
@@ -22,37 +24,46 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.DateTools.Resolution;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.DocumentStoredFieldVisitor;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.IndexableFieldType;
-import org.apache.lucene.index.StoredFieldVisitor;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.MultiTerms;
 import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermVectors;
-import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.index.TermsEnum.SeekStatus;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.CollectorManager;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.LeafCollector;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Scorable;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.ScoreMode;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldDocs;
-import org.apache.lucene.search.TopScoreDocCollector;
+import org.apache.lucene.search.TopScoreDocCollectorManager;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
+import org.apache.lucene.util.BytesRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +78,6 @@ import com.webobjects.foundation.NSForwardException;
 import com.webobjects.foundation.NSKeyValueCoding;
 import com.webobjects.foundation.NSMutableArray;
 import com.webobjects.foundation.NSMutableDictionary;
-import com.webobjects.foundation.NSMutableSet;
 import com.webobjects.foundation.NSNotification;
 import com.webobjects.foundation.NSNotificationCenter;
 import com.webobjects.foundation.NSNumberFormatter;
@@ -77,7 +87,6 @@ import er.extensions.eof.ERXEC;
 import er.extensions.eof.ERXEOControlUtilities;
 import er.extensions.eof.ERXGenericRecord;
 import er.extensions.eof.ERXKeyGlobalID;
-import er.extensions.foundation.ERXKeyValueCodingUtilities;
 import er.extensions.foundation.ERXMutableDictionary;
 import er.extensions.foundation.ERXPatcher;
 import er.extensions.foundation.ERXSelectorUtilities;
@@ -467,6 +476,7 @@ public class ERIndex {
                     Path indexDirectory = Path.of(URI.create(_store)); 
                     _indexDirectory = FSDirectory.open(indexDirectory);
                 } else {
+                    log.warn("Creating an EOF based Lucene storage is a bad idea.");
                     EOEditingContext ec = ERXEC.newEditingContext();
 
                     ec.lock();
@@ -685,12 +695,10 @@ public class ERIndex {
         ScoreDoc[] hits = null;
         long start = System.currentTimeMillis();
         try {
-
-            Searcher searcher = indexSearcher();
-            TopScoreDocCollector collector = TopScoreDocCollector.create(hitsPerPage, true);
-            searcher.search(query, collector);
-            hits = collector.topDocs().scoreDocs;
-
+            final IndexSearcher searcher = indexSearcher();
+            TopScoreDocCollectorManager collectorManager = new TopScoreDocCollectorManager(hitsPerPage, hitsPerPage);
+            TopDocs topDocs = searcher.search(query, collectorManager);
+            hits = topDocs.scoreDocs;
             log.debug("Returning {} after {} ms", hits.length, System.currentTimeMillis() - start);
             return hits;
         } catch (IOException e) {
@@ -698,54 +706,133 @@ public class ERIndex {
         }
     }
     
-    public NSArray<String> findTermStringsForPrefix(String field, String prefix) {
-    	NSMutableArray<String> terms = new NSMutableArray<>();
+    public List<String> findTermStringsForPrefix(String field, String prefix) {
+    	final List<String> terms = new ArrayList<>();
     	try {
-    		IndexReader reader = indexReader(); 
-    		TermEnum tenum = new PrefixTermEnum(reader, new Term(field, prefix));
-    		do {
-    			if (tenum.term() == null) break;
-    			final String termText = tenum.term().text();
-    			terms.addObject(termText);
-    		} while (tenum.next());
+    	    IndexReader reader = indexReader();
+
+    	    // get TermsEnum
+    	    Terms mterms = MultiTerms.getTerms(reader, field);
+    	    TermsEnum tenum = mterms.iterator();
+
+    	    // seek the first instance of prefix. If not found, maybe we get a term containing the prefix 
+    	    if (tenum.seekCeil(new BytesRef(prefix)) != SeekStatus.END) {
+
+    	        BytesRef termBytes = tenum.term();
+    	        while (termBytes != null) {
+    	            String ts = termBytes.utf8ToString();
+    	            // check if the term starts with the prefix and add it to the result
+    	            if (ts.startsWith(prefix)) {
+    	                terms.add(ts);
+    	                // got to the next term (or finish search if no more terms exists
+    	                termBytes = tenum.next();
+    	            } else {
+    	                // the current term does not start with the prefix, so no other term will, end search
+    	                termBytes = null;
+    	            }
+    	        }
+    	    }
 
     	} catch (Exception e) {
-    		e.printStackTrace();
+    	    log.error("Could not find prefix terms", e);
     	}
     	return terms;
     }
-
+    
     public IndexDocument findDocument(EOKeyGlobalID globalID) {
-        NSMutableArray<Document> result = new NSMutableArray<>();
-        long start = System.currentTimeMillis();
+        final long start = System.currentTimeMillis();
         try {
-            Searcher searcher = indexSearcher();
-            String pk = ERXKeyGlobalID.globalIDForGID(globalID).asString();
-            BooleanQuery query = new BooleanQuery();
-            query.add(new TermQuery(new Term(GID, pk)), Occur.MUST);
-            Hits hits = searcher.search(query);
+            final IndexSearcher searcher = indexSearcher();
+            final String pk = ERXKeyGlobalID.globalIDForGID(globalID).asString();
+            
+            // build a query. we use a boolean query to wrap the term query to specify a MUST clause
+            final BooleanQuery query = new BooleanQuery.Builder()
+                    .add(new TermQuery(new Term(GID, pk)), Occur.MUST)
+                    .build();
+            
+            // a collector collects found documentIds in a list
+            class AllDocCollector implements Collector {
+                
+                final List<Integer> docSet = new ArrayList<>();
+
+                @Override
+                public LeafCollector getLeafCollector(LeafReaderContext context) throws IOException
+                {
+                    final int docBase = context.docBase;
+                    
+                    return new LeafCollector() {
+                        
+                        @Override
+                        public void setScorer(Scorable scorer) throws IOException
+                        {
+                            // ignore
+                        }
+                        
+                        @Override
+                        public void collect(int doc) throws IOException
+                        {
+                            docSet.add(docBase + doc);
+                        }
+                    };
+                }
+
+                @Override
+                public ScoreMode scoreMode()
+                {
+                    return ScoreMode.COMPLETE_NO_SCORES;
+                }
+                
+                public Stream<Integer> docStream()
+                {
+                    return docSet.stream();
+                }
+                
+            };
+            
+            // a collection manager is used to reduce the output of multiple collectors to a single result
+            CollectorManager<AllDocCollector, IndexDocument> colman = new CollectorManager<AllDocCollector, IndexDocument>() {
+
+                @Override
+                public AllDocCollector newCollector() throws IOException
+                {
+                    return new AllDocCollector();
+                }
+
+                @Override
+                public IndexDocument reduce(Collection<AllDocCollector> collectors) throws IOException
+                {
+                    List<Integer> allDocSet = collectors.stream()
+                                                        .parallel()
+                                                        .flatMap(AllDocCollector::docStream)
+                                                        .toList();
+                    if (allDocSet.isEmpty()) {
+                        return null;
+                    }
+                    if (allDocSet.size() != 1) {
+                        log.warn("Found more than 1 document containing GID {}, using first one", globalID);
+                    }
+                    return new IndexDocument(searcher.getIndexReader().storedFields().document(allDocSet.getFirst()));
+                } 
+            };
+            
+            final IndexDocument result = searcher.search(query, colman);
 
             if (log.isInfoEnabled()) {
                 log.info("Searched for: {} in  {} ms", query.toString(GID), System.currentTimeMillis() - start);
             }
-            for (Iterator<Hit> iter = hits.iterator(); iter.hasNext();) {
-                Hit hit = iter.next();
-                result.addObject(hit.getDocument());
-            }
-            log.info("Returning {} after {} ms", result.count(), System.currentTimeMillis() - start);
+            return result;
         } catch (IOException e) {
             throw NSForwardException._runtimeExceptionForThrowable(e);
         }
-        return new IndexDocument(result.lastObject());
     }
     
     public ERDocument documentForId(int docId, float score) {
     	ERDocument doc = null;
     	try {
-    		Document _doc = indexSearcher().doc(docId);
-    		doc = new ERDocument(_doc, score);
+    	    Document _doc = indexReader().storedFields().document(docId);
+    	    doc = new ERDocument(_doc, score);
     	} catch (IOException e) {
-    		throw NSForwardException._runtimeExceptionForThrowable(e);
+    	    throw NSForwardException._runtimeExceptionForThrowable(e);
     	}
     	return doc;
     }
@@ -765,41 +852,42 @@ public class ERIndex {
         return ERXEOControlUtilities.faultsForGlobalIDs(ec, gids);
     }
 
-    public NSArray<String> terms(String fieldName) {
-        NSMutableSet<String> result = new NSMutableSet<>();
-        TermEnum terms = null;
+    public Collection<String> terms(String fieldName) {
         try {
             IndexReader reader = indexReader();
-            terms = reader.terms(new Term(fieldName, ""));
-            while (fieldName.equals(terms.term().field())) {
-                result.addObject(terms.term().text());
-                if (!terms.next()) {
-                    break;
-                }
+            Terms terms = MultiTerms.getTerms(reader, fieldName);
+            TermsEnum tnum = terms.iterator();
+            
+            Set<String> result = new TreeSet<String>();
+            BytesRef term;
+            while ((term = tnum.next()) != null) {
+                result.add(term.utf8ToString());
             }
+            
+            return result;
         } catch (IOException e) {
             throw NSForwardException._runtimeExceptionForThrowable(e);
-        } finally {
-            if (terms != null) {
-                try {
-                    terms.close();
-                } catch (IOException e) {
-                    log.error("Could not close terms", e);
-                }
-            }
         }
-
-        return result.allObjects();
     }
 
     public IndexDocument documentForGlobalID(EOKeyGlobalID globalID) {
         return findDocument(globalID);
     }
+    
+    private static FieldType gidFieldsType;
+    static {
+        gidFieldsType = new FieldType();
+        gidFieldsType.setStored(true);
+        gidFieldsType.setTokenized(false);
+        gidFieldsType.setIndexOptions(IndexOptions.DOCS);
+        gidFieldsType.setOmitNorms(true);
+        gidFieldsType.freeze();
+    }
 
     public IndexDocument createDocumentForGlobalID(EOKeyGlobalID globalID) {
         Document doc = new Document();
         String pk = ERXKeyGlobalID.globalIDForGID(globalID).asString();
-        doc.add(new Field(GID, pk, Field.Store.YES, Field.Index.NOT_ANALYZED));
+        doc.add(new StoredField(GID, pk, gidFieldsType));
         return new IndexDocument(doc);
     }
 

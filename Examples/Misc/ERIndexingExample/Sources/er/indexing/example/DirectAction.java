@@ -1,5 +1,7 @@
 package er.indexing.example;
 
+import static org.junit.Assert.assertThrows;
+
 import com.webobjects.appserver.WOActionResults;
 import com.webobjects.appserver.WORequest;
 import com.webobjects.eocontrol.EOEditingContext;
@@ -40,8 +42,8 @@ public class DirectAction extends ERD2WDirectAction {
     @Override
     public WOActionResults defaultAction() {
         //testIndexing();
-        NSDictionary dict = new NSDictionary("TestValue", "TestKey");
-        NSArray keys = new NSArray(new String[]{"test1", "test2"});
+        NSDictionary<String, String> dict = new NSDictionary<>("TestValue", "TestKey");
+        NSArray<String> keys = new NSArray<>(new String[]{"test1", "test2"});
         _EOMutableKnownKeyDictionary vals;
         _EOMutableKnownKeyDictionary.Initializer initializer = new _EOMutableKnownKeyDictionary.Initializer(keys);
         vals = new _EOMutableKnownKeyDictionary(initializer);
@@ -63,10 +65,10 @@ public class DirectAction extends ERD2WDirectAction {
     }
     
     public static void receiveNotification(NSNotification n) {
-        log.info("Received: " + n);
+        log.info("Received: {}", n);
     }
     
-    private void testIndexing() {
+    private void testIndexing() throws InterruptedException {
         EOEditingContext ec = ERXEC.newEditingContext();
         ec.lock();
         try {
@@ -78,10 +80,12 @@ public class DirectAction extends ERD2WDirectAction {
             ERIndex fileStore = ERIndex.indexNamed("AssetInFileStore");
             EOQualifier tagQualifier = new EOKeyValueQualifier("tags.name", EOQualifier.QualifierOperatorEqual, tag.name());
             EOQualifier groupQualifier = new EOKeyValueQualifier("assetGroup.name", EOQualifier.QualifierOperatorEqual, tag.name());
-            log.info("fileStore: " + fileStore.findGlobalIDs(tagQualifier).count());
-            log.info("eofStore: " + eofStore.findGlobalIDs(tagQualifier).count());
-            log.info("fileStore: " + fileStore.findGlobalIDs(groupQualifier).count());
-            log.info("eofStore: " + eofStore.findGlobalIDs(groupQualifier).count());
+            if (log.isInfoEnabled()) {
+                log.info("fileStore: {}", fileStore.findGlobalIDs(tagQualifier).count());
+                log.info("eofStore: {}", eofStore.findGlobalIDs(tagQualifier).count());
+                log.info("fileStore: {}", fileStore.findGlobalIDs(groupQualifier).count());
+                log.info("eofStore: {}", eofStore.findGlobalIDs(groupQualifier).count());
+            }
             
             String newName = "cooltest";
             tagQualifier = new EOKeyValueQualifier("tags.name", com.webobjects.eocontrol.EOQualifier.QualifierOperatorEqual, newName);
@@ -90,17 +94,21 @@ public class DirectAction extends ERD2WDirectAction {
             
             assetGroup.setName(newName + "  " + System.currentTimeMillis());
             ec.saveChanges();
-            log.info("fileStore 1: " + fileStore.findGlobalIDs(tagQualifier).count());
-            log.info("eofStore 1: " + eofStore.findGlobalIDs(tagQualifier).count());
+            if (log.isInfoEnabled()) {
+                log.info("fileStore 1: {}", fileStore.findGlobalIDs(tagQualifier).count());
+                log.info("eofStore 1: {}", eofStore.findGlobalIDs(tagQualifier).count());
+            }
             try {
                 if(true) {
                     Thread.sleep(2000);
                 }
-                log.info("fileStore 2: " + fileStore.findGlobalIDs(tagQualifier).count());
-                log.info("eofStore 2: " + eofStore.findGlobalIDs(tagQualifier).count());
+                if (log.isInfoEnabled()) {
+                    log.info("fileStore 2: {}", fileStore.findGlobalIDs(tagQualifier).count());
+                    log.info("eofStore 2: {}", eofStore.findGlobalIDs(tagQualifier).count());
+                }
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                log.error("Interrupted", e);
+                throw e;
             }
         } finally {
             ec.unlock();

@@ -64,6 +64,7 @@ public class DataCreator {
 				channel.evaluateExpression(expression);
 			}
 		} catch (Exception e) {
+		    log.error("Can't create primary key support for model", e);
 		}
 	}
 

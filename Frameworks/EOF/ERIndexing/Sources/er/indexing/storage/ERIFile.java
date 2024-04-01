@@ -1,6 +1,7 @@
 package er.indexing.storage;
 
 import java.io.IOException;
+import java.util.zip.CRC32;
 
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
@@ -11,6 +12,7 @@ import com.webobjects.eocontrol.EOEditingContext;
 import com.webobjects.foundation.NSData;
 import com.webobjects.foundation.NSMutableData;
 import com.webobjects.foundation.NSMutableRange;
+import com.webobjects.foundation.NSRange;
 import com.webobjects.foundation.NSTimestamp;
 
 public class ERIFile extends _ERIFile {
@@ -35,13 +37,14 @@ public class ERIFile extends _ERIFile {
     private class EOFIndexOutput extends IndexOutput {
 
         long filePointer = 0;
-        long fileLength = 0;
         NSMutableData data;
         boolean dirty = false;
         
-        public EOFIndexOutput(NSData contentData) {
+        CRC32 checksum = new CRC32();
+        
+        public EOFIndexOutput(NSData contentData, String name) {
+            super("EOFIndexOutput", name);
             data = new NSMutableData(contentData);
-            fileLength = data.length();
         }
 
         private NSMutableData data() {
@@ -50,23 +53,18 @@ public class ERIFile extends _ERIFile {
 
         @Override
         public void close() throws IOException {
-            flush();
-        }
-
-        @Override
-        public void flush() throws IOException {
             if (dirty) {
-				if (length() < data().length()) {
-					data().setLength((int) length());
-				}
-				editingContext().lock();
-				try {
-					setContentData(data());
-					editingContext().saveChanges();
-				} finally {
-					editingContext().unlock();
-				}
-			}
+                if (length() < data().length()) {
+                    data().setLength(length().intValue());
+                }
+                editingContext().lock();
+                try {
+                    setContentData(data());
+                    editingContext().saveChanges();
+                } finally {
+                    editingContext().unlock();
+                }
+            }
             dirty = false;
         }
 
@@ -75,23 +73,11 @@ public class ERIFile extends _ERIFile {
             return filePointer;
         }
 
-        @Override
-        public long length() {
-            return fileLength;
-        }
-
-        @Override
-        public void seek(long l) throws IOException {
-            assureLength(l);
-            filePointer = l;
-        }
-
         private void assureLength(long len) {
             if(length() < len) {
                 if(data().length() < len) {
                     data().setLength((int) len + 128000);
                 }
-                fileLength = len;
                 dirty = true;
             }
         }
@@ -104,6 +90,8 @@ public class ERIFile extends _ERIFile {
             bytes[(int) filePointer] = byte0;
             filePointer += 1;
             dirty = true;
+            
+            checksum.update(byte0);
         }
 
         @Override
@@ -114,15 +102,24 @@ public class ERIFile extends _ERIFile {
             System.arraycopy(abyte0, offset, bytes, (int)filePointer, len);
             filePointer += len;
             dirty = true;
+            
+            checksum.update(bytes, offset, len);
+        }
+
+        @Override
+        public long getChecksum() throws IOException
+        {
+            return checksum.getValue();
         }
     }
     
-    private class EOFIndexInput extends IndexInput {
+    private class EOFIndexInput extends IndexInput{
 
         long filePointer = 0;
         NSData data;
         
         public EOFIndexInput(NSData contentData) {
+            super("EOFIndexInput");
             data = contentData;
         }
 
@@ -168,6 +165,12 @@ public class ERIFile extends _ERIFile {
         public void seek(long l) throws IOException {
             assureLength(l);
             filePointer = l;
+        }
+
+        @Override
+        public IndexInput slice(String sliceDescription, long offset, long length) throws IOException
+        {
+            return new EOFIndexInput(data.subdataWithRange(new NSRange((int)offset, (int)length)));
         }
     }
     
@@ -219,6 +222,6 @@ public class ERIFile extends _ERIFile {
     }
 
     public IndexOutput createOutput() {
-        return new EOFIndexOutput(contentData());
+        return new EOFIndexOutput(contentData(), name());
     }
 }

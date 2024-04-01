@@ -1,20 +1,22 @@
 package er.luceneadaptor;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockObtainFailedException;
-import org.apache.lucene.util.Version;
 
 import com.webobjects.eoaccess.EOAdaptor;
 import com.webobjects.eoaccess.EOAdaptorContext;
@@ -39,7 +41,7 @@ public class ERLuceneAdaptor extends EOAdaptor {
 	public Directory _directory;
 	public Analyzer _analyzer;
 
-	private IndexReader _reader;
+	private DirectoryReader _reader;
 
 	public ERLuceneAdaptor(String name) {
 		super(name);
@@ -65,20 +67,22 @@ public class ERLuceneAdaptor extends EOAdaptor {
 
 	public IndexReader indexReader() throws CorruptIndexException, IOException {
 		if (_reader == null) {
-			_reader = IndexReader.open(directory(), true);
+			_reader = DirectoryReader.open(directory());
 		}
+		
 		if (!_reader.isCurrent()) {
-			_reader = _reader.reopen();
+			DirectoryReader newReader = DirectoryReader.openIfChanged(_reader);
+			_reader.close();
+			_reader = newReader;
 		}
 		return _reader;
 	}
 
 	public IndexWriter createWriter() {
 		try {
-			if (directory().fileExists(".")) {
-				return new IndexWriter(directory(), analyzer(), false, MaxFieldLength.UNLIMITED);
-			}
-			return new IndexWriter(directory(), analyzer(), true, MaxFieldLength.UNLIMITED);
+			IndexWriterConfig conv = new IndexWriterConfig(analyzer());
+			conv.setOpenMode(OpenMode.CREATE_OR_APPEND);
+			return new IndexWriter(directory(), conv);
 		} catch (CorruptIndexException e) {
 			throw new ERLuceneAdaptorException("Create index failed: " + e.getMessage(), e);
 		} catch (LockObtainFailedException e) {
@@ -95,14 +99,14 @@ public class ERLuceneAdaptor extends EOAdaptor {
 			if(url == null) {
 				throw new ERLuceneAdaptorException("URL can't be empty.");
 			}
-			File indexDirectory = new File(new URL(url).getFile());
+			Path indexDirectory = Paths.get(URI.create(url));
 			_directory = FSDirectory.open(indexDirectory);
 		} catch (MalformedURLException e) {
 			throw new ERLuceneAdaptorException("Open Directory failed: " + e.getMessage(), e);
 		} catch (IOException e) {
 			throw new ERLuceneAdaptorException("Open Directory failed: " + e.getMessage(), e);
 		}
-		_analyzer = new StandardAnalyzer(Version.LUCENE_29);
+		_analyzer = new StandardAnalyzer();
 	}
 
 	@Override
