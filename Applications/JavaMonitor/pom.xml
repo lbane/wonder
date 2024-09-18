@@ -36,6 +36,15 @@
 			<groupId>wonder.eof</groupId>
 			<artifactId>ERRest</artifactId>
 		</dependency>
+		<dependency>
+		    <!-- indirect dependency from the WebObjects framework, that would be satified by the excludeded WOXML framework -->
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-reload4j</artifactId>
+        </dependency>
 	</dependencies>
 	<build>
 		<sourceDirectory>Sources</sourceDirectory>

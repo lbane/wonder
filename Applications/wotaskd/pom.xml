@@ -52,12 +52,19 @@
         <dependency>
             <groupId>org.apache.sshd</groupId>
             <artifactId>sshd-sftp</artifactId>
-            <version>2.5.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.sshd</groupId>
             <artifactId>sshd-scp</artifactId>
-            <version>2.5.1</version>
+        </dependency>
+        <dependency>
+            <!-- indirect dependency from the WebObjects framework, that would be satified by the excludeded WOXML framework -->
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-reload4j</artifactId>
         </dependency>
 	</dependencies>
 	<build>

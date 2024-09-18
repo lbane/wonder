@@ -18,6 +18,11 @@
 			<groupId>com.webobjects</groupId>
 			<artifactId>JavaWebObjects</artifactId>
 		</dependency>
+        <dependency>
+            <!-- indirect dependency from the WebObjects framework, that would be satified by the excludeded WOXML framework -->
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+        </dependency>
 	</dependencies>
 	<build>
 		<sourceDirectory>Sources</sourceDirectory>
