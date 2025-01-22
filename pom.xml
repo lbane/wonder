@@ -495,7 +495,7 @@
             <dependency>
                 <groupId>ch.qos.reload4j</groupId>
                 <artifactId>reload4j</artifactId>
-                <version>1.2.25</version>
+                <version>1.2.26</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -510,7 +510,7 @@
             <dependency>
                 <groupId>com.ibm.icu</groupId>
                 <artifactId>icu4j</artifactId>
-                <version>75.1</version>
+                <version>76.1</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -573,7 +573,7 @@
             <dependency>
                 <groupId>org.apache.mina</groupId>
                 <artifactId>mina-core</artifactId>
-                <version>2.2.3</version>
+                <version>2.2.4</version>
             </dependency>
             <dependency>
                 <groupId>io.netty</groupId>
@@ -668,17 +668,17 @@
             <dependency>
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
-                <version>1.9.4</version>
+                <version>1.10.0</version>
             </dependency>
             <dependency>
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
-                <version>1.17.1</version>
+                <version>1.17.2</version>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.17.0</version>
+                <version>2.18.0</version>
             </dependency>
             <dependency>
                 <groupId>commons-httpclient</groupId>
@@ -744,7 +744,7 @@
             <dependency>
                 <groupId>com.microsoft.sqlserver</groupId>
                 <artifactId>mssql-jdbc</artifactId>
-                <version>10.2.3.jre8</version>
+                <version>10.2.3.jre17</version>
             </dependency>
             <dependency>
                 <groupId>net.sf.ezmorph</groupId>
@@ -775,12 +775,12 @@
             <dependency>
                 <groupId>org.xhtmlrenderer</groupId>
                 <artifactId>flying-saucer-core</artifactId>
-                <version>9.9.5</version>
+                <version>9.11.2</version>
             </dependency>
 	        <dependency>
 	          <groupId>org.xhtmlrenderer</groupId>
 	          <artifactId>flying-saucer-pdf</artifactId>
-	          <version>9.9.5</version>
+	          <version>9.11.2</version>
 	        </dependency>
             <dependency>
                 <groupId>net.sf.ujac</groupId>
@@ -795,7 +795,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
-                <version>[1.12.0,)</version>
+                <version>[1.13.0,)</version>
             </dependency>
             <dependency>
                 <groupId>org.javassist</groupId>
@@ -811,27 +811,27 @@
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi</artifactId>
-                <version>5.3.0</version>
+                <version>5.4.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
-                <version>5.3.0</version>
+                <version>5.4.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.xmlgraphics</groupId>
                 <artifactId>xmlgraphics-commons</artifactId>
-                <version>2.9</version>
+                <version>2.10</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.xmlgraphics</groupId>
                 <artifactId>fop</artifactId>
-                <version>2.9</version>
+                <version>2.10</version>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
-                <version>24.1.0</version>
+                <version>26.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.openid4java</groupId>
@@ -846,7 +846,7 @@
             <dependency>
                 <groupId>net.sf.jasperreports</groupId>
                 <artifactId>jasperreports</artifactId>
-                <version>6.21.3</version>
+                <version>6.21.4</version>
             </dependency>
             <dependency>
                 <groupId>joda-time</groupId>
@@ -884,7 +884,7 @@
             <dependency>
                 <groupId>org.quartz-scheduler</groupId>
                 <artifactId>quartz</artifactId>
-                <version>2.3.2</version>
+                <version>2.5.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.sshd</groupId>
@@ -932,7 +932,7 @@
 			<dependency>
 				<groupId>org.postgresql</groupId>
 				<artifactId>postgresql</artifactId>
-			    <version>42.7.4</version>
+			    <version>42.7.5</version>
 			</dependency>
 			<dependency>
 				<groupId>com.mysql</groupId>
